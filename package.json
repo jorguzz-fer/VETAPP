@@ -1,0 +1,21 @@
+{
+  "name": "vetapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VETAPP — plataforma de gestão para clínicas veterinárias (monorepo)",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @vetapp/api start:dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "db:generate": "pnpm --filter @vetapp/api db:generate",
+    "db:migrate": "pnpm --filter @vetapp/api db:migrate"
+  }
+}

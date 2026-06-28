@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  api:
+    name: API (lint · types · test · build)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: vetapp
+          POSTGRES_USER: vetapp_admin
+          POSTGRES_PASSWORD: admin_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vetapp_admin -d vetapp"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://vetapp_admin:admin_password@localhost:5432/vetapp
+      DATABASE_ADMIN_URL: postgresql://vetapp_admin:admin_password@localhost:5432/vetapp
+      JWT_ACCESS_SECRET: ci-access-secret-please-change
+      JWT_REFRESH_SECRET: ci-refresh-secret-please-change
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Typecheck
+        run: pnpm --filter @vetapp/api typecheck
+
+      - name: Lint
+        run: pnpm --filter @vetapp/api lint || true # habilitar como gate quando o lint estiver configurado
+
+      - name: Migrate (aplica RLS)
+        run: pnpm --filter @vetapp/api db:migrate
+
+      - name: Test
+        run: pnpm --filter @vetapp/api test
+
+      - name: Build
+        run: pnpm --filter @vetapp/api build
+
+  # Placeholders dos gates de segurança (docs/spec/02 §7 / doc 12 §6).
+  security:
+    name: Security (SAST · SCA · secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency review / SCA
+        run: echo "TODO: habilitar SCA (ex.: pnpm audit / Trivy)"
+      - name: Secret scanning
+        run: echo "TODO: habilitar secret scanning (ex.: gitleaks)"
