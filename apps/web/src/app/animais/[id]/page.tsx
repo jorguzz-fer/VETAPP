@@ -58,6 +58,16 @@ export default function ProntuarioPage() {
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [faturar, setFaturar] = useState(true);
+
+  const [editAnimal, setEditAnimal] = useState(false);
+  const [aForm, setAForm] = useState<{ nome: string; especie: string; raca: string; sexo: '' | 'M' | 'F'; castrado: boolean; status: 'vivo' | 'falecido' }>({
+    nome: '',
+    especie: '',
+    raca: '',
+    sexo: '',
+    castrado: false,
+    status: 'vivo',
+  });
   const [saving, setSaving] = useState(false);
 
   const loadFatura = useCallback(async (responsavelId: string) => {
@@ -72,6 +82,16 @@ export default function ProntuarioPage() {
     ]);
     const an = (a.data as Animal) ?? null;
     setAnimal(an);
+    if (an) {
+      setAForm({
+        nome: an.nome,
+        especie: an.especie ?? '',
+        raca: an.raca ?? '',
+        sexo: (an.sexo as '' | 'M' | 'F') ?? '',
+        castrado: an.castrado,
+        status: (an.status as 'vivo' | 'falecido') ?? 'vivo',
+      });
+    }
     setEventos((e.data as Evento[]) ?? []);
     if (an) await loadFatura(an.responsavelId);
     setLoading(false);
@@ -96,6 +116,23 @@ export default function ProntuarioPage() {
       setShowForm(false);
       await load();
     }
+  }
+
+  async function onSaveAnimal(e: FormEvent) {
+    e.preventDefault();
+    await api.PATCH('/api/animais/{id}', {
+      params: { path: { id } },
+      body: {
+        nome: aForm.nome,
+        especie: aForm.especie || undefined,
+        raca: aForm.raca || undefined,
+        sexo: aForm.sexo || undefined,
+        castrado: aForm.castrado,
+        status: aForm.status,
+      },
+    });
+    setEditAnimal(false);
+    await load();
   }
 
   if (loading) return <p className="text-sm text-gray-500">Carregando…</p>;
@@ -124,10 +161,55 @@ export default function ProntuarioPage() {
                 .join(' · ') || '—'}
             </p>
           </div>
-          <Button onClick={() => setShowForm((v) => !v)}>
-            <i className="ri-add-line"></i> Registrar evento
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setEditAnimal((v) => !v)}>
+              <i className="ri-edit-line"></i> Editar
+            </Button>
+            <Button onClick={() => setShowForm((v) => !v)}>
+              <i className="ri-add-line"></i> Registrar evento
+            </Button>
+          </div>
         </div>
+
+        {editAnimal && (
+          <form onSubmit={onSaveAnimal} className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3 md:items-end">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Nome</span>
+              <input required value={aForm.nome} onChange={(e) => setAForm({ ...aForm, nome: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Espécie</span>
+              <input value={aForm.especie} onChange={(e) => setAForm({ ...aForm, especie: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Raça</span>
+              <input value={aForm.raca} onChange={(e) => setAForm({ ...aForm, raca: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Sexo</span>
+              <select value={aForm.sexo} onChange={(e) => setAForm({ ...aForm, sexo: e.target.value as '' | 'M' | 'F' })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500">
+                <option value="">—</option>
+                <option value="M">Macho</option>
+                <option value="F">Fêmea</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Situação</span>
+              <select value={aForm.status} onChange={(e) => setAForm({ ...aForm, status: e.target.value as 'vivo' | 'falecido' })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500">
+                <option value="vivo">Vivo</option>
+                <option value="falecido">Falecido</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={aForm.castrado} onChange={(e) => setAForm({ ...aForm, castrado: e.target.checked })} />
+              <span className="text-gray-600 dark:text-gray-300">Castrado</span>
+            </label>
+            <div className="md:col-span-3 flex gap-2">
+              <Button type="submit"><i className="ri-save-line"></i> Salvar</Button>
+              <Button type="button" variant="ghost" onClick={() => setEditAnimal(false)}>Cancelar</Button>
+            </div>
+          </form>
+        )}
 
         {showForm && (
           <form onSubmit={onAddEvento} className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">

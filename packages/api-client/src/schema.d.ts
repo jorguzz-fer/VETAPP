@@ -94,10 +94,10 @@ export interface paths {
         get: operations["ClientesController_ficha"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["ClientesController_removeCliente"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["ClientesController_updateCliente"];
         trace?: never;
     };
     "/api/clientes/{id}/animais": {
@@ -126,10 +126,10 @@ export interface paths {
         get: operations["ClientesController_animal"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["ClientesController_removeAnimal"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["ClientesController_updateAnimal"];
         trace?: never;
     };
     "/api/animais/{id}/eventos": {
@@ -159,6 +159,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_list"];
+        put?: never;
+        post: operations["AgendaController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AgendaController_cancelar"];
         options?: never;
         head?: never;
         patch?: never;
@@ -205,6 +237,12 @@ export interface components {
             documento?: string;
             origem?: string;
         };
+        ListResponsaveisDto: {
+            items: components["schemas"]["ResponsavelDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
         CreateResponsavelDto: {
             /** @example Maria Silva */
             nome: string;
@@ -239,6 +277,17 @@ export interface components {
             origem?: string;
             animais: components["schemas"]["AnimalDto"][];
         };
+        UpdateResponsavelDto: {
+            nome?: string;
+            codigo?: string;
+            email?: string;
+            telefone?: string;
+            documento?: string;
+            origem?: string;
+        };
+        OkDto: {
+            ok: boolean;
+        };
         CreateAnimalDto: {
             /** @example Rex */
             nome: string;
@@ -255,6 +304,18 @@ export interface components {
              * @example 2020-05-10
              */
             nascimento?: string;
+        };
+        UpdateAnimalDto: {
+            nome?: string;
+            codigo?: string;
+            especie?: string;
+            raca?: string;
+            /** @enum {string} */
+            sexo?: "M" | "F";
+            castrado?: boolean;
+            nascimento?: string;
+            /** @enum {string} */
+            status?: "vivo" | "falecido";
         };
         EventoDto: {
             id: string;
@@ -289,6 +350,33 @@ export interface components {
             status: string;
             totalCentavos: number;
             itens: components["schemas"]["FaturaItemDto"][];
+        };
+        AgendamentoDto: {
+            id: string;
+            titulo: string;
+            inicio: string;
+            fim: string;
+            status: string;
+            animalId?: string;
+            responsavelId?: string;
+            observacoes?: string;
+        };
+        CreateAgendamentoDto: {
+            /** @example Consulta — Rex */
+            titulo: string;
+            /**
+             * @description ISO 8601
+             * @example 2026-07-01T14:00:00Z
+             */
+            inicio: string;
+            /**
+             * @description ISO 8601
+             * @example 2026-07-01T14:30:00Z
+             */
+            fim: string;
+            animalId?: string;
+            responsavelId?: string;
+            observacoes?: string;
         };
     };
     responses: never;
@@ -384,7 +472,10 @@ export interface operations {
     ClientesController_list: {
         parameters: {
             query?: {
+                /** @description Nome ou telefone */
                 search?: string;
+                page?: number;
+                pageSize?: number;
             };
             header?: never;
             path?: never;
@@ -397,7 +488,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResponsavelDto"][];
+                    "application/json": components["schemas"]["ListResponsaveisDto"];
                 };
             };
         };
@@ -446,6 +537,52 @@ export interface operations {
             };
         };
     };
+    ClientesController_removeCliente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    ClientesController_updateCliente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateResponsavelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponsavelDto"];
+                };
+            };
+        };
+    };
     ClientesController_addAnimal: {
         parameters: {
             query?: never;
@@ -481,6 +618,52 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_removeAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    ClientesController_updateAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAnimalDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -555,6 +738,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FaturaDto"];
+                };
+            };
+        };
+    };
+    AgendaController_list: {
+        parameters: {
+            query?: {
+                /** @description ISO 8601 */
+                from?: string;
+                /** @description ISO 8601 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgendamentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAgendamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgendamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
                 };
             };
         };

@@ -29,6 +29,13 @@
       "when": 1719590700000,
       "tag": "0003_prontuario",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1719590800000,
+      "tag": "0004_agenda",
+      "breakpoints": true
     }
   ]
 }

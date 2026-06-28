@@ -99,3 +99,34 @@ export class ResponsavelComAnimaisDto extends ResponsavelDto {
   @ApiProperty({ type: [AnimalDto] })
   animais!: AnimalDto[];
 }
+
+export class UpdateResponsavelDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() @MinLength(2) @MaxLength(160) nome?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() codigo?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() email?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() telefone?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() documento?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() origem?: string;
+}
+
+export class UpdateAnimalDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() @MinLength(1) @MaxLength(120) nome?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() codigo?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() especie?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() raca?: string;
+  @ApiPropertyOptional({ enum: ['M', 'F'] }) @IsOptional() @IsIn(['M', 'F']) sexo?: string;
+  @ApiPropertyOptional({ type: Boolean }) @IsOptional() @IsBoolean() castrado?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsString() nascimento?: string;
+  @ApiPropertyOptional({ enum: ['vivo', 'falecido'] }) @IsOptional() @IsIn(['vivo', 'falecido']) status?: string;
+}
+
+export class ListResponsaveisDto {
+  @ApiProperty({ type: [ResponsavelDto] }) items!: ResponsavelDto[];
+  @ApiProperty() total!: number;
+  @ApiProperty() page!: number;
+  @ApiProperty() pageSize!: number;
+}
+
+export class OkDto {
+  @ApiProperty() ok!: boolean;
+}
