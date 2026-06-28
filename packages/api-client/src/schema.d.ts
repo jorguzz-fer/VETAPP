@@ -68,6 +68,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/clientes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_list"];
+        put?: never;
+        post: operations["ClientesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_ficha"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{id}/animais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientesController_addAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/animais/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_animal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -99,6 +163,66 @@ export interface components {
             tenantId: string;
             /** @example admin */
             role: string;
+        };
+        ResponsavelDto: {
+            id: string;
+            codigo?: string;
+            nome: string;
+            email?: string;
+            telefone?: string;
+            documento?: string;
+            origem?: string;
+        };
+        CreateResponsavelDto: {
+            /** @example Maria Silva */
+            nome: string;
+            codigo?: string;
+            /** @example maria@email.com */
+            email?: string;
+            /** @example +55 11 99999-0000 */
+            telefone?: string;
+            documento?: string;
+            /** @description Como nos conheceu? */
+            origem?: string;
+        };
+        AnimalDto: {
+            id: string;
+            responsavelId: string;
+            codigo?: string;
+            nome: string;
+            especie?: string;
+            raca?: string;
+            sexo?: string;
+            castrado: boolean;
+            nascimento?: string;
+            status: string;
+        };
+        ResponsavelComAnimaisDto: {
+            id: string;
+            codigo?: string;
+            nome: string;
+            email?: string;
+            telefone?: string;
+            documento?: string;
+            origem?: string;
+            animais: components["schemas"]["AnimalDto"][];
+        };
+        CreateAnimalDto: {
+            /** @example Rex */
+            nome: string;
+            codigo?: string;
+            /** @example Canina */
+            especie?: string;
+            /** @example Labrador */
+            raca?: string;
+            /** @enum {string} */
+            sexo?: "M" | "F";
+            castrado?: boolean;
+            /**
+             * @description AAAA-MM-DD
+             * @example 2020-05-10
+             */
+            nascimento?: string;
         };
     };
     responses: never;
@@ -187,6 +311,117 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthMeDto"];
+                };
+            };
+        };
+    };
+    ClientesController_list: {
+        parameters: {
+            query?: {
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponsavelDto"][];
+                };
+            };
+        };
+    };
+    ClientesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateResponsavelDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponsavelDto"];
+                };
+            };
+        };
+    };
+    ClientesController_ficha: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponsavelComAnimaisDto"];
+                };
+            };
+        };
+    };
+    ClientesController_addAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAnimalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_animal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalDto"];
                 };
             };
         };

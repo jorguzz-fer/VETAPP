@@ -102,6 +102,193 @@
           }
         ]
       }
+    },
+    "/api/clientes": {
+      "get": {
+        "operationId": "ClientesController_list",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponsavelDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ClientesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResponsavelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsavelDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{id}": {
+      "get": {
+        "operationId": "ClientesController_ficha",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsavelComAnimaisDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{id}/animais": {
+      "post": {
+        "operationId": "ClientesController_addAnimal",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnimalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/animais/{id}": {
+      "get": {
+        "operationId": "ClientesController_animal",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -203,6 +390,183 @@
           "userId",
           "tenantId",
           "role"
+        ]
+      },
+      "ResponsavelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "CreateResponsavelDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "example": "maria@email.com"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "+55 11 99999-0000"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Como nos conheceu?"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "AnimalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string"
+          },
+          "raca": {
+            "type": "string"
+          },
+          "sexo": {
+            "type": "string"
+          },
+          "castrado": {
+            "type": "boolean"
+          },
+          "nascimento": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "nome",
+          "castrado",
+          "status"
+        ]
+      },
+      "ResponsavelComAnimaisDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          },
+          "animais": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnimalDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "animais"
+        ]
+      },
+      "CreateAnimalDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Rex"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string",
+            "example": "Canina"
+          },
+          "raca": {
+            "type": "string",
+            "example": "Labrador"
+          },
+          "sexo": {
+            "type": "string",
+            "enum": [
+              "M",
+              "F"
+            ]
+          },
+          "castrado": {
+            "type": "boolean"
+          },
+          "nascimento": {
+            "type": "string",
+            "example": "2020-05-10",
+            "description": "AAAA-MM-DD"
+          }
+        },
+        "required": [
+          "nome"
         ]
       }
     }
