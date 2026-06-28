@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev:api": "pnpm --filter @vetapp/api start:dev",
+    "dev:web": "pnpm --filter @vetapp/web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
