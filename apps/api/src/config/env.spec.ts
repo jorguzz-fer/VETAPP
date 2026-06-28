@@ -10,7 +10,7 @@ describe('loadEnv', () => {
 
   it('aplica defaults e faz parse de CORS_ORIGINS em lista', () => {
     const env = loadEnv({ ...base, CORS_ORIGINS: 'http://a.com, http://b.com' });
-    expect(env.API_PORT).toBe(3000);
+    expect(env.API_PORT).toBe(3333);
     expect(env.CORS_ORIGINS).toEqual(['http://a.com', 'http://b.com']);
   });
 

@@ -4,6 +4,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/providers/AuthProvider';
 import LayoutProvider from '@/providers/LayoutProvider';
 
 const inter = Inter({ variable: '--font-body', subsets: ['latin'] });
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR" dir="ltr">
       <body className={`${inter.variable} antialiased`}>
-        <LayoutProvider>{children}</LayoutProvider>
+        <AuthProvider>
+          <LayoutProvider>{children}</LayoutProvider>
+        </AuthProvider>
       </body>
     </html>
   );
