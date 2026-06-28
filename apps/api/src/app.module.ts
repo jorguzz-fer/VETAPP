@@ -5,10 +5,11 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientesModule } from './modules/clientes/clientes.module';
+import { ProntuarioModule } from './modules/prontuario/prontuario.module';
 import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, HealthModule, AuthModule, ClientesModule],
+  imports: [ConfigModule, DatabaseModule, HealthModule, AuthModule, ClientesModule, ProntuarioModule],
   providers: [
     // RolesGuard global: rotas anotadas com @Roles são checadas; demais passam.
     { provide: APP_GUARD, useClass: RolesGuard },

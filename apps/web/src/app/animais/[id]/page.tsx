@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -17,31 +17,86 @@ interface Animal {
   castrado: boolean;
   status: string;
 }
+interface Evento {
+  id: string;
+  tipo: string;
+  descricao: string;
+  valorCentavos?: number | null;
+  data: string;
+}
+interface Fatura {
+  id: string;
+  status: string;
+  totalCentavos: number;
+  itens: { id: string; descricao: string; valorCentavos: number }[];
+}
 
-// Ações rápidas do prontuário (docs/spec/05 §2.3). Desabilitadas no scaffold —
-// entram nas próximas iterações (atendimento, peso, vacina, exame…).
-const ACOES = [
-  { label: 'Atendimento', icon: 'ri-stethoscope-line' },
-  { label: 'Peso', icon: 'ri-scales-3-line' },
-  { label: 'Vacina', icon: 'ri-syringe-line' },
-  { label: 'Exame', icon: 'ri-test-tube-line' },
-  { label: 'Receita', icon: 'ri-file-list-3-line' },
-  { label: 'Internação', icon: 'ri-hospital-line' },
-];
+const TIPOS = ['atendimento', 'peso', 'vacina', 'exame', 'receita', 'observacao', 'internacao'] as const;
+type Tipo = (typeof TIPOS)[number];
+const ICONE: Record<string, string> = {
+  atendimento: 'ri-stethoscope-line',
+  peso: 'ri-scales-3-line',
+  vacina: 'ri-syringe-line',
+  exame: 'ri-test-tube-line',
+  receita: 'ri-file-list-3-line',
+  observacao: 'ri-sticky-note-line',
+  internacao: 'ri-hospital-line',
+};
+
+const brl = (c: number) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function ProntuarioPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const [animal, setAnimal] = useState<Animal | null>(null);
+  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [fatura, setFatura] = useState<Fatura | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [showForm, setShowForm] = useState(false);
+  const [tipo, setTipo] = useState<Tipo>('atendimento');
+  const [descricao, setDescricao] = useState('');
+  const [valor, setValor] = useState('');
+  const [faturar, setFaturar] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const loadFatura = useCallback(async (responsavelId: string) => {
+    const { data } = await api.GET('/api/clientes/{id}/fatura', { params: { path: { id: responsavelId } } });
+    setFatura((data as Fatura) ?? null);
+  }, []);
+
+  const load = useCallback(async () => {
+    const [a, e] = await Promise.all([
+      api.GET('/api/animais/{id}', { params: { path: { id } } }),
+      api.GET('/api/animais/{id}/eventos', { params: { path: { id } } }),
+    ]);
+    const an = (a.data as Animal) ?? null;
+    setAnimal(an);
+    setEventos((e.data as Evento[]) ?? []);
+    if (an) await loadFatura(an.responsavelId);
+    setLoading(false);
+  }, [id, loadFatura]);
+
   useEffect(() => {
-    (async () => {
-      const { data } = await api.GET('/api/animais/{id}', { params: { path: { id } } });
-      setAnimal((data as Animal) ?? null);
-      setLoading(false);
-    })();
-  }, [id]);
+    void load();
+  }, [load]);
+
+  async function onAddEvento(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const valorCentavos = valor ? Math.round(parseFloat(valor.replace(',', '.')) * 100) : undefined;
+    const { data } = await api.POST('/api/animais/{id}/eventos', {
+      params: { path: { id } },
+      body: { tipo, descricao, valorCentavos, faturar },
+    });
+    setSaving(false);
+    if (data) {
+      setDescricao('');
+      setValor('');
+      setShowForm(false);
+      await load();
+    }
+  }
 
   if (loading) return <p className="text-sm text-gray-500">Carregando…</p>;
   if (!animal) return <p className="text-sm text-gray-500">Animal não encontrado.</p>;
@@ -56,7 +111,6 @@ export default function ProntuarioPage() {
         <span className="text-black dark:text-white">Prontuário</span>
       </div>
 
-      {/* Cabeçalho do prontuário */}
       <Card>
         <div className="flex items-center gap-4">
           <span className="inline-grid place-items-center w-16 h-16 rounded-full bg-primary-50 text-primary-500">
@@ -70,32 +124,101 @@ export default function ProntuarioPage() {
                 .join(' · ') || '—'}
             </p>
           </div>
-          <span className="text-xs rounded-full px-3 py-1 bg-primary-50 text-primary-700 capitalize">
-            {animal.status}
-          </span>
+          <Button onClick={() => setShowForm((v) => !v)}>
+            <i className="ri-add-line"></i> Registrar evento
+          </Button>
         </div>
 
-        {/* Ações rápidas (scaffold: desabilitadas) */}
-        <div className="flex flex-wrap gap-2 mt-5">
-          {ACOES.map((a) => (
-            <Button key={a.label} variant="ghost" disabled title="Em breve">
-              <i className={a.icon}></i> {a.label}
-            </Button>
-          ))}
-        </div>
+        {showForm && (
+          <form onSubmit={onAddEvento} className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Tipo</span>
+              <select
+                value={tipo}
+                onChange={(e) => setTipo(e.target.value as Tipo)}
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500 capitalize"
+              >
+                {TIPOS.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Valor (R$) — opcional</span>
+              <input
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                inputMode="decimal"
+                placeholder="150,00"
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              <span className="text-gray-600 dark:text-gray-300">Descrição</span>
+              <input
+                required
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input type="checkbox" checked={faturar} onChange={(e) => setFaturar(e.target.checked)} />
+              <span className="text-gray-600 dark:text-gray-300">Lançar na fatura do cliente (faturamento automático)</span>
+            </label>
+            <div className="md:col-span-2">
+              <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar evento'}</Button>
+            </div>
+          </form>
+        )}
       </Card>
 
-      {/* Linha do tempo (placeholder) */}
+      {/* Fatura em aberto (faturamento acoplado) */}
+      {fatura && fatura.itens.length > 0 && (
+        <Card>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-black dark:text-white">Fatura em aberto</h2>
+            <span className="text-lg font-bold text-primary-600">{brl(fatura.totalCentavos)}</span>
+          </div>
+          <ul className="mt-3 divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
+            {fatura.itens.map((i) => (
+              <li key={i.id} className="flex justify-between py-2">
+                <span className="text-gray-600 dark:text-gray-300">{i.descricao}</span>
+                <span className="text-black dark:text-white">{brl(i.valorCentavos)}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {/* Linha do tempo */}
       <Card>
-        <h2 className="text-base font-semibold text-black dark:text-white mb-1">Linha do tempo</h2>
-        <p className="text-sm text-gray-500">
-          O histórico clínico (atendimentos, vacinas, peso, exames…) aparecerá aqui. Esta é a tela
-          central do produto (docs/spec/05 §2.3) — o registro de eventos entra nas próximas
-          iterações, com faturamento acoplado a cada ação.
-        </p>
-        <div className="mt-4 border-l-2 border-dashed border-gray-200 dark:border-[#172036] pl-4 text-sm text-gray-400">
-          Sem eventos registrados ainda.
-        </div>
+        <h2 className="text-base font-semibold text-black dark:text-white mb-4">Linha do tempo</h2>
+        {eventos.length === 0 ? (
+          <p className="text-sm text-gray-400">Sem eventos registrados ainda.</p>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {eventos.map((ev) => (
+              <li key={ev.id} className="flex gap-3">
+                <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-50 text-primary-500 shrink-0">
+                  <i className={ICONE[ev.tipo] ?? 'ri-circle-line'}></i>
+                </span>
+                <div className="flex-1 border-b border-gray-50 dark:border-[#172036]/50 pb-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-black dark:text-white capitalize">{ev.tipo}</p>
+                    {ev.valorCentavos ? (
+                      <span className="text-sm text-primary-600">{brl(ev.valorCentavos)}</span>
+                    ) : null}
+                  </div>
+                  <p className="text-sm text-gray-500">{ev.descricao}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(ev.data).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
     </div>
   );

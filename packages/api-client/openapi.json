@@ -289,6 +289,122 @@
           }
         ]
       }
+    },
+    "/api/animais/{id}/eventos": {
+      "get": {
+        "operationId": "ProntuarioController_eventos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "prontuario"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ProntuarioController_addEvento",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "prontuario"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{id}/fatura": {
+      "get": {
+        "operationId": "ProntuarioController_fatura",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "prontuario"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -567,6 +683,122 @@
         },
         "required": [
           "nome"
+        ]
+      },
+      "EventoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "tipo",
+          "descricao",
+          "data"
+        ]
+      },
+      "CreateEventoDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "atendimento",
+              "peso",
+              "vacina",
+              "exame",
+              "receita",
+              "observacao",
+              "internacao"
+            ]
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Consulta clínica de rotina"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor em centavos (ex.: 15000 = R$ 150,00)"
+          },
+          "faturar": {
+            "type": "boolean",
+            "default": true,
+            "description": "Gera lançamento na fatura do cliente"
+          }
+        },
+        "required": [
+          "tipo",
+          "descricao"
+        ]
+      },
+      "FaturaItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "eventoId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "valorCentavos"
+        ]
+      },
+      "FaturaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FaturaItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "status",
+          "totalCentavos",
+          "itens"
         ]
       }
     }
