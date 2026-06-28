@@ -89,21 +89,36 @@ externas quando algo acontece.
   assinada** de curta validade (doc 01).
 - TLS 1.2+/1.3 obrigatório; CORS restrito por aplicação para clientes browser.
 
-## 8. Impacto no roadmap (ver doc 08)
+## 8. Audiência: parceiros externos **estão no escopo** (decidido)
+
+A API não atenderá só aplicações do próprio dono — **parceiros/terceiros também
+integrarão**. Consequências assumidas pela SPEC:
+
+- **Portal do desenvolvedor e sandbox são entregáveis planejados** (não opcionais):
+  registro de aplicações, gestão de credenciais/escopos, docs interativas,
+  changelog e ambiente de testes por tenant.
+- **Consentimento explícito** (OAuth2 Authorization Code + PKCE) para apps de
+  terceiros que agem em nome de um usuário do tenant — o tenant aprova quais
+  escopos cada aplicação recebe e pode **revogar** a qualquer momento.
+- **Governança de parceiros**: processo de registro/aprovação de aplicação,
+  rotação de segredos, termos de uso e limites por plano.
+- Tratar dados clínicos/pessoais expostos a terceiros sob **LGPD** (doc 09):
+  consentimento, finalidade, DPA com o parceiro, minimização por escopo.
+
+## 9. Impacto no roadmap (ver doc 08)
 
 A API **interna** (consumida por web/mobile) já é Fase 1. A **exposição externa**
-controlada entra de forma incremental:
+controlada entra de forma incremental, agora **com trilha de parceiros confirmada**:
 
 - **Fase 1:** API `/api/v1` + OpenAPI desde o início (já previsto). Desenhar
-  escopos e o modelo OAuth2 desde já, mesmo sem portal externo.
+  escopos e o modelo OAuth2 desde já.
 - **Fase 2:** **OAuth2 Client Credentials** + API keys, rate limiting/quotas,
-  **webhooks de saída** — habilita conectar as "outras aplicações" do dono.
-- **Fase 3:** **Portal do desenvolvedor**, sandbox, Authorization Code + PKCE para
-  apps de terceiros agindo em nome de usuários, programa de parceiros.
+  **webhooks de saída** — habilita conectar as aplicações do dono **e** os
+  primeiros parceiros server-a-servidor.
+- **Fase 3:** **Portal do desenvolvedor**, **sandbox**, **Authorization Code +
+  PKCE** (apps de terceiros em nome de usuários) e **programa de parceiros**.
 
-## 9. Pendências **[A DEFINIR]**
-- Audiência inicial: **apenas aplicações do próprio dono (M2M)** vs. **parceiros
-  externos** — define se priorizamos portal/sandbox já na Fase 2.
+## 10. Pendências **[A DEFINIR]**
 - Oferecer **API keys** além de OAuth2, ou só OAuth2.
 - Modelo de **quotas/planos** de uso (se a API virar produto comercializável).
 - Conjunto inicial de **escopos** e de **eventos de webhook** a publicar.
