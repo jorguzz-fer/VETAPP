@@ -40,6 +40,13 @@ A especificação está em [`docs/spec/`](docs/spec/):
 | [10 — UX/UI e Design System](docs/spec/10-ux-ui-design-system.md) | Base visual (Trezo React/Next + Tailwind), design system próprio, mapa template→módulos |
 | [11 — API pública e integrações](docs/spec/11-api-publica-integracoes.md) | API-first, acesso M2M (OAuth2 + escopos), webhooks de saída, versionamento/DX |
 
+## Blueprint reutilizável
+
+As boas práticas aplicadas neste projeto (stack, arquitetura, deploy, segurança,
+multitenancy, UX/UI, API-first + qualidade/processo) estão consolidadas num
+documento **genérico** para iniciar outros projetos:
+[`docs/blueprint/engineering-blueprint.md`](docs/blueprint/engineering-blueprint.md).
+
 ## Fonte
 
 Esta SPEC deriva do documento *"Mapeamento de Telas e Funcionalidades — SimplesVet
