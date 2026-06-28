@@ -75,11 +75,31 @@ A pipeline roda em todo PR e **bloqueia** se falhar:
 5. **Segurança**: **SAST**, **SCA** (deps), **secret scanning**, scan de imagem
    Docker (CVE) — ver doc 02 §7.
 6. **OpenAPI**: spec válida e cliente gerado compila (sem drift).
-7. e2e (Playwright) em PRs que tocam fluxos de UI/críticos (ou no merge para
+7. **Workflows/IaC válidos**: lint dos arquivos de CI/CD (`.github/workflows/*.yml`)
+   e demais YAML (compose, k8s) — validar **sintaxe** antes do merge. Ver §6.1.
+8. e2e (Playwright) em PRs que tocam fluxos de UI/críticos (ou no merge para
    `main`, conforme custo).
 
-> Branch `main` protegida: merge só com **CI verde + 1 review aprovado** (2 quando
-> tocar auth/dados/fiscal).
+### 6.1 Validar o próprio workflow (lição estrutural)
+Um **erro de sintaxe no YAML do workflow** causa *startup failure*: a run termina
+em `failure` **sem criar nenhum job** — não aparece como falha de teste/build e
+**passa despercebido** quando não há *required checks*. Já aconteveu neste projeto
+(`run: echo "TODO: ..."` — o `: ` num escalar sem aspas quebrava o parser).
+Defesas:
+- **Validar o YAML** localmente/na CI (ex.: `python -c "import yaml,glob; [yaml.safe_load(open(f)) for f in glob.glob('.github/workflows/*.yml')]"` ou `actionlint`).
+- **Required status checks** (abaixo) — sem isso, um workflow que nunca roda deixa
+  PRs verdes por omissão.
+- Ao mexer em workflow, confirmar que a run **criou jobs** (não só "passou").
+
+### 6.2 Proteção de branch (`main`)
+Configurar no GitHub (Settings → Branches), tornando objetivos os gates acima:
+- **Required status checks** = os jobs da CI (`api`, `web`; `security` quando sair
+  de placeholder), com *Require branches to be up to date*.
+- **Require a pull request before merging** + **≥ 1 aprovação** (2 quando tocar
+  auth/dados/RLS/fiscal/faturamento).
+- **Require conversation resolution**; bloquear *force-push* e deleção da `main`.
+- Sem required checks, "CI verde" é só convenção — um *startup failure* ou
+  workflow ausente passa batido.
 
 ## 7. Processo de Code Review
 
