@@ -52,9 +52,13 @@
 
 ### Frontend web (desktop + mobile)
 - **React + TypeScript**, **mobile-first** e **responsivo**.
+- **Base visual: template Trezo** (React/Next.js + Tailwind, **Extended License**)
+  como ponto de partida da UI, com **design system próprio** por cima (tokens
+  reaproveitáveis no futuro app React Native via NativeWind). Detalhes no
+  **doc 10**.
 - **PWA** instalável (offline básico para leitura de prontuário e fila).
-- Design system próprio, baseado na direção visual das telas `/v3` (moderno,
-  topo com menu + avatar), unificando o legado `.php`.
+- Mantém a direção visual moderna (estilo telas `/v3`), unificando o legado
+  `.php`.
 
 ### Mobile nativo (fase futura — já contemplado na stack)
 - **React Native (Expo)** reaproveitando tipos, contratos de API (cliente gerado
