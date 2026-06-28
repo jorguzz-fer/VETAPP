@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/providers/AuthProvider';
 
 // Rotas que NÃO usam o shell (sidebar/header) — auth, telas públicas etc.
 const BARE_ROUTES = ['/login', '/cadastro', '/recuperar-senha'];
@@ -15,13 +16,27 @@ const BARE_ROUTES = ['/login', '/cadastro', '/recuperar-senha'];
  */
 export default function LayoutProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [active, setActive] = useState(false);
   const toggleActive = () => setActive((v) => !v);
 
   const isBare = BARE_ROUTES.includes(pathname);
 
+  // Guarda de rota (scaffold): sem usuário em rota protegida → login.
+  // A autorização real é sempre server-side (docs/spec/02); isto é só UX.
+  useEffect(() => {
+    if (!isBare && !loading && !user) {
+      router.replace('/login');
+    }
+  }, [isBare, loading, user, router]);
+
   if (isBare) {
     return <main className="min-h-screen">{children}</main>;
+  }
+
+  if (loading || !user) {
+    return <div className="min-h-screen grid place-items-center text-gray-500">Carregando…</div>;
   }
 
   return (

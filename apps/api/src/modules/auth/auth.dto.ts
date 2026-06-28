@@ -32,3 +32,14 @@ export class TokensDto {
   @ApiProperty()
   refreshToken!: string;
 }
+
+export class AuthMeDto {
+  @ApiProperty()
+  userId!: string;
+
+  @ApiProperty()
+  tenantId!: string;
+
+  @ApiProperty({ example: 'admin' })
+  role!: string;
+}
