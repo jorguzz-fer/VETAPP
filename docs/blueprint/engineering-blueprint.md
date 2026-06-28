@@ -20,6 +20,10 @@ remova as seções não aplicáveis e preencha os pontos marcados `‹decidir›
 - Cada seção fecha com um **checklist** prático.
 - Princípio geral: **simplicidade primeiro**; adicionar complexidade só quando o
   problema justificar (evitar over-engineering).
+- **Documento vivo**: sempre que um projeto esbarrar numa **questão estrutural**
+  (uma armadilha de infra/CI/segurança/arquitetura que custou tempo), **atualize
+  este blueprint** com a lição — para os próximos projetos não repetirem o erro.
+  As lições aparecem ao longo do texto como notas "lição estrutural".
 
 ---
 
@@ -353,13 +357,22 @@ pelo próprio front).
 - **PRs pequenos e focados**; descrição com contexto; template de PR no repo.
 - **Code review** obrigatório; CI verde como gate; revisão de segurança quando
   toca auth/dados.
+- **Proteção de branch + required status checks**: torne a CI um *check
+  obrigatório* na `main` (Settings → Branches). **Sem isso, "CI verde" é só
+  convenção** — um workflow que falha na largada (*startup failure*) ou que nem
+  roda deixa PRs verdes por omissão.
+- **Valide o YAML dos workflows/IaC**: um erro de sintaxe em `.github/workflows/*`
+  gera *startup failure* (run falha **sem criar jobs**) — não aparece como falha
+  de teste e passa batido. Rode `actionlint`/parser de YAML na CI e, ao mexer em
+  workflow, confirme que a run **criou jobs**, não só que "passou".
 - **ADRs** (`docs/adr/NNNN-titulo.md`) para decisões arquiteturais relevantes —
   registram contexto, opções e a escolha (template no anexo A).
 - **Versionamento**: SemVer; releases tagueadas; changelog mantido.
 
 **Checklist**
 - [ ] Conventional commits + template de PR.
-- [ ] Review + CI obrigatórios para merge.
+- [ ] Review + CI obrigatórios para merge (**required status checks** ativos).
+- [ ] YAML de workflows/IaC validado; run cria jobs (não só "passa").
 - [ ] Decisões relevantes viram ADR.
 
 ---
