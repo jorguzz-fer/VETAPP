@@ -20,14 +20,18 @@
 ## 3. Backup e Disaster Recovery (DR)
 - **Postgres**: dump diário + WAL/PITR quando possível; retenção definida por
   política.
-- **MinIO (anexos)**: snapshot/replicação do volume; cópia cifrada off-site.
-- Backups **cifrados** e enviados para storage externo (fora da VPS).
+- **Cloudflare R2 (anexos)**: durável/replicado pela Cloudflare; habilitar
+  **versionamento de objetos** e regras de **lifecycle** (retenção); opcionalmente
+  replicar para um segundo bucket/conta como cópia independente.
+- Backups do Postgres **cifrados** e enviados para storage externo (fora da VPS);
+  anexos já residem fora da VPS (R2).
 - **RPO** alvo ≤ 24 h (melhorar com PITR); **RTO** alvo ≤ 4 h.
 - Teste de restauração periódico (backup não testado não é backup).
 
 ## 4. Segurança (resumo — detalhe no doc 02)
-- Única superfície pública (proxy 443); banco/Redis/MinIO/workers privados, sem
-  porta exposta.
+- Única superfície pública (proxy 443); banco/Redis/workers privados, sem porta
+  exposta. Object storage no **R2** (externo), acessado só pelo servidor; cliente
+  recebe apenas URLs assinadas.
 - Auth/authz server-side, MFA, RBAC + tenant scoping, RLS no banco.
 - Segredos em cofre; TLS em trânsito; criptografia em repouso; auditoria imutável.
 
