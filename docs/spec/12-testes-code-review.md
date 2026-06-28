@@ -101,6 +101,12 @@ Configurar no GitHub (Settings → Branches), tornando objetivos os gates acima:
 - Sem required checks, "CI verde" é só convenção — um *startup failure* ou
   workflow ausente passa batido.
 
+**Checks obrigatórios deste repositório** (nomes exatos a marcar como required, em
+Settings → Branches/Rulesets, após rodarem ao menos uma vez):
+- `API (lint · types · test · build)`
+- `Web (typecheck · build)`
+- `Security (SAST · SCA · secrets)` *(opcional enquanto for placeholder)*
+
 ## 7. Processo de Code Review
 
 ### 7.1 Regras
