@@ -30,7 +30,11 @@ tenant**:
 2. Ao obter a conexão para aquele request, executa:
    `SET LOCAL app.current_tenant = '<tenant_id>'` dentro da transação.
 3. As políticas RLS das tabelas usam
-   `USING (tenant_id = current_setting('app.current_tenant')::uuid)`.
+   `USING (tenant_id = NULLIF(current_setting('app.current_tenant', true), '')::uuid)`.
+   - **Lição estrutural:** use `NULLIF(..., '')` e o `missing_ok = true`. Sem isso,
+     um GUC ausente devolve **string vazia** `''`, e `''::uuid` lança erro
+     (`22P02`) em vez de retornar zero linhas. Com o NULLIF, "tenant não fixado"
+     vira **fail-closed** (0 linhas), não uma exceção.
 4. O Drizzle monta as queries normalmente; mesmo que um filtro de `tenant_id` seja
    esquecido no código, o **RLS barra** o vazamento.
 
