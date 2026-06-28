@@ -218,8 +218,13 @@ isolamento de dados.
 - **Defesa em profundidade**: filtrar por `tenant_id` na aplicação **e** RLS no
   banco — vazamento barrado mesmo se um filtro for esquecido no código.
   - Padrão: a cada request, abrir transação e `SET LOCAL app.current_tenant = …`;
-    políticas RLS usam `current_setting('app.current_tenant')`.
-  - Usuário de banco da aplicação **sem** `BYPASSRLS`.
+    políticas RLS usam `NULLIF(current_setting('app.current_tenant', true), '')::uuid`.
+  - **Lição estrutural:** sempre `missing_ok=true` + `NULLIF(...,'')`. Um GUC
+    custom ausente retorna **string vazia**, e `''::uuid` **lança erro** (`22P02`)
+    em vez de retornar vazio — o RLS deve ser *fail-closed* (0 linhas), não quebrar.
+  - Usuário de banco da aplicação **sem** `BYPASSRLS`. Valide com um **teste real**
+    (Testcontainers): tenant A não vê B; sem tenant fixado → 0 linhas; insert
+    cross-tenant barrado pelo `WITH CHECK`.
 - **Tenant em todas as camadas**: auth/sessão, API (resolvido server-side, nunca
   do cliente), cache (chaves prefixadas), storage (prefixo por tenant), logs/
   métricas (label), filas (no payload).

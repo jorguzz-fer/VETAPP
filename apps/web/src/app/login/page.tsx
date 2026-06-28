@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui/Button';
@@ -69,6 +70,11 @@ export default function LoginPage() {
             {submitting ? 'Entrando…' : 'Entrar'}
           </Button>
         </form>
+
+        <p className="text-sm text-gray-500 mt-4 text-center">
+          Não tem conta?{' '}
+          <Link href="/cadastro" className="text-primary-500 hover:underline">Criar clínica</Link>
+        </p>
       </Card>
     </div>
   );

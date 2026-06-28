@@ -132,6 +132,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais/{id}/eventos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProntuarioController_eventos"];
+        put?: never;
+        post: operations["ProntuarioController_addEvento"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{id}/fatura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProntuarioController_fatura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -223,6 +255,40 @@ export interface components {
              * @example 2020-05-10
              */
             nascimento?: string;
+        };
+        EventoDto: {
+            id: string;
+            animalId: string;
+            tipo: string;
+            descricao: string;
+            valorCentavos?: number;
+            data: string;
+        };
+        CreateEventoDto: {
+            /** @enum {string} */
+            tipo: "atendimento" | "peso" | "vacina" | "exame" | "receita" | "observacao" | "internacao";
+            /** @example Consulta clínica de rotina */
+            descricao: string;
+            /** @description Valor em centavos (ex.: 15000 = R$ 150,00) */
+            valorCentavos?: number;
+            /**
+             * @description Gera lançamento na fatura do cliente
+             * @default true
+             */
+            faturar: boolean;
+        };
+        FaturaItemDto: {
+            id: string;
+            descricao: string;
+            valorCentavos: number;
+            eventoId?: string;
+        };
+        FaturaDto: {
+            id: string;
+            responsavelId: string;
+            status: string;
+            totalCentavos: number;
+            itens: components["schemas"]["FaturaItemDto"][];
         };
     };
     responses: never;
@@ -422,6 +488,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ProntuarioController_eventos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventoDto"][];
+                };
+            };
+        };
+    };
+    ProntuarioController_addEvento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventoDto"];
+                };
+            };
+        };
+    };
+    ProntuarioController_fatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FaturaDto"];
                 };
             };
         };

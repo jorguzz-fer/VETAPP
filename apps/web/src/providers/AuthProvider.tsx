@@ -13,6 +13,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (input: { tenantName: string; name: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -49,12 +50,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me.data ?? null);
   }, []);
 
+  const register = useCallback(
+    async (input: { tenantName: string; name: string; email: string; password: string }) => {
+      const { data, error } = await api.POST('/api/auth/register', { body: input });
+      if (error || !data) throw new Error('Não foi possível criar a conta');
+      tokenStore.set(data.accessToken);
+      const me = await api.GET('/api/auth/me');
+      setUser(me.data ?? null);
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     tokenStore.clear();
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout }),
+    [user, loading, login, register, logout],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
