@@ -39,6 +39,8 @@ A especificação está em [`docs/spec/`](docs/spec/):
 | [09 — Requisitos não-funcionais](docs/spec/09-requisitos-nao-funcionais.md) | Desempenho, observabilidade, LGPD, DR |
 | [10 — UX/UI e Design System](docs/spec/10-ux-ui-design-system.md) | Base visual (Trezo React/Next + Tailwind), design system próprio, mapa template→módulos |
 | [11 — API pública e integrações](docs/spec/11-api-publica-integracoes.md) | API-first, acesso M2M (OAuth2 + escopos), webhooks de saída, versionamento/DX |
+| [12 — Testes e Code Review](docs/spec/12-testes-code-review.md) | Estratégia de testes, gates de CI, processo de revisão, Definition of Done |
+| [13 — Módulos complementares](docs/spec/13-modulos-complementares.md) | Rascunho: Financeiro, Estoque, Fiscal, Site, Portal do tutor (a validar) |
 
 ## Fonte
 
