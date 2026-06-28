@@ -1,15 +1,93 @@
-import { describe, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
 
 /**
  * Teste OBRIGATÓRIO de isolamento de tenant (docs/spec/12 §3.1).
  *
- * Deve subir um Postgres efêmero (Testcontainers), aplicar as migrations (com RLS),
- * conectar como o usuário da APLICAÇÃO (vetapp_app, sem BYPASSRLS) e provar que,
- * fixando app.current_tenant = A, NENHUMA linha do tenant B é visível/alterável.
+ * Sobe um Postgres efêmero (Testcontainers), aplica as migrations (com RLS) como
+ * superusuário, cria um papel de APLICAÇÃO sem BYPASSRLS e prova que, fixando
+ * app.current_tenant = A, nenhum dado do tenant B é visível nem inserível.
  *
- * Marcado como `todo` neste scaffold até a infra de teste (Testcontainers) entrar.
+ * Requer Docker. Sem Docker (ex.: ambiente sem daemon), o suite é PULADO — assim
+ * `pnpm test` não quebra para quem não tem Docker; a verificação real roda na CI.
  */
+const TENANT_A = '11111111-1111-1111-1111-111111111111';
+const TENANT_B = '22222222-2222-2222-2222-222222222222';
+
+let container: StartedPostgreSqlContainer | undefined;
+let adminSql: postgres.Sql | undefined;
+let appSql: postgres.Sql | undefined;
+let dockerAvailable = true;
+
+beforeAll(async () => {
+  try {
+    container = await new PostgreSqlContainer('postgres:16-alpine').start();
+  } catch {
+    dockerAvailable = false;
+    return;
+  }
+
+  adminSql = postgres(container.getConnectionUri(), { max: 1 });
+
+  // Migrations (cria tabelas + políticas RLS) como superusuário.
+  await migrate(drizzle(adminSql), { migrationsFolder: './src/database/migrations' });
+
+  // Papel de aplicação: SEM superuser e SEM BYPASSRLS → sujeito ao RLS.
+  await adminSql`CREATE ROLE app_role LOGIN PASSWORD 'app' NOBYPASSRLS NOSUPERUSER`;
+  await adminSql`GRANT USAGE ON SCHEMA public TO app_role`;
+  await adminSql`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_role`;
+  await adminSql`GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_role`;
+
+  // Seed de dois tenants e um responsável de cada (superusuário ignora o RLS).
+  await adminSql`INSERT INTO tenants (id, name) VALUES (${TENANT_A}, 'Tenant A'), (${TENANT_B}, 'Tenant B')`;
+  await adminSql`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_A}, 'Cliente A'), (${TENANT_B}, 'Cliente B')`;
+
+  // Conexão como app_role (sujeita ao RLS).
+  appSql = postgres({
+    host: container.getHost(),
+    port: container.getPort(),
+    database: container.getDatabase(),
+    username: 'app_role',
+    password: 'app',
+    max: 1,
+  });
+}, 180_000);
+
+afterAll(async () => {
+  await appSql?.end({ timeout: 5 });
+  await adminSql?.end({ timeout: 5 });
+  await container?.stop();
+});
+
 describe('Isolamento de tenant (RLS)', () => {
-  it.todo('tenant A não enxerga memberships do tenant B');
-  it.todo('insert em memberships com tenant divergente é barrado pelo WITH CHECK');
+  it('tenant A só enxerga responsáveis do tenant A', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT tenant_id, nome FROM responsaveis`;
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].nome).toBe('Cliente A');
+    expect(rows[0].tenant_id).toBe(TENANT_A);
+  });
+
+  it('sem tenant fixado, nenhuma linha é visível', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql`SELECT 1 FROM responsaveis`;
+    expect(rows).toHaveLength(0);
+  });
+
+  it('insert com tenant divergente é barrado pelo WITH CHECK', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    await expect(
+      appSql.begin(async (tx) => {
+        await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+        // tenta inserir no tenant B enquanto o contexto é A → deve falhar.
+        await tx`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_B}, 'Invasor')`;
+      }),
+    ).rejects.toThrow();
+  });
 });
