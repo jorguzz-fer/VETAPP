@@ -42,6 +42,13 @@ A especificação está em [`docs/spec/`](docs/spec/):
 | [12 — Testes e Code Review](docs/spec/12-testes-code-review.md) | Estratégia de testes, gates de CI, processo de revisão, Definition of Done |
 | [13 — Módulos complementares](docs/spec/13-modulos-complementares.md) | Rascunho: Financeiro, Estoque, Fiscal, Site, Portal do tutor (a validar) |
 
+## Blueprint reutilizável
+
+As boas práticas aplicadas neste projeto (stack, arquitetura, deploy, segurança,
+multitenancy, UX/UI, API-first + qualidade/processo) estão consolidadas num
+documento **genérico** para iniciar outros projetos:
+[`docs/blueprint/engineering-blueprint.md`](docs/blueprint/engineering-blueprint.md).
+
 ## Fonte
 
 Esta SPEC deriva do documento *"Mapeamento de Telas e Funcionalidades — SimplesVet
