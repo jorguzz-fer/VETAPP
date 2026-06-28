@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { swaggerConfig } from './openapi.config';
 import type { EnvConfig } from './config/env';
 
 async function bootstrap(): Promise<void> {
@@ -18,13 +19,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // OpenAPI como fonte de verdade (docs/spec/11). Em prod, restringir o acesso.
-  const config = new DocumentBuilder()
-    .setTitle('VETAPP API')
-    .setDescription('API do VETAPP — versionada (/api/v1 nas próximas iterações)')
-    .setVersion('0.1.0')
-    .addBearerAuth()
-    .build();
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig));
 
   await app.listen(env.API_PORT);
   // eslint-disable-next-line no-console

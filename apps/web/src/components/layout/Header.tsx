@@ -1,5 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/providers/AuthProvider';
+
 interface HeaderProps {
   toggleActive: () => void;
 }
@@ -9,6 +12,14 @@ interface HeaderProps {
  * inicial enxuta — busca, perfil e ações entram conforme os módulos (docs/spec/05).
  */
 export default function Header({ toggleActive }: HeaderProps) {
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  function onLogout() {
+    logout();
+    router.replace('/login');
+  }
+
   return (
     <header className="header-area bg-white dark:bg-[#0c1427] fixed z-[6] top-0 h-[65px] rounded-b-md shadow-sm flex items-center justify-between px-[20px] transition-all">
       <div className="flex items-center gap-3">
@@ -31,10 +42,15 @@ export default function Header({ toggleActive }: HeaderProps) {
           <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary-500"></span>
         </button>
         <div className="flex items-center gap-2">
-          <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-semibold">
-            V
+          <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-semibold uppercase">
+            {user?.role?.[0] ?? 'V'}
           </span>
-          <span className="hidden md:block text-sm text-black dark:text-white">Minha conta</span>
+          <span className="hidden md:block text-sm text-black dark:text-white capitalize">
+            {user?.role ?? 'Minha conta'}
+          </span>
+          <button type="button" onClick={onLogout} className="text-gray-500 hover:text-primary-500" aria-label="Sair" title="Sair">
+            <i className="ri-logout-box-r-line text-xl"></i>
+          </button>
         </div>
       </div>
     </header>
