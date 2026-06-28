@@ -5,8 +5,9 @@ núcleo clínico e gerencial, deixando PDV/caixa e integrações pesadas para de
 
 ## Fase 0 — Fundações (habilitadores)
 **Objetivo**: base técnica e de segurança antes de qualquer feature.
-- Monólito modular (NestJS) + Postgres (Drizzle + RLS) + Redis + MinIO em VPS
-  Hostinger via Docker Compose; reverse proxy (Caddy/Traefik) como único ingress.
+- Monólito modular (NestJS) + Postgres (Drizzle + RLS) + Redis em VPS Hostinger
+  via Docker Compose + **Cloudflare R2** (object storage externo); reverse proxy
+  (Caddy/Traefik) como único ingress, com Cloudflare na frente (CDN/WAF).
 - **Auth completa**: e-mail/senha, **login Google**, **MFA (TOTP/WebAuthn)**,
   sessões server-side, RBAC + tenant scoping (docs 02, 03, 07).
 - Provisionamento de tenant + seed padrão; trilha de auditoria.

@@ -28,6 +28,10 @@
 - **API**: **REST + OpenAPI** versionada (`/api/v1`). GraphQL **não** recomendado
   na fase 1 (amplia a superfície e dificulta authz granular); reavaliar se um
   cliente nativo exigir.
+- **API-first / API como produto**: a mesma API serve web, mobile **e aplicações
+  externas** (integrações com outros sistemas). Acesso de terceiros é
+  **autenticado e escopado** (OAuth2 client credentials + escopos por tenant),
+  nunca anônimo — ver **doc 11**.
 - **Realtime**: **WebSocket/SSE** para internação (mapa de execução, telas de
   TV/tablet) e atualizações de agenda/fila.
 
@@ -42,16 +46,23 @@
   `SET app.tenant_id` (via transação), de modo que app **e** banco reforçam o
   isolamento (ver doc 03).
 - **Redis** para cache, sessões/refresh tokens e filas leves.
-- **Object storage S3-compatível**: como o deploy é em **VPS Hostinger**, usar
-  **MinIO** auto-hospedado (ou bucket S3-compatível externo) para anexos do
-  prontuário (fotos, exames, vídeos, documentos), sempre com URLs assinadas de
-  curta duração — nunca acesso direto ao bucket.
+- **Object storage: Cloudflare R2** (S3-compatível) para anexos do prontuário
+  (fotos, exames, vídeos, documentos). R2 é gerenciado pela Cloudflare (fora da
+  VPS), **sem custo de egress** e durável por padrão — encaixa com a Cloudflare já
+  usada como CDN/WAF na frente. Acesso **sempre** via **URLs assinadas de curta
+  duração** emitidas pelo servidor após checagem de permissão; bucket privado, sem
+  acesso público direto. Credenciais R2 (tokens S3 API) ficam no cofre, nunca no
+  cliente.
 
 ### Frontend web (desktop + mobile)
 - **React + TypeScript**, **mobile-first** e **responsivo**.
+- **Base visual: template Trezo** (React/Next.js + Tailwind, **Extended License**)
+  como ponto de partida da UI, com **design system próprio** por cima (tokens
+  reaproveitáveis no futuro app React Native via NativeWind). Detalhes no
+  **doc 10**.
 - **PWA** instalável (offline básico para leitura de prontuário e fila).
-- Design system próprio, baseado na direção visual das telas `/v3` (moderno,
-  topo com menu + avatar), unificando o legado `.php`.
+- Mantém a direção visual moderna (estilo telas `/v3`), unificando o legado
+  `.php`.
 
 ### Mobile nativo (fase futura — já contemplado na stack)
 - **React Native (Expo)** reaproveitando tipos, contratos de API (cliente gerado
@@ -81,12 +92,15 @@ segurança** (única superfície pública, resto privado).
 - **Reverse proxy / TLS**: **Caddy** ou **Traefik** como único ingress público
   (443), com TLS automático (Let's Encrypt) e, opcionalmente, WAF (Coraza/ModSec)
   e Cloudflare na frente para CDN + mitigação de DDoS.
-- **Rede privada**: serviços internos (Postgres, Redis, MinIO, workers) em rede
-  Docker interna, **sem publicar portas** no host. Só o proxy expõe 443.
+- **Rede privada**: serviços internos (Postgres, Redis, workers) em rede Docker
+  interna, **sem publicar portas** no host. Só o proxy expõe 443. (O object
+  storage é o **Cloudflare R2**, externo — acessado pelos workers/API via HTTPS
+  com credenciais no cofre.)
 - **Firewall do host (UFW/nftables)**: liberar apenas 443 (e 22 restrito por
-  IP/chave). Banco/Redis/MinIO **nunca** acessíveis de fora.
-- **Backups**: dumps automatizados do Postgres + snapshots do volume MinIO,
-  enviados cifrados para storage externo (ver doc 09 — DR).
+  IP/chave). Banco/Redis **nunca** acessíveis de fora.
+- **Backups**: dumps automatizados do Postgres enviados cifrados para storage
+  externo; anexos já residem no **R2** (durável/replicado pela Cloudflare), com
+  **versionamento** de bucket habilitado (ver doc 09 — DR).
 - **Observabilidade leve**: logs estruturados + Prometheus/Grafana (ou Uptime
   Kuma para começar), acessíveis só por rede interna/VPN.
 - **Escala**: começar em 1 VPS robusta (tudo em Compose). Crescer separando
@@ -101,22 +115,23 @@ segurança** (única superfície pública, resto privado).
 ```
                           Internet (somente HTTPS)
                                    │
-                          ┌────────▼─────────┐
-                          │   WAF + CDN/TLS  │   (TLS termina aqui; mTLS interno)
-                          └────────┬─────────┘
-                                   │
-                          ┌────────▼─────────┐
-                          │  API Gateway /   │   ← ÚNICA superfície pública
-                          │      BFF         │     authn + rate limit + tenant ctx
-                          └────────┬─────────┘
+                          ┌────────▼─────────┐        ┌──────────────────┐
+                          │ Cloudflare       │        │  Cloudflare R2    │
+                          │ WAF + CDN/TLS    │        │  (object storage) │
+                          └────────┬─────────┘        │  bucket privado,  │
+                                   │                  │  URLs assinadas   │
+                          ┌────────▼─────────┐        └─────────▲────────┘
+                          │  API Gateway /   │  ← ÚNICA          │ HTTPS + creds
+                          │      BFF         │    superfície     │ (cofre)
+                          └────────┬─────────┘    pública        │
                                    │  (rede privada, sem rotas expostas)
-        ┌──────────────┬──────────┼───────────┬──────────────┐
-        │              │          │           │              │
-   ┌────▼───┐    ┌─────▼────┐ ┌───▼────┐ ┌────▼─────┐  ┌──────▼──────┐
-   │ Core   │    │ Realtime │ │Workers │ │Integr.   │  │  Object     │
-   │ API    │    │ (WS/SSE) │ │(filas) │ │(Google/  │  │  storage    │
-   │(NestJS)│    │          │ │        │ │ WhatsApp/│  │ (assinado)  │
-   └────┬───┘    └─────┬────┘ └───┬────┘ │ Petlove) │  └─────────────┘
+        ┌──────────────┬──────────┼───────────┬──────────────────┘
+        │              │          │           │
+   ┌────▼───┐    ┌─────▼────┐ ┌───▼────┐ ┌────▼─────┐
+   │ Core   │    │ Realtime │ │Workers │ │Integr.   │
+   │ API    │    │ (WS/SSE) │ │(filas) │ │(Google/  │
+   │(NestJS)│    │          │ │        │ │ WhatsApp/│
+   └────┬───┘    └─────┬────┘ └───┬────┘ │ Petlove) │
         │              │          │      └────┬─────┘
         └──────────────┴────┬─────┴───────────┘
                        ┌────▼─────┐   ┌─────────┐
@@ -126,11 +141,14 @@ segurança** (única superfície pública, resto privado).
 ```
 
 **Regras da topologia**
-- Apenas o **Gateway/BFF** tem IP/porta pública. Tudo mais vive em sub-rede
-  privada (VPC), sem rota de entrada da internet.
+- Apenas o **Gateway/BFF** tem IP/porta pública. Os demais serviços da VPS vivem
+  em rede privada, sem rota de entrada da internet.
+- O **object storage (R2)** é externo (Cloudflare): acessado apenas pelos
+  workers/API via HTTPS com credenciais no cofre; o cliente só recebe **URLs
+  assinadas** de curta validade, nunca a credencial.
 - Comunicação interna por **mTLS** ou malha de serviço; segredos em cofre
   (Vault/KMS), nunca no código ou no cliente.
-- Banco, Redis e storage **não** aceitam conexão externa.
+- Banco e Redis **não** aceitam conexão externa.
 - Webhooks de terceiros (WhatsApp/Google) entram por endpoint dedicado e
   **assinado/verificado**, isolado do resto.
 
