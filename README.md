@@ -35,6 +35,7 @@ A especificação está em [`docs/spec/`](docs/spec/):
 | [07 — Perfis e RBAC](docs/spec/07-perfis-rbac.md) | Papéis, permissões, visão por login |
 | [08 — Roadmap por fases](docs/spec/08-roadmap.md) | O que entra em cada fase; cortes da fase 1 |
 | [09 — Requisitos não-funcionais](docs/spec/09-requisitos-nao-funcionais.md) | Desempenho, observabilidade, LGPD, DR |
+| [10 — UX/UI e Design System](docs/spec/10-ux-ui-design-system.md) | Base visual (Trezo React/Next + Tailwind), design system próprio, mapa template→módulos |
 
 ## Fonte
 
