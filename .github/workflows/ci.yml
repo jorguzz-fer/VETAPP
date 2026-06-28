@@ -92,6 +92,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Dependency review / SCA
-        run: echo "TODO: habilitar SCA (ex.: pnpm audit / Trivy)"
+        run: 'echo "TODO habilitar SCA (pnpm audit / Trivy)"'
       - name: Secret scanning
-        run: echo "TODO: habilitar secret scanning (ex.: gitleaks)"
+        run: 'echo "TODO habilitar secret scanning (gitleaks)"'
