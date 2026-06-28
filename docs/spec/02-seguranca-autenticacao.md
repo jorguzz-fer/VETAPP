@@ -63,13 +63,26 @@
   pertencente ao tenant; comissão do próprio colaborador).
 - Princípio do menor privilégio também para chaves de integração.
 
+## 3.1 Acesso de aplicações externas (machine-to-machine)
+
+A API é exposta a outras aplicações (ver doc 11), mas **sob as mesmas regras**:
+- **OAuth2 Client Credentials** (server-a-servidor) ou **Authorization Code +
+  PKCE** (quando age em nome de um usuário). Tokens JWT de curta duração com
+  `tenant_id` + `scopes`.
+- **Escopos granulares** + RBAC + RLS: a aplicação só acessa o que o tenant
+  concedeu, e só dados daquele tenant.
+- `client_secret`/API keys **apenas no servidor** do parceiro, rotacionáveis e
+  revogáveis; **rate limiting/quotas** por aplicação; auditoria de todo acesso.
+- "Exposta" não é "aberta": **nenhuma** rota de negócio é anônima.
+
 ## 4. "Nenhuma porta aberta / rota exposta"
 
 Tradução concreta da diretriz:
 - **Único ingress público**: gateway/BFF em HTTPS atrás de WAF. Todo o resto em
   rede privada sem rota de entrada.
 - **Nenhum endpoint de negócio sem authz**: o gateway nega por padrão; rotas são
-  *allow-list*. Não existe rota pública de leitura de dados de clínica.
+  *allow-list*. Não existe rota pública de leitura de dados de clínica. A API para
+  terceiros é **autenticada e escopada** (§3.1 e doc 11), nunca aberta.
 - **Sem acesso direto a recursos**: anexos do prontuário só por **URL assinada**
   de curta validade emitida após checagem de permissão; bucket privado.
 - **Admin/observabilidade** (dashboards, métricas, banco) só por rede interna /

@@ -28,6 +28,10 @@
 - **API**: **REST + OpenAPI** versionada (`/api/v1`). GraphQL **não** recomendado
   na fase 1 (amplia a superfície e dificulta authz granular); reavaliar se um
   cliente nativo exigir.
+- **API-first / API como produto**: a mesma API serve web, mobile **e aplicações
+  externas** (integrações com outros sistemas). Acesso de terceiros é
+  **autenticado e escopado** (OAuth2 client credentials + escopos por tenant),
+  nunca anônimo — ver **doc 11**.
 - **Realtime**: **WebSocket/SSE** para internação (mapa de execução, telas de
   TV/tablet) e atualizações de agenda/fila.
 
