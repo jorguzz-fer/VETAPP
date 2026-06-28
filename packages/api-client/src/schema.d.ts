@@ -164,6 +164,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_list"];
+        put?: never;
+        post: operations["AgendaController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AgendaController_cancelar"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -289,6 +321,33 @@ export interface components {
             status: string;
             totalCentavos: number;
             itens: components["schemas"]["FaturaItemDto"][];
+        };
+        AgendamentoDto: {
+            id: string;
+            titulo: string;
+            inicio: string;
+            fim: string;
+            status: string;
+            animalId?: string;
+            responsavelId?: string;
+            observacoes?: string;
+        };
+        CreateAgendamentoDto: {
+            /** @example Consulta — Rex */
+            titulo: string;
+            /**
+             * @description ISO 8601
+             * @example 2026-07-01T14:00:00Z
+             */
+            inicio: string;
+            /**
+             * @description ISO 8601
+             * @example 2026-07-01T14:30:00Z
+             */
+            fim: string;
+            animalId?: string;
+            responsavelId?: string;
+            observacoes?: string;
         };
     };
     responses: never;
@@ -555,6 +614,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FaturaDto"];
+                };
+            };
+        };
+    };
+    AgendaController_list: {
+        parameters: {
+            query?: {
+                /** @description ISO 8601 */
+                from?: string;
+                /** @description ISO 8601 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgendamentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAgendamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgendamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
                 };
             };
         };

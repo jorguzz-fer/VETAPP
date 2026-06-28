@@ -405,6 +405,127 @@
           }
         ]
       }
+    },
+    "/api/agenda": {
+      "get": {
+        "operationId": "AgendaController_list",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgendamentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AgendaController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgendamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendamentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/{id}": {
+      "delete": {
+        "operationId": "AgendaController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -799,6 +920,75 @@
           "status",
           "totalCentavos",
           "itens"
+        ]
+      },
+      "AgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "inicio": {
+            "type": "string"
+          },
+          "fim": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "observacoes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "inicio",
+          "fim",
+          "status"
+        ]
+      },
+      "CreateAgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "example": "Consulta — Rex"
+          },
+          "inicio": {
+            "type": "string",
+            "example": "2026-07-01T14:00:00Z",
+            "description": "ISO 8601"
+          },
+          "fim": {
+            "type": "string",
+            "example": "2026-07-01T14:30:00Z",
+            "description": "ISO 8601"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "observacoes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "titulo",
+          "inicio",
+          "fim"
         ]
       }
     }
