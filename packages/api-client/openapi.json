@@ -456,6 +456,96 @@
         ]
       }
     },
+    "/api/animais/{id}/foto/sign-upload": {
+      "post": {
+        "operationId": "ClientesController_signFoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/animais/{id}/foto": {
+      "post": {
+        "operationId": "ClientesController_confirmFoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmFotoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}/eventos": {
       "get": {
         "operationId": "ProntuarioController_eventos",
@@ -913,6 +1003,10 @@
           },
           "status": {
             "type": "string"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "description": "URL assinada (curta) da foto, se houver"
           }
         },
         "required": [
@@ -1068,6 +1162,51 @@
             ]
           }
         }
+      },
+      "SignUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/jpeg",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "SignUploadResponseDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Chave do objeto a confirmar depois do upload"
+          },
+          "uploadUrl": {
+            "type": "string",
+            "description": "URL pré-assinada para PUT direto no storage (curta validade)"
+          }
+        },
+        "required": [
+          "key",
+          "uploadUrl"
+        ]
+      },
+      "ConfirmFotoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
       },
       "EventoDto": {
         "type": "object",

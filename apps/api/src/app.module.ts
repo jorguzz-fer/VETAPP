@@ -7,12 +7,14 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClientesModule } from './modules/clientes/clientes.module';
 import { ProntuarioModule } from './modules/prontuario/prontuario.module';
 import { AgendaModule } from './modules/agenda/agenda.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
     ConfigModule,
     DatabaseModule,
+    StorageModule,
     HealthModule,
     AuthModule,
     ClientesModule,
