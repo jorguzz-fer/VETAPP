@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { animais, responsaveis } from '../../database/schema';
+import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,
   CreateAnimalDto,
@@ -10,6 +11,7 @@ import type {
   OkDto,
   ResponsavelComAnimaisDto,
   ResponsavelDto,
+  SignUploadResponseDto,
   UpdateAnimalDto,
   UpdateResponsavelDto,
 } from './clientes.dto';
@@ -20,15 +22,19 @@ interface ListOpts {
   pageSize: number;
 }
 
+type AnimalRow = typeof animais.$inferSelect;
+
 // Todas as operações são escopadas ao tenant via withTenant (RLS reforça no banco).
 @Injectable()
 export class ClientesService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly storage: StorageService,
+  ) {}
 
   async listResponsaveis(tenantId: string, opts: ListOpts): Promise<ListResponsaveisDto> {
     const { search, page, pageSize } = opts;
     return this.database.withTenant(tenantId, async (tx) => {
-      // Busca por nome OU telefone (first-class — docs/spec/05 §2.1).
       const where = search
         ? and(
             eq(responsaveis.tenantId, tenantId),
@@ -61,16 +67,18 @@ export class ClientesService {
   }
 
   async getFicha(tenantId: string, id: string): Promise<ResponsavelComAnimaisDto> {
-    return this.database.withTenant(tenantId, async (tx) => {
-      const resp = await tx.query.responsaveis.findFirst({ where: eq(responsaveis.id, id) });
-      if (!resp) throw new NotFoundException('Responsável não encontrado');
+    const resp = await this.database.withTenant(tenantId, async (tx) => {
+      const r = await tx.query.responsaveis.findFirst({ where: eq(responsaveis.id, id) });
+      if (!r) throw new NotFoundException('Responsável não encontrado');
       const pets = await tx
         .select()
         .from(animais)
         .where(eq(animais.responsavelId, id))
         .orderBy(desc(animais.createdAt));
-      return { ...resp, animais: pets } as ResponsavelComAnimaisDto;
+      return { r, pets };
     });
+    const animaisDto = await Promise.all(resp.pets.map((p) => this.toAnimalDto(p)));
+    return { ...resp.r, animais: animaisDto } as ResponsavelComAnimaisDto;
   }
 
   async updateResponsavel(tenantId: string, id: string, dto: UpdateResponsavelDto): Promise<ResponsavelDto> {
@@ -94,32 +102,35 @@ export class ClientesService {
   }
 
   async createAnimal(tenantId: string, responsavelId: string, dto: CreateAnimalDto): Promise<AnimalDto> {
-    return this.database.withTenant(tenantId, async (tx) => {
+    const row = await this.database.withTenant(tenantId, async (tx) => {
       const resp = await tx.query.responsaveis.findFirst({ where: eq(responsaveis.id, responsavelId) });
       if (!resp) throw new NotFoundException('Responsável não encontrado');
-      const [row] = await tx.insert(animais).values({ ...dto, tenantId, responsavelId }).returning();
-      return row as AnimalDto;
+      const [r] = await tx.insert(animais).values({ ...dto, tenantId, responsavelId }).returning();
+      return r;
     });
+    return this.toAnimalDto(row);
   }
 
   async getAnimal(tenantId: string, id: string): Promise<AnimalDto> {
-    return this.database.withTenant(tenantId, async (tx) => {
-      const row = await tx.query.animais.findFirst({ where: eq(animais.id, id) });
-      if (!row) throw new NotFoundException('Animal não encontrado');
-      return row as AnimalDto;
+    const row = await this.database.withTenant(tenantId, async (tx) => {
+      const r = await tx.query.animais.findFirst({ where: eq(animais.id, id) });
+      if (!r) throw new NotFoundException('Animal não encontrado');
+      return r;
     });
+    return this.toAnimalDto(row);
   }
 
   async updateAnimal(tenantId: string, id: string, dto: UpdateAnimalDto): Promise<AnimalDto> {
-    return this.database.withTenant(tenantId, async (tx) => {
-      const [row] = await tx
+    const row = await this.database.withTenant(tenantId, async (tx) => {
+      const [r] = await tx
         .update(animais)
         .set({ ...dto, updatedAt: new Date() })
         .where(eq(animais.id, id))
         .returning();
-      if (!row) throw new NotFoundException('Animal não encontrado');
-      return row as AnimalDto;
+      if (!r) throw new NotFoundException('Animal não encontrado');
+      return r;
     });
+    return this.toAnimalDto(row);
   }
 
   async deleteAnimal(tenantId: string, id: string): Promise<OkDto> {
@@ -128,5 +139,46 @@ export class ClientesService {
       if (rows.length === 0) throw new NotFoundException('Animal não encontrado');
       return { ok: true };
     });
+  }
+
+  // ───────── Foto do animal (storage R2) ─────────
+
+  async signAnimalFotoUpload(tenantId: string, animalId: string, contentType: string): Promise<SignUploadResponseDto> {
+    await this.getAnimal(tenantId, animalId); // garante existência + escopo de tenant
+    const key = this.storage.buildKey(tenantId, 'animais', animalId, 'foto');
+    const uploadUrl = await this.storage.signUpload(key, contentType);
+    return { key, uploadUrl };
+  }
+
+  async confirmAnimalFoto(tenantId: string, animalId: string, key: string): Promise<AnimalDto> {
+    // A key precisa pertencer a este tenant+animal (evita gravar referência forjada).
+    const prefix = `${tenantId}/animais/${animalId}/`;
+    if (!key.startsWith(prefix)) throw new BadRequestException('Chave inválida para este animal');
+    const row = await this.database.withTenant(tenantId, async (tx) => {
+      const [r] = await tx
+        .update(animais)
+        .set({ fotoKey: key, updatedAt: new Date() })
+        .where(eq(animais.id, animalId))
+        .returning();
+      if (!r) throw new NotFoundException('Animal não encontrado');
+      return r;
+    });
+    return this.toAnimalDto(row);
+  }
+
+  private async toAnimalDto(r: AnimalRow): Promise<AnimalDto> {
+    return {
+      id: r.id,
+      responsavelId: r.responsavelId,
+      codigo: r.codigo,
+      nome: r.nome,
+      especie: r.especie,
+      raca: r.raca,
+      sexo: r.sexo,
+      castrado: r.castrado,
+      nascimento: r.nascimento,
+      status: r.status,
+      fotoUrl: await this.storage.signDownload(r.fotoKey),
+    };
   }
 }

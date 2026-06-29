@@ -93,6 +93,8 @@ export class AnimalDto {
   @ApiProperty() castrado!: boolean;
   @ApiPropertyOptional({ type: String }) nascimento?: string | null;
   @ApiProperty() status!: string;
+  @ApiPropertyOptional({ type: String, description: 'URL assinada (curta) da foto, se houver' })
+  fotoUrl?: string | null;
 }
 
 export class ResponsavelComAnimaisDto extends ResponsavelDto {
@@ -129,4 +131,24 @@ export class ListResponsaveisDto {
 
 export class OkDto {
   @ApiProperty() ok!: boolean;
+}
+
+export class SignUploadDto {
+  @ApiProperty({ example: 'image/jpeg', enum: ['image/jpeg', 'image/png', 'image/webp'] })
+  @IsIn(['image/jpeg', 'image/png', 'image/webp'])
+  contentType!: string;
+}
+
+export class SignUploadResponseDto {
+  @ApiProperty({ description: 'Chave do objeto a confirmar depois do upload' })
+  key!: string;
+
+  @ApiProperty({ description: 'URL pré-assinada para PUT direto no storage (curta validade)' })
+  uploadUrl!: string;
+}
+
+export class ConfirmFotoDto {
+  @ApiProperty()
+  @IsString()
+  key!: string;
 }

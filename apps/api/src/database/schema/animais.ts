@@ -22,6 +22,7 @@ export const animais = pgTable(
     castrado: boolean('castrado').notNull().default(false),
     nascimento: date('nascimento'),
     status: text('status').notNull().default('vivo'), // vivo | falecido
+    fotoKey: text('foto_key'), // chave do objeto no storage (R2); leitura via URL assinada
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

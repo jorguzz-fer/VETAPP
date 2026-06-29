@@ -132,6 +132,38 @@ export interface paths {
         patch: operations["ClientesController_updateAnimal"];
         trace?: never;
     };
+    "/api/animais/{id}/foto/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientesController_signFoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/animais/{id}/foto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientesController_confirmFoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}/eventos": {
         parameters: {
             query?: never;
@@ -266,6 +298,8 @@ export interface components {
             castrado: boolean;
             nascimento?: string;
             status: string;
+            /** @description URL assinada (curta) da foto, se houver */
+            fotoUrl?: string;
         };
         ResponsavelComAnimaisDto: {
             id: string;
@@ -316,6 +350,22 @@ export interface components {
             nascimento?: string;
             /** @enum {string} */
             status?: "vivo" | "falecido";
+        };
+        SignUploadDto: {
+            /**
+             * @example image/jpeg
+             * @enum {string}
+             */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+        };
+        SignUploadResponseDto: {
+            /** @description Chave do objeto a confirmar depois do upload */
+            key: string;
+            /** @description URL pré-assinada para PUT direto no storage (curta validade) */
+            uploadUrl: string;
+        };
+        ConfirmFotoDto: {
+            key: string;
         };
         EventoDto: {
             id: string;
@@ -666,6 +716,56 @@ export interface operations {
         };
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_signFoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    ClientesController_confirmFoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmFotoDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

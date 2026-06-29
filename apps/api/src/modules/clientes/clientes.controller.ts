@@ -4,12 +4,15 @@ import type { Request } from 'express';
 import { ClientesService } from './clientes.service';
 import {
   AnimalDto,
+  ConfirmFotoDto,
   CreateAnimalDto,
   CreateResponsavelDto,
   ListResponsaveisDto,
   OkDto,
   ResponsavelComAnimaisDto,
   ResponsavelDto,
+  SignUploadDto,
+  SignUploadResponseDto,
   UpdateAnimalDto,
   UpdateResponsavelDto,
 } from './clientes.dto';
@@ -87,5 +90,18 @@ export class ClientesController {
   @ApiOkResponse({ type: OkDto })
   removeAnimal(@Req() req: Request, @Param('id') id: string): Promise<OkDto> {
     return this.clientes.deleteAnimal(req.auth!.tenantId, id);
+  }
+
+  // Foto do animal: 1) pede URL assinada, 2) sobe direto no storage, 3) confirma a key.
+  @Post('animais/:id/foto/sign-upload')
+  @ApiCreatedResponse({ type: SignUploadResponseDto })
+  signFoto(@Req() req: Request, @Param('id') id: string, @Body() dto: SignUploadDto): Promise<SignUploadResponseDto> {
+    return this.clientes.signAnimalFotoUpload(req.auth!.tenantId, id, dto.contentType);
+  }
+
+  @Post('animais/:id/foto')
+  @ApiCreatedResponse({ type: AnimalDto })
+  confirmFoto(@Req() req: Request, @Param('id') id: string, @Body() dto: ConfirmFotoDto): Promise<AnimalDto> {
+    return this.clientes.confirmAnimalFoto(req.auth!.tenantId, id, dto.key);
   }
 }
