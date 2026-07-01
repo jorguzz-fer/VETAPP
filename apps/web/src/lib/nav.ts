@@ -32,7 +32,7 @@ export const navSections: NavSection[] = [
   {
     title: 'Comercial',
     items: [
-      { label: 'Vendas', href: '/vendas', icon: 'ri-shopping-bag-3-line' },
+      { label: 'Faturas', href: '/faturas', icon: 'ri-bill-line' },
       { label: 'Tabela de preços', href: '/precos', icon: 'ri-price-tag-3-line' },
       { label: 'Comissões', href: '/comissoes', icon: 'ri-hand-coin-line' },
     ],
