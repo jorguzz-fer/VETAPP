@@ -1184,6 +1184,84 @@
           }
         ]
       }
+    },
+    "/api/faturas": {
+      "get": {
+        "operationId": "FinanceiroController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "aberta",
+                "paga",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FaturaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{id}/pagar": {
+      "post": {
+        "operationId": "FinanceiroController_pagar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -2012,6 +2090,41 @@
             "type": "boolean"
           }
         }
+      },
+      "FaturaResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "criadaEm"
+        ]
       }
     }
   }
