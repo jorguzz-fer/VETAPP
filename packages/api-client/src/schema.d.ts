@@ -180,6 +180,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais/{id}/prontuario/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProntuarioController_signAnexo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/clientes/{id}/fatura": {
         parameters: {
             query?: never;
@@ -359,9 +375,7 @@ export interface components {
             contentType: "image/jpeg" | "image/png" | "image/webp";
         };
         SignUploadResponseDto: {
-            /** @description Chave do objeto a confirmar depois do upload */
             key: string;
-            /** @description URL pré-assinada para PUT direto no storage (curta validade) */
             uploadUrl: string;
         };
         ConfirmFotoDto: {
@@ -374,6 +388,8 @@ export interface components {
             descricao: string;
             valorCentavos?: number;
             data: string;
+            /** @description URL assinada (curta) do anexo, se houver */
+            anexoUrl?: string;
         };
         CreateEventoDto: {
             /** @enum {string} */
@@ -387,6 +403,12 @@ export interface components {
              * @default true
              */
             faturar: boolean;
+            /** @description Chave de anexo já enviado ao storage (opcional) */
+            anexoKey?: string;
+        };
+        ProntuarioSignUploadDto: {
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "application/pdf" | "video/mp4";
         };
         FaturaItemDto: {
             id: string;
@@ -817,6 +839,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventoDto"];
+                };
+            };
+        };
+    };
+    ProntuarioController_signAnexo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProntuarioSignUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
                 };
             };
         };

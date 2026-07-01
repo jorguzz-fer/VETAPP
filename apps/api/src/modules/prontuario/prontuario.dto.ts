@@ -32,6 +32,30 @@ export class CreateEventoDto {
   @IsOptional()
   @IsBoolean()
   faturar?: boolean;
+
+  @ApiPropertyOptional({ type: String, description: 'Chave de anexo já enviado ao storage (opcional)' })
+  @IsOptional()
+  @IsString()
+  anexoKey?: string;
+}
+
+export const ANEXO_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+  'video/mp4',
+] as const;
+
+export class ProntuarioSignUploadDto {
+  @ApiProperty({ enum: ANEXO_CONTENT_TYPES })
+  @IsIn(ANEXO_CONTENT_TYPES as unknown as string[])
+  contentType!: string;
+}
+
+export class SignUploadResponseDto {
+  @ApiProperty() key!: string;
+  @ApiProperty() uploadUrl!: string;
 }
 
 export class EventoDto {
@@ -41,6 +65,8 @@ export class EventoDto {
   @ApiProperty() descricao!: string;
   @ApiPropertyOptional({ type: Number }) valorCentavos?: number | null;
   @ApiProperty() data!: string;
+  @ApiPropertyOptional({ type: String, description: 'URL assinada (curta) do anexo, se houver' })
+  anexoUrl?: string | null;
 }
 
 export class FaturaItemDto {
