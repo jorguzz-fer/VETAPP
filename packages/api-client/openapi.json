@@ -627,6 +627,51 @@
         ]
       }
     },
+    "/api/animais/{id}/prontuario/sign-upload": {
+      "post": {
+        "operationId": "ProntuarioController_signAnexo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProntuarioSignUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "prontuario"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/clientes/{id}/fatura": {
       "get": {
         "operationId": "ProntuarioController_fatura",
@@ -1184,12 +1229,10 @@
         "type": "object",
         "properties": {
           "key": {
-            "type": "string",
-            "description": "Chave do objeto a confirmar depois do upload"
+            "type": "string"
           },
           "uploadUrl": {
-            "type": "string",
-            "description": "URL pré-assinada para PUT direto no storage (curta validade)"
+            "type": "string"
           }
         },
         "required": [
@@ -1228,6 +1271,10 @@
           },
           "data": {
             "type": "string"
+          },
+          "anexoUrl": {
+            "type": "string",
+            "description": "URL assinada (curta) do anexo, se houver"
           }
         },
         "required": [
@@ -1265,11 +1312,33 @@
             "type": "boolean",
             "default": true,
             "description": "Gera lançamento na fatura do cliente"
+          },
+          "anexoKey": {
+            "type": "string",
+            "description": "Chave de anexo já enviado ao storage (opcional)"
           }
         },
         "required": [
           "tipo",
           "descricao"
+        ]
+      },
+      "ProntuarioSignUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "application/pdf",
+              "video/mp4"
+            ]
+          }
+        },
+        "required": [
+          "contentType"
         ]
       },
       "FaturaItemDto": {

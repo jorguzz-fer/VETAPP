@@ -14,6 +14,8 @@ export const prontuarioEventos = pgTable(
     descricao: text('descricao').notNull(),
     // Dinheiro em centavos (inteiro) — evita float (blueprint §10). Null = sem faturamento.
     valorCentavos: integer('valor_centavos'),
+    // Anexo opcional (documento/exame/vídeo) no storage (R2); leitura via URL assinada.
+    anexoKey: text('anexo_key'),
     data: timestamp('data', { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
