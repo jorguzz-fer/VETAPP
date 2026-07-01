@@ -244,6 +244,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/catalogo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogoController_list"];
+        put?: never;
+        post: operations["CatalogoController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalogo/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["CatalogoController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["CatalogoController_update"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -449,6 +481,38 @@ export interface components {
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
+        };
+        ItemCatalogoDto: {
+            id: string;
+            codigo: string;
+            nome: string;
+            tipo: string;
+            precoCentavos: number;
+            ativo: boolean;
+        };
+        CreateItemDto: {
+            /**
+             * @description Código único do item no tenant
+             * @example 22
+             */
+            codigo: string;
+            /** @example Avaliação cirúrgica */
+            nome: string;
+            /** @enum {string} */
+            tipo: "produto" | "servico" | "exame" | "vacina" | "medicamento" | "cirurgia";
+            /**
+             * @description Preço em centavos
+             * @example 15000
+             */
+            precoCentavos: number;
+        };
+        UpdateItemDto: {
+            codigo?: string;
+            nome?: string;
+            /** @enum {string} */
+            tipo?: "produto" | "servico" | "exame" | "vacina" | "medicamento" | "cirurgia";
+            precoCentavos?: number;
+            ativo?: boolean;
         };
     };
     responses: never;
@@ -955,6 +1019,101 @@ export interface operations {
                     "application/json": {
                         ok?: boolean;
                     };
+                };
+            };
+        };
+    };
+    CatalogoController_list: {
+        parameters: {
+            query?: {
+                /** @description Nome ou código */
+                search?: string;
+                tipo?: string;
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemCatalogoDto"][];
+                };
+            };
+        };
+    };
+    CatalogoController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemCatalogoDto"];
+                };
+            };
+        };
+    };
+    CatalogoController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    CatalogoController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemCatalogoDto"];
                 };
             };
         };

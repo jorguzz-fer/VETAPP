@@ -62,6 +62,22 @@ export default function ProntuarioPage() {
   const [faturar, setFaturar] = useState(true);
   const [anexoEvento, setAnexoEvento] = useState<File | null>(null);
 
+  // Itens do catálogo (tabela de preços) — selecionar preenche descrição/valor.
+  const [catalogo, setCatalogo] = useState<{ id: string; codigo: string; nome: string; precoCentavos: number }[]>([]);
+  useEffect(() => {
+    if (!showForm || catalogo.length > 0) return;
+    void api.GET('/api/catalogo', { params: { query: {} } }).then(({ data }) => {
+      setCatalogo((data as typeof catalogo) ?? []);
+    });
+  }, [showForm, catalogo.length]);
+
+  function onPickCatalogo(itemId: string) {
+    const item = catalogo.find((c) => c.id === itemId);
+    if (!item) return;
+    setDescricao(`${item.nome} (cód. ${item.codigo})`);
+    setValor((item.precoCentavos / 100).toFixed(2).replace('.', ','));
+  }
+
   const [editAnimal, setEditAnimal] = useState(false);
   const [aForm, setAForm] = useState<{ nome: string; especie: string; raca: string; sexo: '' | 'M' | 'F'; castrado: boolean; status: 'vivo' | 'falecido' }>({
     nome: '',
@@ -281,6 +297,23 @@ export default function ProntuarioPage() {
 
         {showForm && (
           <form onSubmit={onAddEvento} className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {catalogo.length > 0 && (
+              <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                <span className="text-gray-600 dark:text-gray-300">Item do catálogo (preenche descrição e valor)</span>
+                <select
+                  defaultValue=""
+                  onChange={(e) => onPickCatalogo(e.target.value)}
+                  className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+                >
+                  <option value="">— selecionar da tabela de preços —</option>
+                  {catalogo.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.codigo} · {c.nome} · {(c.precoCentavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-gray-600 dark:text-gray-300">Tipo</span>
               <select
