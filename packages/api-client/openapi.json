@@ -827,6 +827,177 @@
           }
         ]
       }
+    },
+    "/api/catalogo": {
+      "get": {
+        "operationId": "CatalogoController_list",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Nome ou código",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemCatalogoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "CatalogoController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemCatalogoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/catalogo/{id}": {
+      "patch": {
+        "operationId": "CatalogoController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemCatalogoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "CatalogoController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -1461,6 +1632,101 @@
           "inicio",
           "fim"
         ]
+      },
+      "ItemCatalogoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nome",
+          "tipo",
+          "precoCentavos",
+          "ativo"
+        ]
+      },
+      "CreateItemDto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "example": "22",
+            "description": "Código único do item no tenant"
+          },
+          "nome": {
+            "type": "string",
+            "example": "Avaliação cirúrgica"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "produto",
+              "servico",
+              "exame",
+              "vacina",
+              "medicamento",
+              "cirurgia"
+            ]
+          },
+          "precoCentavos": {
+            "type": "number",
+            "example": 15000,
+            "description": "Preço em centavos"
+          }
+        },
+        "required": [
+          "codigo",
+          "nome",
+          "tipo",
+          "precoCentavos"
+        ]
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "produto",
+              "servico",
+              "exame",
+              "vacina",
+              "medicamento",
+              "cirurgia"
+            ]
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

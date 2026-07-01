@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClientesModule } from './modules/clientes/clientes.module';
 import { ProntuarioModule } from './modules/prontuario/prontuario.module';
 import { AgendaModule } from './modules/agenda/agenda.module';
+import { CatalogoModule } from './modules/catalogo/catalogo.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -20,6 +21,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     ClientesModule,
     ProntuarioModule,
     AgendaModule,
+    CatalogoModule,
   ],
   providers: [
     // RolesGuard global: rotas anotadas com @Roles são checadas; demais passam.
