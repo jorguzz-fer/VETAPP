@@ -18,6 +18,10 @@ export const envSchema = z.object({
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL: z.coerce.number().int().positive().default(2592000),
 
+  // Login com Google (OIDC). Opcional: sem isto, o endpoint /auth/google fica
+  // desabilitado (a app sobe normalmente).
+  GOOGLE_CLIENT_ID: z.string().optional(),
+
   // Object storage (Cloudflare R2 / S3-compatível). Opcional: sem isto, uploads
   // ficam desabilitados (a app sobe normalmente em dev/CI). Credenciais só aqui,
   // nunca no cliente (docs/spec/02).
