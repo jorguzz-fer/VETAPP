@@ -2,7 +2,13 @@ import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/comm
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { ProntuarioService } from './prontuario.service';
-import { CreateEventoDto, EventoDto, FaturaDto } from './prontuario.dto';
+import {
+  CreateEventoDto,
+  EventoDto,
+  FaturaDto,
+  ProntuarioSignUploadDto,
+  SignUploadResponseDto,
+} from './prontuario.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('prontuario')
@@ -22,6 +28,13 @@ export class ProntuarioController {
   @ApiCreatedResponse({ type: EventoDto })
   addEvento(@Req() req: Request, @Param('id') id: string, @Body() dto: CreateEventoDto): Promise<EventoDto> {
     return this.prontuario.createEvento(req.auth!.tenantId, id, dto);
+  }
+
+  // URL pré-assinada para anexar arquivo (documento/exame/vídeo) a um evento.
+  @Post('animais/:id/prontuario/sign-upload')
+  @ApiCreatedResponse({ type: SignUploadResponseDto })
+  signAnexo(@Req() req: Request, @Param('id') id: string, @Body() dto: ProntuarioSignUploadDto): Promise<SignUploadResponseDto> {
+    return this.prontuario.signAnexoUpload(req.auth!.tenantId, id, dto.contentType);
   }
 
   // Fatura aberta (consolidada) do responsável.

@@ -17,6 +17,16 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL: z.coerce.number().int().positive().default(2592000),
+
+  // Object storage (Cloudflare R2 / S3-compatível). Opcional: sem isto, uploads
+  // ficam desabilitados (a app sobe normalmente em dev/CI). Credenciais só aqui,
+  // nunca no cliente (docs/spec/02).
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_REGION: z.string().default('auto'),
+  S3_BUCKET: z.string().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.coerce.boolean().default(false),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

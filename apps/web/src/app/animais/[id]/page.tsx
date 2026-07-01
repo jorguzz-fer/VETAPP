@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -16,6 +16,7 @@ interface Animal {
   sexo?: string | null;
   castrado: boolean;
   status: string;
+  fotoUrl?: string | null;
 }
 interface Evento {
   id: string;
@@ -23,6 +24,7 @@ interface Evento {
   descricao: string;
   valorCentavos?: number | null;
   data: string;
+  anexoUrl?: string | null;
 }
 interface Fatura {
   id: string;
@@ -58,6 +60,7 @@ export default function ProntuarioPage() {
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [faturar, setFaturar] = useState(true);
+  const [anexoEvento, setAnexoEvento] = useState<File | null>(null);
 
   const [editAnimal, setEditAnimal] = useState(false);
   const [aForm, setAForm] = useState<{ nome: string; especie: string; raca: string; sexo: '' | 'M' | 'F'; castrado: boolean; status: 'vivo' | 'falecido' }>({
@@ -104,17 +107,66 @@ export default function ProntuarioPage() {
   async function onAddEvento(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const valorCentavos = valor ? Math.round(parseFloat(valor.replace(',', '.')) * 100) : undefined;
-    const { data } = await api.POST('/api/animais/{id}/eventos', {
-      params: { path: { id } },
-      body: { tipo, descricao, valorCentavos, faturar },
-    });
-    setSaving(false);
-    if (data) {
-      setDescricao('');
-      setValor('');
-      setShowForm(false);
+    try {
+      const valorCentavos = valor ? Math.round(parseFloat(valor.replace(',', '.')) * 100) : undefined;
+
+      // Anexo opcional: sobe primeiro ao storage e obtém a key.
+      let anexoKey: string | undefined;
+      if (anexoEvento) {
+        const sign = await api.POST('/api/animais/{id}/prontuario/sign-upload', {
+          params: { path: { id } },
+          body: { contentType: anexoEvento.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'application/pdf' | 'video/mp4' },
+        });
+        if (!sign.data) throw new Error('sign falhou');
+        const put = await fetch(sign.data.uploadUrl, { method: 'PUT', body: anexoEvento, headers: { 'Content-Type': anexoEvento.type } });
+        if (!put.ok) throw new Error('upload falhou');
+        anexoKey = sign.data.key;
+      }
+
+      const { data } = await api.POST('/api/animais/{id}/eventos', {
+        params: { path: { id } },
+        body: { tipo, descricao, valorCentavos, faturar, anexoKey },
+      });
+      if (data) {
+        setDescricao('');
+        setValor('');
+        setAnexoEvento(null);
+        setShowForm(false);
+        await load();
+      }
+    } catch {
+      alert('Falha ao registrar. Se anexou arquivo, verifique o storage/CORS.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function onPickFoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const sign = await api.POST('/api/animais/{id}/foto/sign-upload', {
+        params: { path: { id } },
+        body: { contentType: file.type as 'image/jpeg' | 'image/png' | 'image/webp' },
+      });
+      if (!sign.data) throw new Error('sign falhou');
+      const put = await fetch(sign.data.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      if (!put.ok) throw new Error('upload falhou');
+      await api.POST('/api/animais/{id}/foto', { params: { path: { id } }, body: { key: sign.data.key } });
       await load();
+    } catch {
+      alert('Falha no upload da foto. Verifique se o storage (R2/MinIO) e o CORS estão configurados.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
     }
   }
 
@@ -150,9 +202,25 @@ export default function ProntuarioPage() {
 
       <Card>
         <div className="flex items-center gap-4">
-          <span className="inline-grid place-items-center w-16 h-16 rounded-full bg-primary-50 text-primary-500">
-            <i className="ri-bear-smile-line text-3xl"></i>
-          </span>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="relative w-16 h-16 rounded-full overflow-hidden bg-primary-50 text-primary-500 grid place-items-center group"
+            title="Trocar foto"
+            aria-label="Trocar foto"
+          >
+            {animal.fotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={animal.fotoUrl} alt={animal.nome} className="w-full h-full object-cover" />
+            ) : (
+              <i className="ri-bear-smile-line text-3xl"></i>
+            )}
+            <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity grid place-items-center text-white">
+              <i className={`text-xl ${uploading ? 'ri-loader-4-line animate-spin' : 'ri-camera-line'}`}></i>
+            </span>
+          </button>
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPickFoto} />
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-black dark:text-white">{animal.nome}</h1>
             <p className="text-sm text-gray-500">
@@ -244,6 +312,15 @@ export default function ProntuarioPage() {
                 className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
               />
             </label>
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              <span className="text-gray-600 dark:text-gray-300">Anexo (documento/exame/vídeo) — opcional</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4"
+                onChange={(e) => setAnexoEvento(e.target.files?.[0] ?? null)}
+                className="text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:text-primary-600 file:px-3 file:py-1.5"
+              />
+            </label>
             <label className="flex items-center gap-2 text-sm md:col-span-2">
               <input type="checkbox" checked={faturar} onChange={(e) => setFaturar(e.target.checked)} />
               <span className="text-gray-600 dark:text-gray-300">Lançar na fatura do cliente (faturamento automático)</span>
@@ -293,9 +370,14 @@ export default function ProntuarioPage() {
                     ) : null}
                   </div>
                   <p className="text-sm text-gray-500">{ev.descricao}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(ev.data).toLocaleString('pt-BR')}
-                  </p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <p className="text-xs text-gray-400">{new Date(ev.data).toLocaleString('pt-BR')}</p>
+                    {ev.anexoUrl ? (
+                      <a href={ev.anexoUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-500 hover:underline inline-flex items-center gap-1">
+                        <i className="ri-attachment-2"></i> Ver anexo
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </li>
             ))}

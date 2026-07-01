@@ -132,6 +132,38 @@ export interface paths {
         patch: operations["ClientesController_updateAnimal"];
         trace?: never;
     };
+    "/api/animais/{id}/foto/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientesController_signFoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/animais/{id}/foto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientesController_confirmFoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}/eventos": {
         parameters: {
             query?: never;
@@ -142,6 +174,22 @@ export interface paths {
         get: operations["ProntuarioController_eventos"];
         put?: never;
         post: operations["ProntuarioController_addEvento"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/animais/{id}/prontuario/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProntuarioController_signAnexo"];
         delete?: never;
         options?: never;
         head?: never;
@@ -266,6 +314,8 @@ export interface components {
             castrado: boolean;
             nascimento?: string;
             status: string;
+            /** @description URL assinada (curta) da foto, se houver */
+            fotoUrl?: string;
         };
         ResponsavelComAnimaisDto: {
             id: string;
@@ -317,6 +367,20 @@ export interface components {
             /** @enum {string} */
             status?: "vivo" | "falecido";
         };
+        SignUploadDto: {
+            /**
+             * @example image/jpeg
+             * @enum {string}
+             */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+        };
+        SignUploadResponseDto: {
+            key: string;
+            uploadUrl: string;
+        };
+        ConfirmFotoDto: {
+            key: string;
+        };
         EventoDto: {
             id: string;
             animalId: string;
@@ -324,6 +388,8 @@ export interface components {
             descricao: string;
             valorCentavos?: number;
             data: string;
+            /** @description URL assinada (curta) do anexo, se houver */
+            anexoUrl?: string;
         };
         CreateEventoDto: {
             /** @enum {string} */
@@ -337,6 +403,12 @@ export interface components {
              * @default true
              */
             faturar: boolean;
+            /** @description Chave de anexo já enviado ao storage (opcional) */
+            anexoKey?: string;
+        };
+        ProntuarioSignUploadDto: {
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "application/pdf" | "video/mp4";
         };
         FaturaItemDto: {
             id: string;
@@ -675,6 +747,56 @@ export interface operations {
             };
         };
     };
+    ClientesController_signFoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    ClientesController_confirmFoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmFotoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
     ProntuarioController_eventos: {
         parameters: {
             query?: never;
@@ -717,6 +839,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventoDto"];
+                };
+            };
+        };
+    };
+    ProntuarioController_signAnexo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProntuarioSignUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
                 };
             };
         };

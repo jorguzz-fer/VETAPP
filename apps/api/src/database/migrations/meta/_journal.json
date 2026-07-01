@@ -36,6 +36,20 @@
       "when": 1719590800000,
       "tag": "0004_agenda",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1719590900000,
+      "tag": "0005_animal_foto",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1719591000000,
+      "tag": "0006_prontuario_anexo",
+      "breakpoints": true
     }
   ]
 }

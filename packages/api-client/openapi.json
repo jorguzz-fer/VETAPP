@@ -456,6 +456,96 @@
         ]
       }
     },
+    "/api/animais/{id}/foto/sign-upload": {
+      "post": {
+        "operationId": "ClientesController_signFoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/animais/{id}/foto": {
+      "post": {
+        "operationId": "ClientesController_confirmFoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmFotoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}/eventos": {
       "get": {
         "operationId": "ProntuarioController_eventos",
@@ -522,6 +612,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "prontuario"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/animais/{id}/prontuario/sign-upload": {
+      "post": {
+        "operationId": "ProntuarioController_signAnexo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProntuarioSignUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
                 }
               }
             }
@@ -913,6 +1048,10 @@
           },
           "status": {
             "type": "string"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "description": "URL assinada (curta) da foto, se houver"
           }
         },
         "required": [
@@ -1069,6 +1208,49 @@
           }
         }
       },
+      "SignUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/jpeg",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "SignUploadResponseDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "uploadUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "uploadUrl"
+        ]
+      },
+      "ConfirmFotoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
       "EventoDto": {
         "type": "object",
         "properties": {
@@ -1089,6 +1271,10 @@
           },
           "data": {
             "type": "string"
+          },
+          "anexoUrl": {
+            "type": "string",
+            "description": "URL assinada (curta) do anexo, se houver"
           }
         },
         "required": [
@@ -1126,11 +1312,33 @@
             "type": "boolean",
             "default": true,
             "description": "Gera lançamento na fatura do cliente"
+          },
+          "anexoKey": {
+            "type": "string",
+            "description": "Chave de anexo já enviado ao storage (opcional)"
           }
         },
         "required": [
           "tipo",
           "descricao"
+        ]
+      },
+      "ProntuarioSignUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "application/pdf",
+              "video/mp4"
+            ]
+          }
+        },
+        "required": [
+          "contentType"
         ]
       },
       "FaturaItemDto": {
