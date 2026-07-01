@@ -35,12 +35,18 @@ export class JwtAuthGuard implements CanActivate {
     }
     const token = header.slice('Bearer '.length);
     try {
-      const payload = await this.jwt.verifyAsync<{ sub: string; tenantId: string; role: string }>(token, {
-        secret: this.env.JWT_ACCESS_SECRET,
-      });
+      const payload = await this.jwt.verifyAsync<{ sub: string; tenantId: string; role: string; scope?: string }>(
+        token,
+        { secret: this.env.JWT_ACCESS_SECRET },
+      );
+      // Tokens de desafio MFA (scope 'mfa') NÃO valem como sessão.
+      if (payload.scope === 'mfa') {
+        throw new UnauthorizedException('Conclua o MFA para obter uma sessão');
+      }
       req.auth = { userId: payload.sub, tenantId: payload.tenantId, role: payload.role };
       return true;
-    } catch {
+    } catch (err) {
+      if (err instanceof UnauthorizedException) throw err;
       throw new UnauthorizedException('Token inválido');
     }
   }

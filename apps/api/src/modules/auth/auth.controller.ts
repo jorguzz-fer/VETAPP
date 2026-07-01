@@ -2,7 +2,19 @@ import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/c
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
-import { AuthMeDto, LoginDto, RegisterDto, TokensDto } from './auth.dto';
+import {
+  AuthMeDto,
+  GoogleLoginDto,
+  LoginDto,
+  LoginResultDto,
+  MfaCodeDto,
+  MfaSetupResponseDto,
+  MfaStatusDto,
+  MfaVerifyDto,
+  OkResponseDto,
+  RegisterDto,
+  TokensDto,
+} from './auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('auth')
@@ -18,12 +30,64 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @ApiOkResponse({ type: TokensDto })
-  login(@Body() dto: LoginDto): Promise<TokensDto> {
+  @ApiOkResponse({ type: LoginResultDto })
+  login(@Body() dto: LoginDto): Promise<LoginResultDto> {
     return this.auth.login(dto);
   }
 
-  // Exemplo de rota protegida: retorna o contexto autenticado (userId/tenant/role).
+  // Login com Google (id_token validado no servidor — docs/spec/02 §2.1).
+  @Post('google')
+  @HttpCode(200)
+  @ApiOkResponse({ type: LoginResultDto })
+  google(@Body() dto: GoogleLoginDto): Promise<LoginResultDto> {
+    return this.auth.googleLogin(dto.idToken);
+  }
+
+  // Conclui o login quando o usuário tem MFA ativo.
+  @Post('mfa/verify')
+  @HttpCode(200)
+  @ApiOkResponse({ type: TokensDto })
+  mfaVerify(@Body() dto: MfaVerifyDto): Promise<TokensDto> {
+    return this.auth.mfaVerify(dto.mfaToken, dto.code);
+  }
+
+  // ───────── Gestão do MFA (autenticado) ─────────
+
+  @Get('mfa/status')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: MfaStatusDto })
+  mfaStatus(@Req() req: Request): Promise<MfaStatusDto> {
+    return this.auth.mfaStatus(req.auth!.userId);
+  }
+
+  @Post('mfa/setup')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiCreatedResponse({ type: MfaSetupResponseDto })
+  mfaSetup(@Req() req: Request): Promise<MfaSetupResponseDto> {
+    return this.auth.mfaSetup(req.auth!.userId);
+  }
+
+  @Post('mfa/enable')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  @ApiOkResponse({ type: OkResponseDto })
+  mfaEnable(@Req() req: Request, @Body() dto: MfaCodeDto): Promise<OkResponseDto> {
+    return this.auth.mfaEnable(req.auth!.userId, dto.code);
+  }
+
+  @Post('mfa/disable')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  @ApiOkResponse({ type: OkResponseDto })
+  mfaDisable(@Req() req: Request, @Body() dto: MfaCodeDto): Promise<OkResponseDto> {
+    return this.auth.mfaDisable(req.auth!.userId, dto.code);
+  }
+
+  // Rota protegida: retorna o contexto autenticado (userId/tenant/role).
   @Get('me')
   @ApiBearerAuth()
   @ApiOkResponse({ type: AuthMeDto })
