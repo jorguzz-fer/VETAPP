@@ -9,6 +9,7 @@ import { ProntuarioModule } from './modules/prontuario/prontuario.module';
 import { AgendaModule } from './modules/agenda/agenda.module';
 import { CatalogoModule } from './modules/catalogo/catalogo.module';
 import { FinanceiroModule } from './modules/financeiro/financeiro.module';
+import { EstoqueModule } from './modules/estoque/estoque.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -24,6 +25,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AgendaModule,
     CatalogoModule,
     FinanceiroModule,
+    EstoqueModule,
   ],
   providers: [
     // RolesGuard global: rotas anotadas com @Roles são checadas; demais passam.

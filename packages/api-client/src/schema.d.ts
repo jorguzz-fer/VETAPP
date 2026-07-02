@@ -404,6 +404,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/estoque": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EstoqueController_saldos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/estoque/{itemId}/movimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EstoqueController_movimentos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/estoque/movimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EstoqueController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/estoque/{itemId}/minimo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["EstoqueController_minimo"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -686,6 +750,54 @@ export interface components {
             totalCentavos: number;
             itens: number;
             criadaEm: string;
+        };
+        SaldoItemDto: {
+            itemId: string;
+            codigo: string;
+            nome: string;
+            tipo: string;
+            saldo: number;
+            estoqueMinimo: number;
+            abaixoDoMinimo: boolean;
+        };
+        MovimentoDto: {
+            id: string;
+            itemId: string;
+            tipo: string;
+            quantidade: number;
+            custoCentavos: number | null;
+            motivo: string | null;
+            criadoEm: string;
+        };
+        CreateMovimentoDto: {
+            /** @description Item do catálogo (estocável) */
+            itemId: string;
+            /** @enum {string} */
+            tipo: "entrada" | "saida" | "ajuste";
+            /**
+             * @description Quantidade. entrada/saida: magnitude positiva; ajuste: delta com sinal (inventário).
+             * @example 10
+             */
+            quantidade: number;
+            /** @description Custo unitário em centavos (entrada) */
+            custoCentavos?: number;
+            /** @description Observação (NF, fornecedor, motivo do ajuste) */
+            motivo?: string;
+        };
+        MovimentoResultDto: {
+            id: string;
+            itemId: string;
+            tipo: string;
+            quantidade: number;
+            custoCentavos: number | null;
+            motivo: string | null;
+            criadoEm: string;
+            /** @description Saldo do item após a movimentação */
+            saldoAtual: number;
+        };
+        SetMinimoDto: {
+            /** @example 5 */
+            estoqueMinimo: number;
         };
     };
     responses: never;
@@ -1459,6 +1571,99 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    EstoqueController_saldos: {
+        parameters: {
+            query?: {
+                /** @description Nome ou código */
+                search?: string;
+                /** @description Só itens abaixo do mínimo */
+                apenasBaixo?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoItemDto"][];
+                };
+            };
+        };
+    };
+    EstoqueController_movimentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimentoDto"][];
+                };
+            };
+        };
+    };
+    EstoqueController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMovimentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimentoResultDto"];
+                };
+            };
+        };
+    };
+    EstoqueController_minimo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetMinimoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoItemDto"];
                 };
             };
         };

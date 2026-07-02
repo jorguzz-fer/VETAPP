@@ -71,6 +71,24 @@ vacinas, materiais.
   regras de venda (doc 05 §4.13) → respeitar aqui.
 - Serviços (não estocáveis) convivem no mesmo catálogo, sem saldo físico.
 
+### 2.3 Fase 1 — implementado ✅
+Fatia mínima entregue (`apps/api/src/modules/estoque` + `/estoque` no web):
+- **Movimentações** manuais `entrada | saida | ajuste` como **fonte da verdade**
+  (tabela `estoque_movimentos`, com RLS por tenant fail-closed — doc 03).
+- **Saldo por item** derivado da SOMA das quantidades (sinal por tipo); **serviços
+  ficam de fora** (sem saldo físico — §2.2). Sem depósitos ainda.
+- **Ponto de reposição**: coluna `estoque_minimo` no catálogo + alerta "abaixo do
+  mínimo" e filtro na tela.
+- **Histórico** por item; bloqueio de **saldo negativo** (o toggle "permite vender
+  sem estoque" da §2.2 entra na fase 2).
+- API: `GET /api/estoque`, `GET /api/estoque/:itemId/movimentos`,
+  `POST /api/estoque/movimentos`, `PATCH /api/estoque/:itemId/minimo`.
+
+**Fase 2**: baixa automática (venda / medicação na internação — fecha o ciclo
+clínico→estoque→financeiro), lotes/validade, múltiplos depósitos, fornecedores/
+pedidos de compra, curva ABC. A baixa automática depende de o evento do prontuário
+passar a referenciar o **item de catálogo** (hoje o evento tem só `valorCentavos`).
+
 ---
 
 ## 3. Fiscal
