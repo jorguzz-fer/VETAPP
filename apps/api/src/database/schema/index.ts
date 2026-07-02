@@ -6,3 +6,4 @@ export * from './animais';
 export * from './prontuario';
 export * from './agenda';
 export * from './catalogo';
+export * from './estoque';
