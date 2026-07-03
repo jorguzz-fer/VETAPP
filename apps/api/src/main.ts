@@ -18,12 +18,20 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // OpenAPI como fonte de verdade (docs/spec/11). Em prod, restringir o acesso.
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig));
+  // OpenAPI como fonte de verdade (docs/spec/11). Em produção o endpoint vivo fica
+  // DESABILITADO — nenhuma rota a mais exposta (doc 02). O contrato continua gerado
+  // offline por `openapi:gen`; para expor a parceiros, publicar atrás de proxy/authz.
+  const docsEnabled = env.NODE_ENV !== 'production';
+  if (docsEnabled) {
+    SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig));
+  }
 
   await app.listen(env.API_PORT);
   // eslint-disable-next-line no-console
-  console.log(`VETAPP API ouvindo em http://localhost:${env.API_PORT} (docs em /api/docs)`);
+  console.log(
+    `VETAPP API ouvindo em http://localhost:${env.API_PORT}` +
+      (docsEnabled ? ' (docs em /api/docs)' : ' (docs desabilitados em produção)'),
+  );
 }
 
 bootstrap();

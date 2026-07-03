@@ -72,7 +72,9 @@ GOOGLE_CLIENT_ID=<client-id>.apps.googleusercontent.com
 ```
 
 Segredos JWT: `openssl rand -hex 32`. Healthcheck do Coolify: `GET /api/health`.
-Docs OpenAPI em `/api/docs` (restringir/desabilitar em prod se necessário).
+Docs OpenAPI (`/api/docs`) ficam **desabilitados** quando `NODE_ENV=production`
+(nenhuma rota a mais exposta — doc 02); o contrato segue gerado offline por
+`openapi:gen`. Para expor a parceiros, publicar atrás de proxy/authz.
 
 ## ENVs — Web
 
