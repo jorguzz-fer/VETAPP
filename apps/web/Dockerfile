@@ -4,12 +4,16 @@ FROM node:20-alpine AS build
 WORKDIR /app
 RUN npm install -g pnpm@9.12.0
 
-# Manifests primeiro (cache de deps). Inclui os workspace packages que o web usa.
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# Manifests + lockfile primeiro (cache de deps). Todos os package.json do
+# workspace presentes para o frozen-lockfile reconstruir o grafo.
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json apps/web/package.json
+COPY apps/api/package.json apps/api/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
 COPY packages/design-tokens/package.json packages/design-tokens/package.json
-RUN pnpm install --filter @vetapp/web... --frozen-lockfile || pnpm install --filter @vetapp/web...
+# next build precisa das devDependencies (typescript, tailwind, @types). Coolify
+# injeta NODE_ENV=production no build → forçar dev deps só neste install.
+RUN NODE_ENV=development pnpm install --filter @vetapp/web... --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY packages packages
