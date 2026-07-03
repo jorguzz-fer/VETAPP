@@ -165,6 +165,15 @@ evoluindo para orquestração só quando necessário.
      **build**, não em runtime → passar como **build args**, não só env de runtime.
 - **Porta**: alinhe a porta que o app faz bind (env) com o `EXPOSE` do Dockerfile
   e a porta configurada no proxy — divergência silenciosa vira 502.
+- **VPS sem swap mata builds**: em servidor compartilhado (vários apps), um pico
+  de RAM durante o build derruba o processo **sem mensagem** (exit 255, log
+  cortado). Provisionar swap (2G) é barato e elimina a classe inteira de falha.
+- **Hostnames internos: copiar, nunca redigitar.** Um `O` (letra) no lugar de `0`
+  (zero) num host gerado vira horas de `EAI_AGAIN`. Colar a connection string da
+  UI do provedor e validar com `getent hosts <host>` de dentro do container.
+- **Smoke e2e antes de declarar deploy pronto**: subir não basta — exercitar o
+  caminho de escrita crítico (ex.: signup→login) contra o ambiente real. Boot
+  limpo não prova que request funciona.
 
 **Checklist**
 - [ ] Build reprodutível em container; imagem escaneada (CVE).
@@ -359,10 +368,16 @@ pelo próprio front).
 - **Definition of Done**: código + testes + docs + revisão + CI verde + sem TODO
   crítico + observabilidade do que foi entregue.
 - **Feature flags** para entregar incremental e desligar rápido.
+- **Validação de entrada é contrato, não decoração**: se o pipe de validação usa
+  whitelist (NestJS `ValidationPipe({whitelist:true})` e afins), campo **sem
+  decorator de validação é removido do body** — DTO só com anotação de docs
+  (Swagger) chega vazio no service e explode em produção. Regra: todo DTO de
+  entrada tem validadores, e o typecheck **não** pega isso — só teste e2e pega.
 
 **Checklist**
 - [ ] CI bloqueia merge sem lint/types/test verdes.
-- [ ] Fluxos críticos cobertos por e2e.
+- [ ] Fluxos críticos cobertos por e2e (incluindo signup/login reais).
+- [ ] Todo DTO de entrada tem validadores (nunca só anotação de docs).
 - [ ] DoD acordada pelo time.
 
 ---
