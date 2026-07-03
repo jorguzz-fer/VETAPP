@@ -1,9 +1,14 @@
 import type { NextConfig } from 'next';
+import path from 'node:path';
 
-// Scaffold: modo padrão (permite dev/SSR). A decisão SPA estático (output:'export')
-// × Next SSR fica para o início da Fase 1 — ver docs/spec/10 §2.
+// Deploy (Coolify/Docker): 'standalone' gera um server.js mínimo + node_modules
+// traçados, sem precisar do pnpm no runtime. outputFileTracingRoot aponta para a
+// raiz do monorepo para o tracing achar os workspace packages (api-client,
+// design-tokens) — ver apps/web/Dockerfile e docs/spec/14.
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 };
 
 export default nextConfig;

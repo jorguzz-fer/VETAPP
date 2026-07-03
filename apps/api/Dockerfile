@@ -16,6 +16,8 @@ RUN pnpm --filter @vetapp/api build && pnpm --filter @vetapp/api deploy --prod /
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# Porta padrão coerente com o EXPOSE (main.ts usa API_PORT). Sobrescreva se precisar.
+ENV API_PORT=3000
 # Usuário não-root
 USER node
 COPY --chown=node:node --from=build /out/node_modules ./node_modules
