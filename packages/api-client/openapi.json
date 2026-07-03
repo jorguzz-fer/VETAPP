@@ -1262,6 +1262,173 @@
           }
         ]
       }
+    },
+    "/api/estoque": {
+      "get": {
+        "operationId": "EstoqueController_saldos",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Nome ou código",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apenasBaixo",
+            "required": false,
+            "in": "query",
+            "description": "Só itens abaixo do mínimo",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SaldoItemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/estoque/{itemId}/movimentos": {
+      "get": {
+        "operationId": "EstoqueController_movimentos",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/estoque/movimentos": {
+      "post": {
+        "operationId": "EstoqueController_registrar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMovimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimentoResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/estoque/{itemId}/minimo": {
+      "patch": {
+        "operationId": "EstoqueController_minimo",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMinimoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaldoItemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -2124,6 +2291,167 @@
           "totalCentavos",
           "itens",
           "criadaEm"
+        ]
+      },
+      "SaldoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "saldo": {
+            "type": "number"
+          },
+          "estoqueMinimo": {
+            "type": "number"
+          },
+          "abaixoDoMinimo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "itemId",
+          "codigo",
+          "nome",
+          "tipo",
+          "saldo",
+          "estoqueMinimo",
+          "abaixoDoMinimo"
+        ]
+      },
+      "MovimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "custoCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "tipo",
+          "quantidade",
+          "custoCentavos",
+          "motivo",
+          "criadoEm"
+        ]
+      },
+      "CreateMovimentoDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (estocável)"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "saida",
+              "ajuste"
+            ]
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Quantidade. entrada/saida: magnitude positiva; ajuste: delta com sinal (inventário).",
+            "example": 10
+          },
+          "custoCentavos": {
+            "type": "number",
+            "description": "Custo unitário em centavos (entrada)"
+          },
+          "motivo": {
+            "type": "string",
+            "description": "Observação (NF, fornecedor, motivo do ajuste)"
+          }
+        },
+        "required": [
+          "itemId",
+          "tipo",
+          "quantidade"
+        ]
+      },
+      "MovimentoResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "custoCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          },
+          "saldoAtual": {
+            "type": "number",
+            "description": "Saldo do item após a movimentação"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "tipo",
+          "quantidade",
+          "custoCentavos",
+          "motivo",
+          "criadoEm",
+          "saldoAtual"
+        ]
+      },
+      "SetMinimoDto": {
+        "type": "object",
+        "properties": {
+          "estoqueMinimo": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "required": [
+          "estoqueMinimo"
         ]
       }
     }

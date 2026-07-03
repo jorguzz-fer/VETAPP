@@ -16,6 +16,8 @@ import postgres from 'postgres';
  */
 const TENANT_A = '11111111-1111-1111-1111-111111111111';
 const TENANT_B = '22222222-2222-2222-2222-222222222222';
+const ITEM_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const ITEM_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 let container: StartedPostgreSqlContainer | undefined;
 let adminSql: postgres.Sql | undefined;
@@ -44,6 +46,16 @@ beforeAll(async () => {
   // Seed de dois tenants e um responsável de cada (superusuário ignora o RLS).
   await adminSql`INSERT INTO tenants (id, name) VALUES (${TENANT_A}, 'Tenant A'), (${TENANT_B}, 'Tenant B')`;
   await adminSql`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_A}, 'Cliente A'), (${TENANT_B}, 'Cliente B')`;
+
+  // Estoque: item por tenant + movimentos (A: +10 -3 = 7 | B: +5) para provar
+  // que o saldo (SUM) só enxerga o próprio tenant sob RLS.
+  await adminSql`INSERT INTO itens_catalogo (id, tenant_id, codigo, nome, tipo, preco_centavos) VALUES
+    (${ITEM_A}, ${TENANT_A}, 'P1', 'Ração A', 'produto', 1000),
+    (${ITEM_B}, ${TENANT_B}, 'P1', 'Ração B', 'produto', 1000)`;
+  await adminSql`INSERT INTO estoque_movimentos (tenant_id, item_id, tipo, quantidade) VALUES
+    (${TENANT_A}, ${ITEM_A}, 'entrada', 10),
+    (${TENANT_A}, ${ITEM_A}, 'saida', -3),
+    (${TENANT_B}, ${ITEM_B}, 'entrada', 5)`;
 
   // Conexão como app_role (sujeita ao RLS).
   appSql = postgres({
@@ -89,5 +101,15 @@ describe('Isolamento de tenant (RLS)', () => {
         await tx`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_B}, 'Invasor')`;
       }),
     ).rejects.toThrow();
+  });
+
+  it('saldo de estoque só soma movimentos do próprio tenant', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT coalesce(sum(quantidade), 0)::int AS saldo FROM estoque_movimentos`;
+    });
+    // Só os movimentos de A entram na soma: 10 - 3 = 7 (os +5 de B ficam invisíveis).
+    expect(rows[0].saldo).toBe(7);
   });
 });

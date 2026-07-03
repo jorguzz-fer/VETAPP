@@ -1,0 +1,2 @@
+# Diretório de assets estáticos do Next (servido em /). Mantido versionado para
+# que o COPY do Dockerfile (apps/web/public) seja estável mesmo sem assets ainda.

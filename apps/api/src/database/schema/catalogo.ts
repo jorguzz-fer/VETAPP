@@ -13,6 +13,8 @@ export const itensCatalogo = pgTable(
     nome: text('nome').notNull(),
     tipo: text('tipo').notNull(), // produto | servico | exame | vacina | medicamento | cirurgia
     precoCentavos: integer('preco_centavos').notNull().default(0),
+    // Ponto de reposição: alerta de estoque mínimo (doc 13 §2). 0 = sem alerta.
+    estoqueMinimo: integer('estoque_minimo').notNull().default(0),
     ativo: boolean('ativo').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

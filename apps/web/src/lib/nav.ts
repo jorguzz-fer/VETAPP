@@ -34,6 +34,7 @@ export const navSections: NavSection[] = [
     items: [
       { label: 'Faturas', href: '/faturas', icon: 'ri-bill-line' },
       { label: 'Tabela de preços', href: '/precos', icon: 'ri-price-tag-3-line' },
+      { label: 'Estoque', href: '/estoque', icon: 'ri-archive-2-line' },
       { label: 'Comissões', href: '/comissoes', icon: 'ri-hand-coin-line' },
     ],
   },
