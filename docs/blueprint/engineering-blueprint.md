@@ -154,11 +154,25 @@ evoluindo para orquestração só quando necessário.
 - **Custo/FinOps**: dimensionar para o uso real; storage com egress baixo;
   observar custo por ambiente.
 
+- **PaaS self-hosted (Coolify/Dokku/CapRover)**: aceleram o VPS+Docker, mas
+  atenção a duas armadilhas:
+  1. **Banco gerenciado não roda `docker-entrypoint-initdb.d`** — os scripts de
+     init (criar papel de aplicação sem `BYPASSRLS`, grants) que funcionam no
+     Compose de dev **não** executam. Rode-os **manualmente** uma vez no banco de
+     prod, senão a app conecta como superusuário e o **RLS é silenciosamente
+     ignorado** (ver §7). Fail-closed começa pela config do banco.
+  2. **Vars `NEXT_PUBLIC_*` / build-time do front** são embutidas no bundle no
+     **build**, não em runtime → passar como **build args**, não só env de runtime.
+- **Porta**: alinhe a porta que o app faz bind (env) com o `EXPOSE` do Dockerfile
+  e a porta configurada no proxy — divergência silenciosa vira 502.
+
 **Checklist**
 - [ ] Build reprodutível em container; imagem escaneada (CVE).
 - [ ] Só 443 público; resto privado; firewall ativo.
 - [ ] CI/CD com rollback; staging espelha prod.
 - [ ] Backup testado; RPO/RTO definidos.
+- [ ] Em PaaS/banco gerenciado: papel de app sem BYPASSRLS criado à mão; migrations
+      rodam com o papel admin; vars de build passadas como build args.
 
 ---
 
