@@ -1412,6 +1412,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/modelos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ModelosController_list"];
+        put?: never;
+        post: operations["ModelosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/modelos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ModelosController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["ModelosController_update"];
+        trace?: never;
+    };
+    "/api/modelos/{id}/gerar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ModelosController_gerar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2316,6 +2364,35 @@ export interface components {
         TriagemDto: {
             /** @description Observação interna (opcional) */
             observacao?: string;
+        };
+        ModeloDto: {
+            id: string;
+            /** @enum {string} */
+            tipo: "receita" | "documento";
+            nome: string;
+            conteudo: string;
+        };
+        CreateModeloDto: {
+            /** @enum {string} */
+            tipo: "receita" | "documento";
+            /** @example Receita simples */
+            nome: string;
+            /** @description Placeholders: {{animal}} {{especie}} {{raca}} {{tutor}} {{telefone}} {{data}} {{clinica}} */
+            conteudo: string;
+        };
+        UpdateModeloDto: {
+            /** @enum {string} */
+            tipo?: "receita" | "documento";
+            nome?: string;
+            conteudo?: string;
+        };
+        GerarModeloDto: {
+            /** @description Animal para preencher os placeholders */
+            animalId: string;
+        };
+        ModeloGeradoDto: {
+            titulo: string;
+            conteudo: string;
         };
     };
     responses: never;
@@ -4714,6 +4791,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SolicitacaoDto"];
+                };
+            };
+        };
+    };
+    ModelosController_list: {
+        parameters: {
+            query?: {
+                tipo?: "receita" | "documento";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"][];
+                };
+            };
+        };
+    };
+    ModelosController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateModeloDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"];
+                };
+            };
+        };
+    };
+    ModelosController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    ModelosController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"];
+                };
+            };
+        };
+    };
+    ModelosController_gerar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GerarModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloGeradoDto"];
                 };
             };
         };

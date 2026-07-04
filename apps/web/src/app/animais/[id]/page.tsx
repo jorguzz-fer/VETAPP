@@ -73,6 +73,13 @@ export default function ProntuarioPage() {
   const [internando, setInternando] = useState(false);
   const [internarErr, setInternarErr] = useState<string | null>(null);
 
+  // Gerar documento/receita a partir de um modelo.
+  const [docOpen, setDocOpen] = useState(false);
+  const [modelos, setModelos] = useState<{ id: string; tipo: string; nome: string }[]>([]);
+  const [modeloId, setModeloId] = useState('');
+  const [gerado, setGerado] = useState<{ titulo: string; conteudo: string } | null>(null);
+  const [gerando, setGerando] = useState(false);
+
   // Itens do catálogo (tabela de preços) — selecionar preenche descrição/valor.
   const [catalogo, setCatalogo] = useState<{ id: string; codigo: string; nome: string; precoCentavos: number }[]>([]);
   useEffect(() => {
@@ -235,6 +242,39 @@ export default function ProntuarioPage() {
     router.push('/internacao');
   }
 
+  function onDocumentos() {
+    setGerado(null);
+    setModeloId('');
+    setDocOpen(true);
+    void api
+      .GET('/api/modelos', { params: { query: {} } })
+      .then(({ data }) => setModelos((data as { id: string; tipo: string; nome: string }[]) ?? []));
+  }
+
+  async function gerarDoc() {
+    if (!modeloId) return;
+    setGerando(true);
+    const { data } = await api.POST('/api/modelos/{id}/gerar', {
+      params: { path: { id: modeloId } },
+      body: { animalId: id },
+    });
+    setGerando(false);
+    if (data) setGerado(data as { titulo: string; conteudo: string });
+  }
+
+  function imprimirDoc() {
+    if (!gerado) return;
+    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] ?? c);
+    const w = window.open('', '_blank', 'width=800,height=600');
+    if (!w) return;
+    w.document.write(
+      `<html><head><title>${esc(gerado.titulo)}</title><style>body{font-family:system-ui,sans-serif;padding:40px;white-space:pre-wrap;line-height:1.6;color:#111}</style></head><body>${esc(gerado.conteudo)}</body></html>`,
+    );
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+
   async function onSaveAnimal(e: FormEvent) {
     e.preventDefault();
     await api.PATCH('/api/animais/{id}', {
@@ -301,6 +341,9 @@ export default function ProntuarioPage() {
             <Button variant="ghost" onClick={onInternar}>
               <i className="ri-hospital-line"></i> Internar
             </Button>
+            <Button variant="ghost" onClick={onDocumentos}>
+              <i className="ri-file-text-line"></i> Documento
+            </Button>
             <Button onClick={() => setShowForm((v) => !v)}>
               <i className="ri-add-line"></i> Registrar evento
             </Button>
@@ -353,6 +396,59 @@ export default function ProntuarioPage() {
               </Button>
             </div>
           </form>
+        </Modal>
+
+        <Modal open={docOpen} onClose={() => setDocOpen(false)} title={`Documento — ${animal.nome}`}>
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Modelo</span>
+              <div className="flex gap-2">
+                <select
+                  value={modeloId}
+                  onChange={(e) => {
+                    setModeloId(e.target.value);
+                    setGerado(null);
+                  }}
+                  className="flex-1 rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+                >
+                  <option value="">— escolha —</option>
+                  {modelos.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nome} ({m.tipo})
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" onClick={gerarDoc} disabled={!modeloId || gerando}>
+                  {gerando ? 'Gerando…' : 'Gerar'}
+                </Button>
+              </div>
+            </label>
+
+            {modelos.length === 0 && (
+              <p className="text-xs text-gray-400">
+                Nenhum modelo ainda. Crie em <span className="text-primary-500">Modelos</span> no menu.
+              </p>
+            )}
+
+            {gerado && (
+              <>
+                <textarea
+                  readOnly
+                  value={gerado.conteudo}
+                  rows={10}
+                  className="rounded-md border border-gray-200 dark:border-[#172036] bg-gray-50 dark:bg-[#0c1427] px-3 py-2 text-sm whitespace-pre-wrap"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setDocOpen(false)}>
+                    Fechar
+                  </Button>
+                  <Button type="button" onClick={imprimirDoc}>
+                    <i className="ri-printer-line"></i> Imprimir
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </Modal>
 
         {editAnimal && (
