@@ -66,6 +66,19 @@ export default function FichaClientePage() {
     }
   }
 
+  async function onNovoOrcamento() {
+    const obs = prompt('Novo orçamento — observações (opcional):');
+    if (obs === null) return;
+    const { error } = await api.POST('/api/orcamentos', {
+      body: { responsavelId: id, observacoes: obs || undefined },
+    });
+    if (error) {
+      alert('Não foi possível criar o orçamento.');
+      return;
+    }
+    router.push('/orcamentos');
+  }
+
   async function onDeleteCliente() {
     if (!ficha) return;
     if (!confirm(`Excluir "${ficha.nome}" e todos os seus animais?`)) return;
@@ -139,6 +152,7 @@ export default function FichaClientePage() {
             <div className="flex items-start justify-between">
               <h1 className="text-lg font-semibold text-black dark:text-white">{ficha.nome}</h1>
               <div className="flex gap-2">
+                <Button variant="ghost" onClick={onNovoOrcamento}><i className="ri-file-list-3-line"></i> Orçamento</Button>
                 <Button variant="ghost" onClick={() => setEditing(true)}><i className="ri-edit-line"></i> Editar</Button>
                 <button type="button" onClick={onDeleteCliente} className="text-gray-400 hover:text-red-500 px-2" title="Excluir cliente">
                   <i className="ri-delete-bin-line text-lg"></i>

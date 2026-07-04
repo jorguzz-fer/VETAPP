@@ -73,8 +73,9 @@ signup/cadastro, agenda, storage R2 (foto + anexos), catálogo/tabela de preços
 MFA + Google, financeiro (faturas + baixa), estoque (saldo/movimentações/mínimo),
 internação (admissão → mapa de execução com baixa de estoque + faturamento
 automáticos → alta; faturamento compartilhado via `FaturamentoService`),
-**agenda avançada** (tipos de atendimento com duração/cor em `/cadastros`,
-profissional por agendamento, "minha agenda", status).
+agenda avançada (tipos de atendimento com duração/cor em `/cadastros`,
+profissional por agendamento, "minha agenda", status), **vendas/orçamentos**
+(acoplado à ficha do cliente, itens por código, converter → fatura aberta).
 **App em produção** (Coolify/VPS): runbook e troubleshooting em `docs/spec/14`.
 
 Pendências conhecidas:
