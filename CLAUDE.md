@@ -126,8 +126,13 @@ Pendências conhecidas:
   registro clínico se faltar saldo — sinaliza `estoqueBaixado:false`). `item_id`
   também vai ao `fatura_itens` (comissão). UI: picker de catálogo + quantidade na
   ficha do animal.
-- Fase 2 documentada (pendente): histórico/vigência de preços, **MFA
-  obrigatório por papel**, migração de token para cookie httpOnly/BFF, WebAuthn.
+- **MFA obrigatório por papel feito** (doc 02 §2.2): papéis sensíveis (admin/gestor/
+  financeiro) não recebem sessão sem 2º fator. Login devolve `mfaSetupRequired` +
+  `mfaSetupToken` (escopo `mfa_setup`, 15 min) → `POST /auth/mfa/forced-setup` +
+  `/forced-enable` (liga MFA, emite recovery codes E a sessão). `JwtAuthGuard` recusa
+  o token de setup como sessão. Front força o passo (QR → recovery codes) no login.
+- Fase 2 documentada (pendente): histórico/vigência de preços, migração de token
+  para cookie httpOnly/BFF, WebAuthn.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe

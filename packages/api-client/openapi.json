@@ -206,6 +206,68 @@
         ]
       }
     },
+    "/api/auth/mfa/forced-setup": {
+      "post": {
+        "operationId": "AuthController_mfaForcedSetup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaForcedSetupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaSetupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/mfa/forced-enable": {
+      "post": {
+        "operationId": "AuthController_mfaForcedEnable",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaForcedEnableDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaForcedEnableResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh",
@@ -5113,6 +5175,14 @@
           "mfaToken": {
             "type": "string",
             "description": "Token temporário para concluir o MFA"
+          },
+          "mfaSetupRequired": {
+            "type": "boolean",
+            "description": "MFA obrigatório para o papel e ainda não configurado: precisa concluir o setup para logar"
+          },
+          "mfaSetupToken": {
+            "type": "string",
+            "description": "Token temporário (escopo mfa_setup) para o setup forçado"
           }
         }
       },
@@ -5144,6 +5214,76 @@
         "required": [
           "mfaToken",
           "code"
+        ]
+      },
+      "MfaForcedSetupDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string",
+            "description": "mfaSetupToken devolvido pelo login"
+          }
+        },
+        "required": [
+          "setupToken"
+        ]
+      },
+      "MfaSetupResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Segredo TOTP (base32) — exibir uma única vez"
+          },
+          "otpauthUrl": {
+            "type": "string",
+            "description": "URL otpauth:// para QR code"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUrl"
+        ]
+      },
+      "MfaForcedEnableDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string",
+            "description": "mfaSetupToken devolvido pelo login"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456",
+            "description": "Código TOTP do app autenticador"
+          }
+        },
+        "required": [
+          "setupToken",
+          "code"
+        ]
+      },
+      "MfaForcedEnableResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "recoveryCodes": {
+            "description": "Recovery codes de uso único — exibir uma única vez",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "recoveryCodes"
         ]
       },
       "RefreshDto": {
@@ -5195,23 +5335,6 @@
         "required": [
           "enabled",
           "recoveryCodesRemaining"
-        ]
-      },
-      "MfaSetupResponseDto": {
-        "type": "object",
-        "properties": {
-          "secret": {
-            "type": "string",
-            "description": "Segredo TOTP (base32) — exibir uma única vez"
-          },
-          "otpauthUrl": {
-            "type": "string",
-            "description": "URL otpauth:// para QR code"
-          }
-        },
-        "required": [
-          "secret",
-          "otpauthUrl"
         ]
       },
       "MfaCodeDto": {

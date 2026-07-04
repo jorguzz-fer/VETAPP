@@ -10,6 +10,9 @@ import {
   LogoutDto,
   MfaCodeDto,
   MfaEnableResponseDto,
+  MfaForcedEnableDto,
+  MfaForcedEnableResponseDto,
+  MfaForcedSetupDto,
   MfaSetupResponseDto,
   MfaStatusDto,
   MfaVerifyDto,
@@ -52,6 +55,22 @@ export class AuthController {
   @ApiOkResponse({ type: TokensDto })
   mfaVerify(@Req() req: Request, @Body() dto: MfaVerifyDto): Promise<TokensDto> {
     return this.auth.mfaVerify(dto.mfaToken, dto.code, req.ip);
+  }
+
+  // MFA obrigatório por papel — setup forçado. Autorizado pelo mfaSetupToken (no
+  // body), não por sessão: o usuário ainda não tem sessão (doc 02 §2.2).
+  @Post('mfa/forced-setup')
+  @HttpCode(200)
+  @ApiOkResponse({ type: MfaSetupResponseDto })
+  mfaForcedSetup(@Body() dto: MfaForcedSetupDto): Promise<MfaSetupResponseDto> {
+    return this.auth.mfaForcedSetup(dto.setupToken);
+  }
+
+  @Post('mfa/forced-enable')
+  @HttpCode(200)
+  @ApiOkResponse({ type: MfaForcedEnableResponseDto })
+  mfaForcedEnable(@Req() req: Request, @Body() dto: MfaForcedEnableDto): Promise<MfaForcedEnableResponseDto> {
+    return this.auth.mfaForcedEnable(dto.setupToken, dto.code, req.ip);
   }
 
   // Rotação de refresh token (stateful, com detecção de reuso — docs/spec/02 §2.2).
