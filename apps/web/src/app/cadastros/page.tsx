@@ -168,6 +168,7 @@ export default function CadastrosPage() {
       </Card>
 
       <FormasRecebimentoCard />
+      <InternacaoListasCard />
     </div>
   );
 }
@@ -304,5 +305,160 @@ function FormasRecebimentoCard() {
         </table>
       )}
     </Card>
+  );
+}
+
+interface ItemLista {
+  id: string;
+  nome: string;
+}
+
+// Motivos e boxes de internação (doc 05 §9.7): listas usadas na admissão.
+function InternacaoListasCard() {
+  return (
+    <Card>
+      <div className="mb-4">
+        <h2 className="font-semibold text-black dark:text-white">Internação — motivos e boxes</h2>
+        <p className="text-sm text-gray-500">
+          Listas usadas na admissão. Renomeie ou remova; nomes não se duplicam.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <ListaColuna titulo="Motivos" recurso="motivos" />
+        <ListaColuna titulo="Boxes" recurso="boxes" />
+      </div>
+    </Card>
+  );
+}
+
+function ListaColuna({ titulo, recurso }: { titulo: string; recurso: 'motivos' | 'boxes' }) {
+  const [items, setItems] = useState<ItemLista[]>([]);
+  const [novo, setNovo] = useState('');
+  const [editing, setEditing] = useState<{ id: string; value: string } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const { data } =
+      recurso === 'motivos'
+        ? await api.GET('/api/internacoes/motivos')
+        : await api.GET('/api/internacoes/boxes');
+    setItems((data as ItemLista[]) ?? []);
+  }, [recurso]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function criar(e: FormEvent) {
+    e.preventDefault();
+    const nome = novo.trim();
+    if (!nome) return;
+    setErr(null);
+    const { error } =
+      recurso === 'motivos'
+        ? await api.POST('/api/internacoes/motivos', { body: { nome } })
+        : await api.POST('/api/internacoes/boxes', { body: { nome } });
+    if (error) {
+      setErr('Não foi possível adicionar.');
+      return;
+    }
+    setNovo('');
+    void load();
+  }
+
+  async function salvarEdicao() {
+    if (!editing) return;
+    const nome = editing.value.trim();
+    if (!nome) return;
+    setErr(null);
+    const { error } =
+      recurso === 'motivos'
+        ? await api.PATCH('/api/internacoes/motivos/{id}', { params: { path: { id: editing.id } }, body: { nome } })
+        : await api.PATCH('/api/internacoes/boxes/{id}', { params: { path: { id: editing.id } }, body: { nome } });
+    if (error) {
+      setErr('Já existe um item com esse nome.');
+      return;
+    }
+    setEditing(null);
+    void load();
+  }
+
+  async function remover(id: string) {
+    if (!confirm('Remover este item da lista?')) return;
+    if (recurso === 'motivos') await api.DELETE('/api/internacoes/motivos/{id}', { params: { path: { id } } });
+    else await api.DELETE('/api/internacoes/boxes/{id}', { params: { path: { id } } });
+    void load();
+  }
+
+  return (
+    <div>
+      <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{titulo}</p>
+      {items.length === 0 ? (
+        <p className="text-xs text-gray-400 mb-2">Nenhum ainda.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-gray-100 dark:divide-[#172036] mb-2">
+          {items.map((it) => (
+            <li key={it.id} className="flex items-center justify-between gap-2 py-2">
+              {editing?.id === it.id ? (
+                <>
+                  <input
+                    value={editing.value}
+                    onChange={(e) => setEditing({ id: it.id, value: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void salvarEdicao();
+                      if (e.key === 'Escape') setEditing(null);
+                    }}
+                    className={`${inputCls} flex-1 text-sm py-1`}
+                    autoFocus
+                  />
+                  <button type="button" onClick={() => void salvarEdicao()} className="text-sm text-primary-500">
+                    Salvar
+                  </button>
+                  <button type="button" onClick={() => setEditing(null)} className="text-sm text-gray-400">
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm text-black dark:text-white">{it.nome}</span>
+                  <span className="flex gap-2 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ id: it.id, value: it.nome })}
+                      className="text-gray-400 hover:text-primary-500"
+                      title="Renomear"
+                      aria-label="Renomear"
+                    >
+                      <i className="ri-pencil-line"></i>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remover(it.id)}
+                      className="text-gray-400 hover:text-red-500"
+                      title="Remover"
+                      aria-label="Remover"
+                    >
+                      <i className="ri-delete-bin-line"></i>
+                    </button>
+                  </span>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {err && <p className="text-xs text-red-500 mb-2">{err}</p>}
+      <form onSubmit={criar} className="flex gap-2">
+        <input
+          value={novo}
+          onChange={(e) => setNovo(e.target.value)}
+          placeholder={`Novo ${titulo.toLowerCase().replace(/s$/, '')}…`}
+          className={`${inputCls} flex-1 text-sm py-1`}
+        />
+        <Button type="submit" variant="ghost">
+          <i className="ri-add-line"></i>
+        </Button>
+      </form>
+    </div>
   );
 }
