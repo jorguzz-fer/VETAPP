@@ -1556,6 +1556,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/usuarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["UsuariosController_list"];
+        put?: never;
+        post: operations["UsuariosController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["UsuariosController_remover"];
+        options?: never;
+        head?: never;
+        patch: operations["UsuariosController_atualizar"];
+        trace?: never;
+    };
+    "/api/usuarios/{userId}/reset-senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["UsuariosController_resetSenha"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2542,6 +2590,46 @@ export interface components {
         ModeloGeradoDto: {
             titulo: string;
             conteudo: string;
+        };
+        UsuarioDto: {
+            userId: string;
+            nome: string;
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @description active | disabled */
+            status: string;
+            mfaEnabled: boolean;
+        };
+        CriarUsuarioDto: {
+            /** @example Dra. Carla Nunes */
+            nome: string;
+            /** @example carla@clinica.com */
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+        };
+        CriarUsuarioResultDto: {
+            userId: string;
+            nome: string;
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @description active | disabled */
+            status: string;
+            mfaEnabled: boolean;
+            /** @description Senha temporária (mostrada só uma vez). Null quando o usuário já existia (mantém a senha atual). */
+            senhaTemporaria: string | null;
+        };
+        AtualizarUsuarioDto: {
+            /** @enum {string} */
+            role?: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @enum {string} */
+            status?: "active" | "disabled";
+        };
+        SenhaTemporariaDto: {
+            /** @description Nova senha temporária (mostrada só uma vez). */
+            senhaTemporaria: string;
         };
     };
     responses: never;
@@ -5289,6 +5377,115 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModeloGeradoDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"][];
+                };
+            };
+        };
+    };
+    UsuariosController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarUsuarioDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CriarUsuarioResultDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_remover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_atualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarUsuarioDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_resetSenha: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenhaTemporariaDto"];
                 };
             };
         };

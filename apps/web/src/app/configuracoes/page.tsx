@@ -244,6 +244,159 @@ export default function ConfiguracoesPage() {
           </div>
         )}
       </Card>
+
+      <UsuariosCard />
     </div>
+  );
+}
+
+interface Usuario {
+  userId: string;
+  nome: string;
+  email: string;
+  role: string;
+  status: string;
+  mfaEnabled: boolean;
+}
+
+const PAPEL_LABEL: Record<string, string> = {
+  admin: 'Admin',
+  gestor: 'Gestor',
+  veterinario: 'Veterinário',
+  recepcao: 'Recepção',
+  financeiro: 'Financeiro',
+  internacao: 'Internação',
+};
+type Papel = 'admin' | 'gestor' | 'veterinario' | 'recepcao' | 'financeiro' | 'internacao';
+const PAPEIS = Object.keys(PAPEL_LABEL) as Papel[];
+
+const inputUsr =
+  'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500 text-sm';
+
+// Gestão de usuários e acessos (doc 07) — admin.
+function UsuariosCard() {
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [form, setForm] = useState<{ nome: string; email: string; role: Papel }>({ nome: '', email: '', role: 'recepcao' });
+  const [saving, setSaving] = useState(false);
+  const [senhaInfo, setSenhaInfo] = useState<{ nome: string; senha: string } | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const { data } = await api.GET('/api/usuarios');
+    setUsuarios((data as Usuario[]) ?? []);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function criar(e: FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    setSenhaInfo(null);
+    setSaving(true);
+    const { data, error } = await api.POST('/api/usuarios', {
+      body: { nome: form.nome.trim(), email: form.email.trim(), role: form.role },
+    });
+    setSaving(false);
+    if (error) {
+      setErro('Não foi possível criar (e-mail já na equipe ou inválido?).');
+      return;
+    }
+    const r = data as Usuario & { senhaTemporaria: string | null };
+    if (r?.senhaTemporaria) setSenhaInfo({ nome: r.nome, senha: r.senhaTemporaria });
+    setForm({ nome: '', email: '', role: 'recepcao' });
+    void load();
+  }
+
+  async function mudarPapel(u: Usuario, role: Papel) {
+    setErro(null);
+    const { error } = await api.PATCH('/api/usuarios/{userId}', { params: { path: { userId: u.userId } }, body: { role } });
+    if (error) setErro('Não foi possível alterar o papel (último admin?).');
+    void load();
+  }
+
+  async function alternarStatus(u: Usuario) {
+    setErro(null);
+    const status = u.status === 'active' ? 'disabled' : 'active';
+    const { error } = await api.PATCH('/api/usuarios/{userId}', { params: { path: { userId: u.userId } }, body: { status } });
+    if (error) setErro('Não foi possível alterar o status (você mesmo / último admin?).');
+    void load();
+  }
+
+  async function resetSenha(u: Usuario) {
+    if (!confirm(`Gerar nova senha temporária para ${u.nome}?`)) return;
+    const { data } = await api.POST('/api/usuarios/{userId}/reset-senha', { params: { path: { userId: u.userId } } });
+    const r = data as { senhaTemporaria?: string } | undefined;
+    if (r?.senhaTemporaria) setSenhaInfo({ nome: u.nome, senha: r.senhaTemporaria });
+  }
+
+  async function remover(u: Usuario) {
+    if (!confirm(`Remover o acesso de ${u.nome} a esta clínica?`)) return;
+    setErro(null);
+    const { error } = await api.DELETE('/api/usuarios/{userId}', { params: { path: { userId: u.userId } } });
+    if (error) setErro('Não foi possível remover (você mesmo / último admin?).');
+    void load();
+  }
+
+  return (
+    <Card>
+      <div className="mb-4">
+        <h2 className="text-base font-semibold text-black dark:text-white">Usuários e acessos</h2>
+        <p className="text-sm text-gray-500">Gerencie a equipe da clínica e os papéis de cada um.</p>
+      </div>
+
+      {senhaInfo && (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-sm">
+          Senha temporária de <strong>{senhaInfo.nome}</strong>:{' '}
+          <code className="font-mono bg-white dark:bg-[#0c1427] px-1.5 py-0.5 rounded">{senhaInfo.senha}</code>{' '}
+          — copie e entregue ao colaborador (aparece só uma vez; ele troca depois).
+          <button onClick={() => setSenhaInfo(null)} className="ml-2 text-amber-700 underline">ok</button>
+        </div>
+      )}
+      {erro && <p className="text-sm text-red-500 mb-3">{erro}</p>}
+
+      <form onSubmit={criar} className="grid grid-cols-1 md:grid-cols-4 gap-2 md:items-end mb-4">
+        <input required placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputUsr} />
+        <input required type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputUsr} />
+        <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Papel })} className={inputUsr}>
+          {PAPEIS.map((p) => (
+            <option key={p} value={p}>{PAPEL_LABEL[p]}</option>
+          ))}
+        </select>
+        <Button type="submit" disabled={saving}>{saving ? 'Adicionando…' : 'Adicionar'}</Button>
+      </form>
+
+      <div className="flex flex-col divide-y divide-gray-100 dark:divide-[#172036]">
+        {usuarios.map((u) => (
+          <div key={u.userId} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-black dark:text-white truncate">
+                {u.nome}
+                {u.status === 'disabled' && <span className="ml-2 text-xs text-red-500">(desativado)</span>}
+                {u.mfaEnabled && <span className="ml-2 text-xs text-green-600" title="MFA ativo"><i className="ri-shield-check-line"></i></span>}
+              </p>
+              <p className="text-xs text-gray-500 truncate">{u.email}</p>
+            </div>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <select value={u.role} onChange={(e) => mudarPapel(u, e.target.value as Papel)} className={`${inputUsr} py-1`}>
+                {PAPEIS.map((p) => (
+                  <option key={p} value={p}>{PAPEL_LABEL[p]}</option>
+                ))}
+              </select>
+              <button onClick={() => alternarStatus(u)} className="text-xs text-gray-500 hover:text-primary-500" title={u.status === 'active' ? 'Desativar' : 'Ativar'}>
+                <i className={u.status === 'active' ? 'ri-toggle-fill text-lg text-green-600' : 'ri-toggle-line text-lg'}></i>
+              </button>
+              <button onClick={() => resetSenha(u)} className="text-gray-400 hover:text-primary-500" title="Resetar senha" aria-label="Resetar senha">
+                <i className="ri-key-2-line"></i>
+              </button>
+              <button onClick={() => remover(u)} className="text-gray-400 hover:text-red-500" title="Remover acesso" aria-label="Remover">
+                <i className="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

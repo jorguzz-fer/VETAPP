@@ -122,6 +122,16 @@ Pendências conhecidas:
 - Fase 2 documentada (pendente): histórico/vigência de preços, baixa automática de
   estoque (exige evento do prontuário referenciar item de catálogo), **MFA
   obrigatório por papel**, migração de token para cookie httpOnly/BFF, WebAuthn.
+- **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
+  UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
+  ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe
+  em si mesmo nem no último admin).
+- **Seed de demonstração** (`apps/api/src/database/seed.ts`, `pnpm --filter
+  @vetapp/api db:seed` / `node dist/database/seed.js`): clínica-demo completa e
+  idempotente para apresentação (tenant separado, login `ana@vetexemplo.demo`).
+- **Fila (a fazer)**: (1) **Log de auditoria LGPD** (`audit_log` append-only por
+  tenant — doc 02 §6); (2) **Upload do logo da clínica** (branding do tenant em
+  Configurações, reaproveitado nos documentos impressos — hoje só o site tem logo).
 
 ## Regra viva
 
