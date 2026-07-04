@@ -92,17 +92,24 @@ export class EstoqueService {
 
   /** Define o ponto de reposição (estoque mínimo) do item. */
   async definirMinimo(tenantId: string, itemId: string, estoqueMinimo: number): Promise<SaldoItemDto> {
-    await this.database.withTenant(tenantId, async (tx) => {
+    return this.database.withTenant(tenantId, async (tx) => {
+      // Atualiza e calcula o saldo na MESMA transação: evita retornar "não
+      // encontrado" quando o item é serviço ou está além do limite de listSaldos.
       const [row] = await tx
         .update(itensCatalogo)
         .set({ estoqueMinimo, updatedAt: new Date() })
         .where(eq(itensCatalogo.id, itemId))
-        .returning({ id: itensCatalogo.id });
+        .returning({
+          itemId: itensCatalogo.id,
+          codigo: itensCatalogo.codigo,
+          nome: itensCatalogo.nome,
+          tipo: itensCatalogo.tipo,
+          estoqueMinimo: itensCatalogo.estoqueMinimo,
+        });
       if (!row) throw new NotFoundException('Item não encontrado');
+      const saldo = await this.saldoDe(tx, itemId);
+      return { ...row, saldo, abaixoDoMinimo: row.estoqueMinimo > 0 && saldo < row.estoqueMinimo };
     });
-    const [saldo] = await this.listSaldos(tenantId).then((all) => all.filter((s) => s.itemId === itemId));
-    if (!saldo) throw new NotFoundException('Item não encontrado');
-    return saldo;
   }
 
   /** Converte a quantidade informada no delta com sinal aplicado ao saldo. */

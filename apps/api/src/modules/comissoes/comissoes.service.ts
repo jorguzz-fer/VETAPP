@@ -163,7 +163,10 @@ export class ComissoesService {
     return itens
       .map((i) => {
         const bps = regraDe(i.userId!, i.itemId);
-        if (bps == null || bps === 0) return null;
+        // Sem regra aplicável → item não comissiona (fica de fora). Uma regra
+        // explícita de 0% ENTRA na apuração (comissão zero), para o colaborador
+        // aparecer com sua base — só não gera valor.
+        if (bps == null) return null;
         return {
           descricao: i.descricao,
           valorCentavos: i.valorCentavos,

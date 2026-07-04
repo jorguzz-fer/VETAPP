@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, ilike, or } from 'drizzle-orm';
+import { and, asc, eq, ilike, ne, or } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { itensCatalogo } from '../../database/schema';
 import type { CreateItemDto, ItemCatalogoDto, UpdateItemDto } from './catalogo.dto';
@@ -39,6 +39,18 @@ export class CatalogoService {
 
   async update(tenantId: string, id: string, dto: UpdateItemDto): Promise<ItemCatalogoDto> {
     return this.database.withTenant(tenantId, async (tx) => {
+      // Troca de código revalida unicidade (como no create) → 409 amigável em vez
+      // de estourar 500 na violação do índice único do banco.
+      if (dto.codigo) {
+        const conflito = await tx.query.itensCatalogo.findFirst({
+          where: and(
+            eq(itensCatalogo.tenantId, tenantId),
+            eq(itensCatalogo.codigo, dto.codigo),
+            ne(itensCatalogo.id, id),
+          ),
+        });
+        if (conflito) throw new ConflictException(`Código "${dto.codigo}" já está em uso`);
+      }
       const [row] = await tx
         .update(itensCatalogo)
         .set({ ...dto, updatedAt: new Date() })
