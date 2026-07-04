@@ -1,17 +1,22 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { InternacaoService } from './internacao.service';
 import {
   AdmitirDto,
   AltaDto,
+  AplicarModeloDto,
   CriarItemListaDto,
+  CriarModeloPrescricaoDto,
   ExecucaoDto,
   ExecutarResultDto,
   InternacaoDetalheDto,
   InternacaoResumoDto,
   ItemListaDto,
+  ModeloPrescricaoDto,
+  ParametroDto,
   PrescreverDto,
+  RegistrarParametroDto,
 } from './internacao.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
@@ -61,10 +66,47 @@ export class InternacaoController {
     return this.internacao.criarBox(req.auth!.tenantId, dto);
   }
 
+  // Modelos de prescrição (doc 05 §9.6). DECLARAR ANTES de :id.
+  @Get('modelos-prescricao')
+  @ApiOkResponse({ type: [ModeloPrescricaoDto] })
+  listModelosPrescricao(@Req() req: Request): Promise<ModeloPrescricaoDto[]> {
+    return this.internacao.listModelosPrescricao(req.auth!.tenantId);
+  }
+
+  @Post('modelos-prescricao')
+  @ApiCreatedResponse({ type: ModeloPrescricaoDto })
+  criarModeloPrescricao(@Req() req: Request, @Body() dto: CriarModeloPrescricaoDto): Promise<ModeloPrescricaoDto> {
+    return this.internacao.criarModeloPrescricao(req.auth!.tenantId, dto);
+  }
+
+  @Delete('modelos-prescricao/:id')
+  @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
+  removerModeloPrescricao(@Req() req: Request, @Param('id') id: string): Promise<{ ok: boolean }> {
+    return this.internacao.removerModeloPrescricao(req.auth!.tenantId, id);
+  }
+
   @Get(':id')
   @ApiOkResponse({ type: InternacaoDetalheDto })
   detalhe(@Req() req: Request, @Param('id') id: string): Promise<InternacaoDetalheDto> {
     return this.internacao.detalhe(req.auth!.tenantId, id);
+  }
+
+  @Post(':id/aplicar-modelo')
+  @ApiOkResponse({ type: [ExecucaoDto] })
+  aplicarModelo(@Req() req: Request, @Param('id') id: string, @Body() dto: AplicarModeloDto): Promise<ExecucaoDto[]> {
+    return this.internacao.aplicarModelo(req.auth!.tenantId, id, dto.modeloId);
+  }
+
+  @Get(':id/parametros')
+  @ApiOkResponse({ type: [ParametroDto] })
+  listParametros(@Req() req: Request, @Param('id') id: string): Promise<ParametroDto[]> {
+    return this.internacao.listParametros(req.auth!.tenantId, id);
+  }
+
+  @Post(':id/parametros')
+  @ApiCreatedResponse({ type: ParametroDto })
+  registrarParametro(@Req() req: Request, @Param('id') id: string, @Body() dto: RegistrarParametroDto): Promise<ParametroDto> {
+    return this.internacao.registrarParametro(req.auth!.tenantId, id, dto);
   }
 
   @Post(':id/execucoes')

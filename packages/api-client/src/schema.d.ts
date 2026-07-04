@@ -724,6 +724,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internacoes/modelos-prescricao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listModelosPrescricao"];
+        put?: never;
+        post: operations["InternacaoController_criarModeloPrescricao"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/modelos-prescricao/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["InternacaoController_removerModeloPrescricao"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internacoes/{id}": {
         parameters: {
             query?: never;
@@ -734,6 +766,38 @@ export interface paths {
         get: operations["InternacaoController_detalhe"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/aplicar-modelo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_aplicarModelo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/parametros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listParametros"];
+        put?: never;
+        post: operations["InternacaoController_registrarParametro"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1945,6 +2009,29 @@ export interface components {
             /** @example Pós-operatório */
             nome: string;
         };
+        ModeloPrescricaoItemDto: {
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+        };
+        ModeloPrescricaoDto: {
+            id: string;
+            nome: string;
+            itens: components["schemas"]["ModeloPrescricaoItemDto"][];
+        };
+        CriarModeloPrescricaoItemDto: {
+            /** @description Item do catálogo */
+            itemId?: string;
+            /** @description Descrição livre (obrigatória sem itemId) */
+            descricao?: string;
+            /** @example 1 */
+            quantidade?: number;
+        };
+        CriarModeloPrescricaoDto: {
+            /** @example Pós-cirúrgico padrão */
+            nome: string;
+            itens: components["schemas"]["CriarModeloPrescricaoItemDto"][];
+        };
         ExecucaoDto: {
             id: string;
             itemId: string | null;
@@ -1968,6 +2055,36 @@ export interface components {
             pendentes: number;
             observacoes: string | null;
             execucoes: components["schemas"]["ExecucaoDto"][];
+        };
+        AplicarModeloDto: {
+            /** @description Modelo de prescrição a aplicar na internação */
+            modeloId: string;
+        };
+        ParametroDto: {
+            id: string;
+            pesoKg: number | null;
+            temperaturaC: number | null;
+            fc: number | null;
+            fr: number | null;
+            observacao: string | null;
+            registradoEm: string;
+        };
+        RegistrarParametroDto: {
+            /**
+             * @description Peso em kg
+             * @example 4.2
+             */
+            pesoKg?: number;
+            /**
+             * @description Temperatura em °C
+             * @example 38.5
+             */
+            temperaturaC?: number;
+            /** @description Frequência cardíaca (bpm) */
+            fc?: number;
+            /** @description Frequência respiratória (rpm) */
+            fr?: number;
+            observacao?: string;
         };
         PrescreverDto: {
             /** @description Item do catálogo (medicamento/procedimento) */
@@ -3754,6 +3871,71 @@ export interface operations {
             };
         };
     };
+    InternacaoController_listModelosPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloPrescricaoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarModeloPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarModeloPrescricaoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloPrescricaoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_removerModeloPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
     InternacaoController_detalhe: {
         parameters: {
             query?: never;
@@ -3771,6 +3953,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InternacaoDetalheDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_aplicarModelo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AplicarModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_listParametros: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_registrarParametro: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrarParametroDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroDto"];
                 };
             };
         };

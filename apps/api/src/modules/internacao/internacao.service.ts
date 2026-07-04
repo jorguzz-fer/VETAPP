@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { DatabaseService, type Database } from '../../database/database.service';
 import {
   animais,
@@ -7,8 +7,11 @@ import {
   internacaoBoxes,
   internacaoExecucoes,
   internacaoMotivos,
+  internacaoParametros,
   internacoes,
   itensCatalogo,
+  modelosPrescricao,
+  modelosPrescricaoItens,
   prontuarioEventos,
   responsaveis,
 } from '../../database/schema';
@@ -17,12 +20,16 @@ import type {
   AdmitirDto,
   AltaDto,
   CriarItemListaDto,
+  CriarModeloPrescricaoDto,
   ExecucaoDto,
   ExecutarResultDto,
   InternacaoDetalheDto,
   InternacaoResumoDto,
   ItemListaDto,
+  ModeloPrescricaoDto,
+  ParametroDto,
   PrescreverDto,
+  RegistrarParametroDto,
 } from './internacao.dto';
 
 // Tipos de item do catálogo com saldo físico (mesma regra do módulo Estoque).
@@ -82,6 +89,152 @@ export class InternacaoService {
       const [row] = await tx.insert(tabela).values({ tenantId, nome }).returning({ id: tabela.id, nome: tabela.nome });
       return row;
     });
+  }
+
+  // ───────── Modelos de prescrição (doc 05 §9.6) ─────────
+
+  async listModelosPrescricao(tenantId: string): Promise<ModeloPrescricaoDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const modelos = await tx
+        .select({ id: modelosPrescricao.id, nome: modelosPrescricao.nome })
+        .from(modelosPrescricao)
+        .orderBy(asc(modelosPrescricao.nome))
+        .limit(200);
+      if (modelos.length === 0) return [];
+      const itens = await tx
+        .select({
+          modeloId: modelosPrescricaoItens.modeloId,
+          itemId: modelosPrescricaoItens.itemId,
+          descricao: modelosPrescricaoItens.descricao,
+          quantidade: modelosPrescricaoItens.quantidade,
+        })
+        .from(modelosPrescricaoItens)
+        .where(inArray(modelosPrescricaoItens.modeloId, modelos.map((m) => m.id)));
+      return modelos.map((m) => ({
+        id: m.id,
+        nome: m.nome,
+        itens: itens
+          .filter((i) => i.modeloId === m.id)
+          .map((i) => ({ itemId: i.itemId, descricao: i.descricao, quantidade: i.quantidade })),
+      }));
+    });
+  }
+
+  async criarModeloPrescricao(tenantId: string, dto: CriarModeloPrescricaoDto): Promise<ModeloPrescricaoDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const [modelo] = await tx.insert(modelosPrescricao).values({ tenantId, nome: dto.nome }).returning();
+      const itensOut: { itemId: string | null; descricao: string; quantidade: number }[] = [];
+      for (const it of dto.itens) {
+        let descricao = it.descricao?.trim();
+        if (it.itemId) {
+          const cat = await tx.query.itensCatalogo.findFirst({ where: eq(itensCatalogo.id, it.itemId) });
+          if (!cat) throw new NotFoundException('Item do catálogo não encontrado');
+          descricao = descricao || cat.nome;
+        }
+        if (!descricao) throw new BadRequestException('Cada item precisa de descrição ou item de catálogo');
+        const quantidade = it.quantidade ?? 1;
+        await tx
+          .insert(modelosPrescricaoItens)
+          .values({ tenantId, modeloId: modelo.id, itemId: it.itemId ?? null, descricao, quantidade });
+        itensOut.push({ itemId: it.itemId ?? null, descricao, quantidade });
+      }
+      return { id: modelo.id, nome: modelo.nome, itens: itensOut };
+    });
+  }
+
+  async removerModeloPrescricao(tenantId: string, id: string): Promise<{ ok: boolean }> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .delete(modelosPrescricao)
+        .where(eq(modelosPrescricao.id, id))
+        .returning({ id: modelosPrescricao.id });
+      if (rows.length === 0) throw new NotFoundException('Modelo não encontrado');
+      return { ok: true };
+    });
+  }
+
+  /** Aplica um modelo: cria uma execução (linha do mapa) para cada item do modelo. */
+  async aplicarModelo(tenantId: string, internacaoId: string, modeloId: string): Promise<ExecucaoDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const { internacao } = await this.carregar(tx, tenantId, internacaoId);
+      if (internacao.status !== 'internado') throw new BadRequestException('Internação não está ativa');
+      const modelo = await tx.query.modelosPrescricao.findFirst({ where: eq(modelosPrescricao.id, modeloId) });
+      if (!modelo) throw new NotFoundException('Modelo não encontrado');
+      const itens = await tx
+        .select()
+        .from(modelosPrescricaoItens)
+        .where(eq(modelosPrescricaoItens.modeloId, modeloId));
+      const criadas: ExecucaoDto[] = [];
+      for (const it of itens) {
+        let valor: number | null = null;
+        if (it.itemId) {
+          const cat = await tx.query.itensCatalogo.findFirst({ where: eq(itensCatalogo.id, it.itemId) });
+          valor = cat?.precoCentavos ?? null;
+        }
+        const [exec] = await tx
+          .insert(internacaoExecucoes)
+          .values({
+            tenantId,
+            internacaoId,
+            itemId: it.itemId,
+            descricao: it.descricao,
+            quantidade: it.quantidade,
+            valorCentavos: valor,
+          })
+          .returning();
+        criadas.push(this.toExecucao(exec));
+      }
+      return criadas;
+    });
+  }
+
+  // ───────── Parâmetros clínicos (doc 05 §9.5) ─────────
+
+  async registrarParametro(
+    tenantId: string,
+    internacaoId: string,
+    dto: RegistrarParametroDto,
+  ): Promise<ParametroDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      await this.carregar(tx, tenantId, internacaoId); // valida existência + tenant
+      const [row] = await tx
+        .insert(internacaoParametros)
+        .values({
+          tenantId,
+          internacaoId,
+          pesoG: dto.pesoKg != null ? Math.round(dto.pesoKg * 1000) : null,
+          temperaturaDecimos: dto.temperaturaC != null ? Math.round(dto.temperaturaC * 10) : null,
+          freqCardiaca: dto.fc ?? null,
+          freqRespiratoria: dto.fr ?? null,
+          observacao: dto.observacao?.trim() || null,
+        })
+        .returning();
+      return this.toParametro(row);
+    });
+  }
+
+  async listParametros(tenantId: string, internacaoId: string): Promise<ParametroDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .select()
+        .from(internacaoParametros)
+        .where(eq(internacaoParametros.internacaoId, internacaoId))
+        .orderBy(desc(internacaoParametros.registradoEm))
+        .limit(200);
+      return rows.map((r) => this.toParametro(r));
+    });
+  }
+
+  private toParametro(r: typeof internacaoParametros.$inferSelect): ParametroDto {
+    return {
+      id: r.id,
+      pesoKg: r.pesoG != null ? r.pesoG / 1000 : null,
+      temperaturaC: r.temperaturaDecimos != null ? r.temperaturaDecimos / 10 : null,
+      fc: r.freqCardiaca,
+      fr: r.freqRespiratoria,
+      observacao: r.observacao,
+      registradoEm: (r.registradoEm as Date).toISOString(),
+    };
   }
 
   async admitir(tenantId: string, dto: AdmitirDto): Promise<InternacaoResumoDto> {
