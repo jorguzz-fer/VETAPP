@@ -91,6 +91,15 @@ máximo reuso e contratação mais simples). Ajuste por contexto.
 - **Contratos versionados** (OpenAPI) gerando clientes e tipos → menos drift.
 - **Evolução para serviços** só quando um módulo tiver escala/independência que
   justifique extração.
+  > **Padrão — provedor externo atrás de interface (driver pluggável)** (reusável):
+  > para integrações de terceiros com vendor lock-in potencial (fiscal, pagamento,
+  > mensageria, storage), defina uma **interface de domínio** (`XProvider`) + um
+  > **factory** que resolve o driver por configuração do tenant. O caso de uso fala
+  > só com a interface; trocar de fornecedor não toca no serviço. Comece com um
+  > driver **`manual`/no-op** que já entrega o ciclo de vida local (registro,
+  > numeração, status) sem bloquear no fornecedor; drivers reais entram depois.
+  > Fornecedor não plugado deve **falhar explícito** (não silencioso). Segredos do
+  > provedor (certificado, API key) **no cofre**, nunca no banco/repo.
 
 **Checklist**
 - [ ] Domínios mapeados; um diagrama de topologia no repo.

@@ -6,6 +6,7 @@ import {
   animais,
   faturaItens,
   faturas,
+  notasFiscais,
   prontuarioEventos,
   recebimentos,
   tiposAtendimento,
@@ -38,6 +39,14 @@ export class PortalService {
 
   private recebidoExpr = sql<number>`coalesce((select sum(${recebimentos.valorCentavos})
     from ${recebimentos} where ${recebimentos.faturaId} = ${faturas.id}), 0)::int`;
+
+  // Nota fiscal ativa (não cancelada) mais recente da fatura, se houver.
+  private notaNumeroExpr = sql<string | null>`(select ${notasFiscais.numero} from ${notasFiscais}
+    where ${notasFiscais.faturaId} = ${faturas.id} and ${notasFiscais.status} <> 'cancelada'
+    order by ${notasFiscais.createdAt} desc limit 1)`;
+  private notaStatusExpr = sql<string | null>`(select ${notasFiscais.status} from ${notasFiscais}
+    where ${notasFiscais.faturaId} = ${faturas.id} and ${notasFiscais.status} <> 'cancelada'
+    order by ${notasFiscais.createdAt} desc limit 1)`;
 
   async meusPets(tenantId: string, responsavelId: string): Promise<PortalPetDto[]> {
     const rows = await this.database.withTenant(tenantId, (tx) =>
@@ -122,6 +131,8 @@ export class PortalService {
           status: faturas.status,
           totalCentavos: faturas.totalCentavos,
           recebidoCentavos: this.recebidoExpr,
+          notaNumero: this.notaNumeroExpr,
+          notaStatus: this.notaStatusExpr,
           criadaEm: faturas.createdAt,
         })
         .from(faturas)
@@ -145,6 +156,8 @@ export class PortalService {
           status: faturas.status,
           totalCentavos: faturas.totalCentavos,
           recebidoCentavos: this.recebidoExpr,
+          notaNumero: this.notaNumeroExpr,
+          notaStatus: this.notaStatusExpr,
           criadaEm: faturas.createdAt,
         })
         .from(faturas)
@@ -183,6 +196,8 @@ export class PortalService {
     status: string;
     totalCentavos: number;
     recebidoCentavos: number;
+    notaNumero: string | null;
+    notaStatus: string | null;
     criadaEm: unknown;
   }): PortalFaturaResumoDto {
     return {
@@ -191,6 +206,8 @@ export class PortalService {
       totalCentavos: r.totalCentavos,
       recebidoCentavos: r.recebidoCentavos,
       saldoCentavos: r.totalCentavos - r.recebidoCentavos,
+      notaNumero: r.notaNumero,
+      notaStatus: r.notaStatus,
       criadaEm: r.criadaEm as string,
     };
   }

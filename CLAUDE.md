@@ -86,7 +86,15 @@ mapeamento (doc 05) completa** — restam os complementares do doc 13.
 Pendências conhecidas:
 - **Branch protection** em `main` (ação manual no GitHub UI — exigir PR + checks
   `API (lint · types · test · build)` e `Web (typecheck · build)`).
-- Próximos módulos do mapa (`docs/spec/13`): **Fiscal**, **Site**.
+- Próximos módulos do mapa (`docs/spec/13`): **Site**.
+- **Fiscal MVP feito** (doc 13 §3.3, provider-agnostic): config do emitente por
+  tenant (`fiscal_config`, RLS) e ciclo da nota (`notas_fiscais`, RLS) a partir da
+  fatura (`rascunho→emitida→cancelada`). **Provedor pluggável** (`FiscalProvider` +
+  factory) — driver **`manual`** (numeração própria pela série); externos recusam
+  explícito até plugar. Restrito a admin/gestor/financeiro (`/fiscal`). Nº da NFS-e
+  aparece na 2ª via do Portal. **SEM segredos no banco** (certificado/credenciais →
+  cofre). Pendente (requer decisão externa): integração real com provedor/prefeitura/
+  SEFAZ, certificado A1, regras tributárias por item, PDF/XML no storage, webhook.
 - **Portal do tutor MVP feito** (doc 13 §5.3): área logada do cliente em `/portal/*`
   com **auth separada da gestão** (`tutor_credentials` global sem RLS; token
   `scope:'tutor'`; `JwtAuthGuard` recusa tokens com scope, `TutorGuard` só aceita

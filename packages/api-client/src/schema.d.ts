@@ -1156,6 +1156,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fiscal/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalController_getConfig"];
+        put: operations["FiscalController_updateConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalController_listNotas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/faturas/{faturaId}/nota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas/{id}/emitir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_emitir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas/{id}/cancelar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1882,6 +1962,10 @@ export interface components {
             recebidoCentavos: number;
             saldoCentavos: number;
             criadaEm: string;
+            /** @description Número da NFS-e, se emitida */
+            notaNumero: string | null;
+            /** @description Status fiscal da fatura */
+            notaStatus: string | null;
         };
         PortalFaturaItemDto: {
             descricao: string;
@@ -1903,6 +1987,57 @@ export interface components {
             token: string;
             tenantId: string;
             expiresAt: string;
+        };
+        FiscalConfigDto: {
+            id: string;
+            cnpj?: string;
+            razaoSocial?: string;
+            inscricaoMunicipal?: string;
+            regimeTributario: string;
+            serieNfse: string;
+            proximoNumero: number;
+            provedor: string;
+            ambiente: string;
+            ativo: boolean;
+        };
+        UpdateFiscalConfigDto: {
+            cnpj?: string;
+            razaoSocial?: string;
+            inscricaoMunicipal?: string;
+            /** @enum {string} */
+            regimeTributario?: "simples" | "presumido" | "real";
+            serieNfse?: string;
+            proximoNumero?: number;
+            /** @enum {string} */
+            provedor?: "manual" | "focus" | "nfe_io" | "plugnotas";
+            /** @enum {string} */
+            ambiente?: "homologacao" | "producao";
+            ativo?: boolean;
+        };
+        NotaFiscalDto: {
+            id: string;
+            faturaId: string;
+            responsavelId: string;
+            responsavelNome?: string;
+            tipo: string;
+            status: string;
+            numero?: string;
+            serie?: string;
+            valorCentavos: number;
+            mensagem?: string;
+            emitidaEm?: string;
+            criadaEm: string;
+        };
+        CriarNotaDto: {
+            /**
+             * @default nfse
+             * @enum {string}
+             */
+            tipo: "nfse" | "nfe";
+        };
+        CancelarNotaDto: {
+            /** @example Emitida em duplicidade */
+            motivo: string;
         };
     };
     responses: never;
@@ -3856,6 +3991,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    FiscalController_getConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalConfigDto"];
+                };
+            };
+        };
+    };
+    FiscalController_updateConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFiscalConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalConfigDto"];
+                };
+            };
+        };
+    };
+    FiscalController_listNotas: {
+        parameters: {
+            query?: {
+                status?: "rascunho" | "processando" | "emitida" | "rejeitada" | "cancelada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"][];
+                };
+            };
+        };
+    };
+    FiscalController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                faturaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarNotaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    FiscalController_emitir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    FiscalController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelarNotaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
                 };
             };
         };
