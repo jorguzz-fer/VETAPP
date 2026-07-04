@@ -7,17 +7,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
+import { randomBytes, randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { OAuth2Client } from 'google-auth-library';
 import { DatabaseService } from '../../database/database.service';
-import { memberships, tenants, users } from '../../database/schema';
+import { memberships, mfaRecoveryCodes, refreshTokens, tenants, users } from '../../database/schema';
 import type { EnvConfig } from '../../config/env';
 import type {
   LoginDto,
   LoginResultDto,
+  MfaEnableResponseDto,
   MfaSetupResponseDto,
+  MfaStatusDto,
   RegisterDto,
   TokensDto,
 } from './auth.dto';
@@ -28,6 +31,18 @@ interface MfaTokenPayload {
   role: string;
   scope: 'mfa';
 }
+
+// Payload do refresh JWT: carrega só o jti (= id da linha em refresh_tokens) e a
+// family. Todo o estado (revogação, expiração) mora no banco — o refresh é
+// stateful para permitir rotação e detecção de reuso (docs/spec/02 §2.2).
+interface RefreshPayload {
+  sub: string;
+  jti: string;
+  family: string;
+  scope: 'refresh';
+}
+
+const RECOVERY_CODE_COUNT = 10;
 
 @Injectable()
 export class AuthService {
@@ -126,7 +141,10 @@ export class AuthService {
     return this.resolveLogin(user.id, user.mfaEnabled, tenantId);
   }
 
-  /** Conclui o login quando o usuário tem MFA: valida o mfaToken + código TOTP. */
+  /**
+   * Conclui o login quando o usuário tem MFA: valida o mfaToken + código.
+   * O código pode ser um TOTP do autenticador OU um recovery code de uso único.
+   */
   async mfaVerify(mfaToken: string, code: string): Promise<TokensDto> {
     let payload: MfaTokenPayload;
     try {
@@ -139,17 +157,75 @@ export class AuthService {
     if (payload.scope !== 'mfa') throw new UnauthorizedException('Token inválido');
 
     const user = await this.database.db.query.users.findFirst({ where: eq(users.id, payload.sub) });
-    if (!user?.mfaSecret || !authenticator.check(code, user.mfaSecret)) {
+    if (!user?.mfaSecret) throw new UnauthorizedException('Código inválido');
+
+    const totpOk = authenticator.check(code, user.mfaSecret);
+    const recoveryOk = totpOk ? false : await this.consumeRecoveryCode(user.id, code);
+    if (!totpOk && !recoveryOk) {
       throw new UnauthorizedException('Código inválido');
     }
     return this.issueTokens(payload.sub, payload.tenantId, payload.role);
   }
 
+  // ───────── Sessão: refresh e logout ─────────
+
+  /**
+   * Rotação de refresh token (docs/spec/02 §2.2): valida o refresh JWT, confere
+   * a linha em refresh_tokens e — se válida e não revogada — emite um novo par
+   * na MESMA family, revogando o jti apresentado. Apresentar um jti já revogado
+   * é REUSO (token roubado/replay) → revoga a family inteira e recusa.
+   */
+  async refresh(refreshToken: string): Promise<TokensDto> {
+    let payload: RefreshPayload;
+    try {
+      payload = await this.jwt.verifyAsync<RefreshPayload>(refreshToken, {
+        secret: this.env.JWT_REFRESH_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException('Sessão expirada — faça login novamente');
+    }
+    if (payload.scope !== 'refresh') throw new UnauthorizedException('Token inválido');
+
+    const row = await this.database.db.query.refreshTokens.findFirst({
+      where: eq(refreshTokens.id, payload.jti),
+    });
+    // jti desconhecido ou family divergente = token forjado/adulterado.
+    if (!row || row.family !== payload.family || row.userId !== payload.sub) {
+      throw new UnauthorizedException('Token inválido');
+    }
+    if (row.revokedAt) {
+      // Reuso de um refresh já rotacionado: mata a family inteira.
+      await this.revokeFamily(row.family);
+      throw new UnauthorizedException('Sessão revogada — faça login novamente');
+    }
+    if (row.expiresAt.getTime() <= Date.now()) {
+      throw new UnauthorizedException('Sessão expirada — faça login novamente');
+    }
+
+    return this.issueInFamily(row.userId, row.tenantId, row.role, row.family, row.id);
+  }
+
+  /** Logout: revoga a family do refresh apresentado (idempotente). */
+  async logout(refreshToken: string): Promise<{ ok: boolean }> {
+    try {
+      const payload = await this.jwt.verifyAsync<RefreshPayload>(refreshToken, {
+        secret: this.env.JWT_REFRESH_SECRET,
+      });
+      if (payload.scope === 'refresh') {
+        await this.revokeFamily(payload.family);
+      }
+    } catch {
+      // Token inválido/expirado: logout é best-effort, não vaza estado.
+    }
+    return { ok: true };
+  }
+
   // ───────── Gestão do MFA (usuário autenticado) ─────────
 
-  async mfaStatus(userId: string): Promise<{ enabled: boolean }> {
+  async mfaStatus(userId: string): Promise<MfaStatusDto> {
     const user = await this.database.db.query.users.findFirst({ where: eq(users.id, userId) });
-    return { enabled: user?.mfaEnabled ?? false };
+    const remaining = user?.mfaEnabled ? await this.countRecoveryCodes(userId) : 0;
+    return { enabled: user?.mfaEnabled ?? false, recoveryCodesRemaining: remaining };
   }
 
   /** Gera e guarda o segredo TOTP (pendente até confirmar com mfaEnable). */
@@ -168,8 +244,11 @@ export class AuthService {
     return { secret, otpauthUrl };
   }
 
-  /** Confirma o setup: valida o primeiro código e liga o MFA. */
-  async mfaEnable(userId: string, code: string): Promise<{ ok: boolean }> {
+  /**
+   * Confirma o setup: valida o primeiro código, liga o MFA e emite os recovery
+   * codes iniciais (exibidos UMA vez).
+   */
+  async mfaEnable(userId: string, code: string): Promise<MfaEnableResponseDto> {
     const user = await this.database.db.query.users.findFirst({ where: eq(users.id, userId) });
     if (!user?.mfaSecret) throw new BadRequestException('Rode o setup do MFA primeiro');
     if (!authenticator.check(code, user.mfaSecret)) {
@@ -179,10 +258,11 @@ export class AuthService {
       .update(users)
       .set({ mfaEnabled: true, updatedAt: new Date() })
       .where(eq(users.id, userId));
-    return { ok: true };
+    const recoveryCodes = await this.generateRecoveryCodes(userId);
+    return { ok: true, recoveryCodes };
   }
 
-  /** Desliga o MFA (exige um código válido — não basta estar logado). */
+  /** Desliga o MFA (exige um código TOTP válido — não basta estar logado). */
   async mfaDisable(userId: string, code: string): Promise<{ ok: boolean }> {
     const user = await this.database.db.query.users.findFirst({ where: eq(users.id, userId) });
     if (!user?.mfaEnabled || !user.mfaSecret) throw new BadRequestException('MFA não está ativo');
@@ -193,7 +273,19 @@ export class AuthService {
       .update(users)
       .set({ mfaEnabled: false, mfaSecret: null, updatedAt: new Date() })
       .where(eq(users.id, userId));
+    await this.database.db.delete(mfaRecoveryCodes).where(eq(mfaRecoveryCodes.userId, userId));
     return { ok: true };
+  }
+
+  /** Regera os recovery codes (exige TOTP válido). Invalida os antigos. */
+  async regenerateRecoveryCodes(userId: string, code: string): Promise<MfaEnableResponseDto> {
+    const user = await this.database.db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!user?.mfaEnabled || !user.mfaSecret) throw new BadRequestException('MFA não está ativo');
+    if (!authenticator.check(code, user.mfaSecret)) {
+      throw new UnauthorizedException('Código inválido');
+    }
+    const recoveryCodes = await this.generateRecoveryCodes(userId);
+    return { ok: true, recoveryCodes };
   }
 
   // ───────── internos ─────────
@@ -222,16 +314,103 @@ export class AuthService {
     return this.issueTokens(userId, member.tenantId, member.role);
   }
 
-  private async issueTokens(userId: string, tenantId: string, role: string): Promise<TokensDto> {
-    const payload = { sub: userId, tenantId, role };
-    const accessToken = await this.jwt.signAsync(payload, {
-      secret: this.env.JWT_ACCESS_SECRET,
-      expiresIn: this.env.JWT_ACCESS_TTL,
+  /** Abre uma nova family de sessão (login/registro). */
+  private issueTokens(userId: string, tenantId: string, role: string): Promise<TokensDto> {
+    return this.issueInFamily(userId, tenantId, role, randomUUID());
+  }
+
+  /**
+   * Emite um par access/refresh dentro de uma family. Grava a linha do refresh
+   * (stateful) e, se `replacesId` vier, revoga o jti anterior apontando para o
+   * novo (rotação). O access token é stateless: {sub, tenantId, role}.
+   */
+  private async issueInFamily(
+    userId: string,
+    tenantId: string,
+    role: string,
+    family: string,
+    replacesId?: string,
+  ): Promise<TokensDto> {
+    const accessToken = await this.jwt.signAsync(
+      { sub: userId, tenantId, role },
+      { secret: this.env.JWT_ACCESS_SECRET, expiresIn: this.env.JWT_ACCESS_TTL },
+    );
+
+    const jti = randomUUID();
+    const expiresAt = new Date(Date.now() + this.env.JWT_REFRESH_TTL * 1000);
+    await this.database.db.insert(refreshTokens).values({
+      id: jti,
+      userId,
+      tenantId,
+      role,
+      family,
+      expiresAt,
     });
-    const refreshToken = await this.jwt.signAsync(payload, {
-      secret: this.env.JWT_REFRESH_SECRET,
-      expiresIn: this.env.JWT_REFRESH_TTL,
-    });
+
+    if (replacesId) {
+      await this.database.db
+        .update(refreshTokens)
+        .set({ revokedAt: new Date(), replacedById: jti })
+        .where(eq(refreshTokens.id, replacesId));
+    }
+
+    const refreshToken = await this.jwt.signAsync(
+      { sub: userId, jti, family, scope: 'refresh' } satisfies RefreshPayload,
+      { secret: this.env.JWT_REFRESH_SECRET, expiresIn: this.env.JWT_REFRESH_TTL },
+    );
     return { accessToken, refreshToken };
+  }
+
+  /** Revoga todos os refresh tokens ativos de uma family. */
+  private async revokeFamily(family: string): Promise<void> {
+    await this.database.db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.family, family), isNull(refreshTokens.revokedAt)));
+  }
+
+  // ───────── Recovery codes do MFA ─────────
+
+  /** (Re)gera os recovery codes: guarda só o hash argon2, devolve o texto plano. */
+  private async generateRecoveryCodes(userId: string): Promise<string[]> {
+    await this.database.db.delete(mfaRecoveryCodes).where(eq(mfaRecoveryCodes.userId, userId));
+    const codes: string[] = [];
+    const rows: { userId: string; codeHash: string }[] = [];
+    for (let i = 0; i < RECOVERY_CODE_COUNT; i += 1) {
+      const code = `${randomBytes(2).toString('hex')}-${randomBytes(2).toString('hex')}`;
+      codes.push(code);
+      rows.push({ userId, codeHash: await argon2.hash(code, { type: argon2.argon2id }) });
+    }
+    await this.database.db.insert(mfaRecoveryCodes).values(rows);
+    return codes;
+  }
+
+  /**
+   * Verifica e CONSOME um recovery code (uso único). Normaliza (trim/lowercase)
+   * e compara com o hash de cada código ainda não usado. Retorna true se casou.
+   */
+  private async consumeRecoveryCode(userId: string, code: string): Promise<boolean> {
+    const normalized = code.trim().toLowerCase();
+    if (!normalized) return false;
+    const rows = await this.database.db.query.mfaRecoveryCodes.findMany({
+      where: and(eq(mfaRecoveryCodes.userId, userId), isNull(mfaRecoveryCodes.usedAt)),
+    });
+    for (const row of rows) {
+      if (await argon2.verify(row.codeHash, normalized)) {
+        await this.database.db
+          .update(mfaRecoveryCodes)
+          .set({ usedAt: new Date() })
+          .where(eq(mfaRecoveryCodes.id, row.id));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private async countRecoveryCodes(userId: string): Promise<number> {
+    const rows = await this.database.db.query.mfaRecoveryCodes.findMany({
+      where: and(eq(mfaRecoveryCodes.userId, userId), isNull(mfaRecoveryCodes.usedAt)),
+    });
+    return rows.length;
   }
 }

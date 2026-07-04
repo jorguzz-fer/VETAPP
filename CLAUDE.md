@@ -90,9 +90,14 @@ Pendências conhecidas:
 - **Financeiro fase 2 feito**: recebimento parcial (`recebimentos`, status
   derivado), formas de recebimento (taxa em bps, em `/cadastros`), saldo do
   cliente (`/api/financeiro/saldos`, `/saldos`).
-- Fase 2 documentada: histórico/vigência de preços, baixa automática de estoque
-  (exige evento do prontuário referenciar item de catálogo), rotação/revogação de
-  refresh token, recovery codes, WebAuthn, recebimentos parciais.
+- **Segurança fase 2 feita** (doc 02 §2.2/§2.3): **refresh token stateful com
+  rotação por *family* + detecção de reuso** (`refresh_tokens`, `/auth/refresh`,
+  `/auth/logout`; renovação proativa no front) e **recovery codes de MFA**
+  (`mfa_recovery_codes`, `/auth/mfa/recovery-codes`, aceitos no `/auth/mfa/verify`;
+  UI em `/configuracoes`). Tabelas globais sem RLS (escopo por `jti`/`user_id`).
+- Fase 2 documentada (pendente): histórico/vigência de preços, baixa automática de
+  estoque (exige evento do prontuário referenciar item de catálogo), **MFA
+  obrigatório por papel**, migração de token para cookie httpOnly/BFF, WebAuthn.
 
 ## Regra viva
 

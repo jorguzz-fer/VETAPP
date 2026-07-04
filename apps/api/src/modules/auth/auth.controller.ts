@@ -7,11 +7,14 @@ import {
   GoogleLoginDto,
   LoginDto,
   LoginResultDto,
+  LogoutDto,
   MfaCodeDto,
+  MfaEnableResponseDto,
   MfaSetupResponseDto,
   MfaStatusDto,
   MfaVerifyDto,
   OkResponseDto,
+  RefreshDto,
   RegisterDto,
   TokensDto,
 } from './auth.dto';
@@ -51,6 +54,22 @@ export class AuthController {
     return this.auth.mfaVerify(dto.mfaToken, dto.code);
   }
 
+  // Rotação de refresh token (stateful, com detecção de reuso — docs/spec/02 §2.2).
+  @Post('refresh')
+  @HttpCode(200)
+  @ApiOkResponse({ type: TokensDto })
+  refresh(@Body() dto: RefreshDto): Promise<TokensDto> {
+    return this.auth.refresh(dto.refreshToken);
+  }
+
+  // Logout: revoga a family do refresh apresentado.
+  @Post('logout')
+  @HttpCode(200)
+  @ApiOkResponse({ type: OkResponseDto })
+  logout(@Body() dto: LogoutDto): Promise<OkResponseDto> {
+    return this.auth.logout(dto.refreshToken);
+  }
+
   // ───────── Gestão do MFA (autenticado) ─────────
 
   @Get('mfa/status')
@@ -73,9 +92,19 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
-  @ApiOkResponse({ type: OkResponseDto })
-  mfaEnable(@Req() req: Request, @Body() dto: MfaCodeDto): Promise<OkResponseDto> {
+  @ApiOkResponse({ type: MfaEnableResponseDto })
+  mfaEnable(@Req() req: Request, @Body() dto: MfaCodeDto): Promise<MfaEnableResponseDto> {
     return this.auth.mfaEnable(req.auth!.userId, dto.code);
+  }
+
+  // Regera os recovery codes (exige TOTP válido). Invalida os anteriores.
+  @Post('mfa/recovery-codes')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  @ApiOkResponse({ type: MfaEnableResponseDto })
+  regenerateRecoveryCodes(@Req() req: Request, @Body() dto: MfaCodeDto): Promise<MfaEnableResponseDto> {
+    return this.auth.regenerateRecoveryCodes(req.auth!.userId, dto.code);
   }
 
   @Post('mfa/disable')

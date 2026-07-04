@@ -84,6 +84,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/mfa/status": {
         parameters: {
             query?: never;
@@ -126,6 +158,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AuthController_mfaEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_regenerateRecoveryCodes"];
         delete?: never;
         options?: never;
         head?: never;
@@ -925,13 +973,26 @@ export interface components {
             /** @description mfaToken devolvido pelo login */
             mfaToken: string;
             /**
-             * @description Código TOTP do autenticador
+             * @description Código TOTP ou recovery code
              * @example 123456
              */
             code: string;
         };
+        RefreshDto: {
+            /** @description Refresh token da sessão */
+            refreshToken: string;
+        };
+        LogoutDto: {
+            /** @description Refresh token da sessão a encerrar */
+            refreshToken: string;
+        };
+        OkResponseDto: {
+            ok: boolean;
+        };
         MfaStatusDto: {
             enabled: boolean;
+            /** @description Quantos recovery codes de uso único ainda restam */
+            recoveryCodesRemaining: number;
         };
         MfaSetupResponseDto: {
             /** @description Segredo TOTP (base32) — exibir uma única vez */
@@ -943,8 +1004,10 @@ export interface components {
             /** @example 123456 */
             code: string;
         };
-        OkResponseDto: {
+        MfaEnableResponseDto: {
             ok: boolean;
+            /** @description Recovery codes de uso único — exibidos UMA vez, guarde-os */
+            recoveryCodes: string[];
         };
         AuthMeDto: {
             userId: string;
@@ -1630,6 +1693,52 @@ export interface operations {
             };
         };
     };
+    AuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokensDto"];
+                };
+            };
+        };
+    };
+    AuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponseDto"];
+                };
+            };
+        };
+    };
     AuthController_mfaStatus: {
         parameters: {
             query?: never;
@@ -1686,7 +1795,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OkResponseDto"];
+                    "application/json": components["schemas"]["MfaEnableResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_regenerateRecoveryCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaEnableResponseDto"];
                 };
             };
         };
