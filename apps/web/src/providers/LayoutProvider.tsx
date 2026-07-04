@@ -21,7 +21,9 @@ export default function LayoutProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(false);
   const toggleActive = () => setActive((v) => !v);
 
-  const isBare = BARE_ROUTES.includes(pathname);
+  // O portal do tutor (/portal/*) tem shell e auth próprios (PortalAuthProvider)
+  // — nunca usa o shell da gestão nem o guard de sessão interna.
+  const isBare = BARE_ROUTES.includes(pathname) || pathname.startsWith('/portal');
 
   // Guarda de rota (scaffold): sem usuário em rota protegida → login.
   // A autorização real é sempre server-side (docs/spec/02); isto é só UX.

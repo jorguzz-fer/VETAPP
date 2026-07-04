@@ -39,9 +39,11 @@ export class JwtAuthGuard implements CanActivate {
         token,
         { secret: this.env.JWT_ACCESS_SECRET },
       );
-      // Tokens de desafio MFA (scope 'mfa') NÃO valem como sessão.
-      if (payload.scope === 'mfa') {
-        throw new UnauthorizedException('Conclua o MFA para obter uma sessão');
+      // Só o token de sessão INTERNO vale aqui — e ele não carrega `scope`.
+      // Rejeita explicitamente desafio MFA ('mfa') e token do portal do tutor
+      // ('tutor'): um tutor jamais acessa rota da gestão (doc 13 §5.2).
+      if (payload.scope) {
+        throw new UnauthorizedException('Token sem escopo de sessão da gestão');
       }
       req.auth = { userId: payload.sub, tenantId: payload.tenantId, role: payload.role };
       return true;

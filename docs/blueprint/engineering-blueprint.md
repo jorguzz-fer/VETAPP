@@ -206,6 +206,15 @@ evoluindo para orquestração só quando necessário.
   > escopo é por `jti`/`user_id`. Mesmo padrão serve para **recovery codes de MFA**
   > (uso único, guardar só o hash argon2id, consumo marca `used_at`).
 - **RBAC** com menor privilégio; autorização a nível de objeto quando necessário.
+  > **Padrão — múltiplas audiências isoladas** (reusável): quando há uma superfície
+  > para usuários internos (gestão) **e** outra para o cliente final (portal), NÃO
+  > compartilhe sessão. Credencial separada, e cada token carrega um `scope`
+  > distinto (`'staff'` implícito × `'tutor'`) + o escopo de dados (`tenantId`,
+  > `ownerId`). O guard interno **recusa** qualquer token com scope de portal e
+  > vice-versa — um cliente jamais alcança rota da gestão nem com um token válido de
+  > outra audiência. Os dados do cliente saem sempre por `withTenant()` + filtro
+  > pelo dono (RLS + authz por objeto). Onboarding do cliente por **convite** (token
+  > de alta entropia, hash no banco, validade curta), nunca auto-cadastro anônimo.
 - **Superfície mínima**: único ingress público; serviços internos privados;
   admin/observabilidade só por rede interna/VPN.
 - **Segredos**: cofre (Vault/KMS/secret manager), rotação automática, nunca no

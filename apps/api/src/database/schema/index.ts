@@ -13,3 +13,4 @@ export * from './orcamentos';
 export * from './comissoes';
 export * from './recebimentos';
 export * from './auth-tokens';
+export * from './portal';

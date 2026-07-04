@@ -2801,6 +2801,448 @@
           }
         ]
       }
+    },
+    "/api/portal/convite/{token}": {
+      "get": {
+        "operationId": "PortalController_invitePreview",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalInvitePreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/convite/aceitar": {
+      "post": {
+        "operationId": "PortalController_aceitar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalAcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/login": {
+      "post": {
+        "operationId": "PortalController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/refresh": {
+      "post": {
+        "operationId": "PortalController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalRefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/logout": {
+      "post": {
+        "operationId": "PortalController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalLogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/me": {
+      "get": {
+        "operationId": "PortalController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalMeDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/pets": {
+      "get": {
+        "operationId": "PortalController_pets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalPetDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/pets/{id}": {
+      "get": {
+        "operationId": "PortalController_pet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPetDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/agendamentos": {
+      "get": {
+        "operationId": "PortalController_agendamentos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalAgendamentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/faturas": {
+      "get": {
+        "operationId": "PortalController_faturas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalFaturaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/faturas/{id}": {
+      "get": {
+        "operationId": "PortalController_fatura",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalFaturaDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal": {
+      "get": {
+        "operationId": "PortalAdminController_status",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalAcessoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal/convite": {
+      "post": {
+        "operationId": "PortalAdminController_convite",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalConviteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal/revogar": {
+      "post": {
+        "operationId": "PortalAdminController_revogar",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -4837,6 +5279,402 @@
           "lancamentos",
           "receitaCentavos",
           "agendamentosConcluidos"
+        ]
+      },
+      "PortalInvitePreviewDto": {
+        "type": "object",
+        "properties": {
+          "responsavelNome": {
+            "type": "string"
+          },
+          "clinicaNome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "responsavelNome",
+          "clinicaNome",
+          "email"
+        ]
+      },
+      "PortalAcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token do link de convite"
+          },
+          "password": {
+            "type": "string",
+            "example": "senha-forte-aqui",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "PortalTokensDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant do tutor — o front guarda p/ o próximo login"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tenantId"
+        ]
+      },
+      "PortalLoginDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant (clínica) do portal — o front guarda do convite"
+          },
+          "email": {
+            "type": "string",
+            "example": "tutor@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "senha-forte-aqui"
+          }
+        },
+        "required": [
+          "tenantId",
+          "email",
+          "password"
+        ]
+      },
+      "PortalRefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PortalLogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PortalMeDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "clinicaNome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "responsavelId",
+          "nome",
+          "email",
+          "clinicaNome"
+        ]
+      },
+      "PortalPetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string",
+            "nullable": true
+          },
+          "raca": {
+            "type": "string",
+            "nullable": true
+          },
+          "sexo": {
+            "type": "string",
+            "nullable": true
+          },
+          "castrado": {
+            "type": "boolean"
+          },
+          "nascimento": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto (curta validade)"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "especie",
+          "raca",
+          "sexo",
+          "castrado",
+          "nascimento",
+          "status",
+          "fotoUrl"
+        ]
+      },
+      "PortalVacinaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "data"
+        ]
+      },
+      "PortalHistoricoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "description": "atendimento | vacina | exame | receita | internacao | peso"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "descricao",
+          "data"
+        ]
+      },
+      "PortalPetDetalheDto": {
+        "type": "object",
+        "properties": {
+          "pet": {
+            "$ref": "#/components/schemas/PortalPetDto"
+          },
+          "vacinas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalVacinaDto"
+            }
+          },
+          "historico": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalHistoricoDto"
+            }
+          }
+        },
+        "required": [
+          "pet",
+          "vacinas",
+          "historico"
+        ]
+      },
+      "PortalAgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "profissionalNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "inicio": {
+            "type": "string"
+          },
+          "fim": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "petNome",
+          "tipoNome",
+          "profissionalNome",
+          "inicio",
+          "fim",
+          "status"
+        ]
+      },
+      "PortalFaturaResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "recebidoCentavos": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "totalCentavos",
+          "recebidoCentavos",
+          "saldoCentavos",
+          "criadaEm"
+        ]
+      },
+      "PortalFaturaItemDto": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "descricao",
+          "valorCentavos"
+        ]
+      },
+      "PortalFaturaDetalheDto": {
+        "type": "object",
+        "properties": {
+          "fatura": {
+            "$ref": "#/components/schemas/PortalFaturaResumoDto"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalFaturaItemDto"
+            }
+          }
+        },
+        "required": [
+          "fatura",
+          "itens"
+        ]
+      },
+      "PortalAcessoDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "sem-acesso | invited | active | disabled"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "inviteExpiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "email",
+          "inviteExpiresAt",
+          "lastLoginAt"
+        ]
+      },
+      "PortalConviteResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token do convite — a clínica envia o link ao tutor"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "tenantId",
+          "expiresAt"
         ]
       }
     }
