@@ -33,6 +33,7 @@ export default function LoginPage() {
   const { login, googleLogin, verifyMfa, forcedMfaSetup, forcedMfaEnable } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -197,7 +198,7 @@ export default function LoginPage() {
                   />
                 </label>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" disabled={submitting} className="justify-center">
                   {submitting ? 'Ativando…' : 'Ativar e entrar'}
                 </Button>
               </form>
@@ -221,7 +222,7 @@ export default function LoginPage() {
                 />
               </label>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting} className="justify-center">
                 {submitting ? 'Verificando…' : 'Verificar'}
               </Button>
               <button type="button" onClick={() => setMfaStep(false)} className="text-sm text-gray-500 hover:text-primary-500">
@@ -239,12 +240,30 @@ export default function LoginPage() {
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-gray-600 dark:text-gray-300">Senha</span>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`${inputCls} w-full pr-10`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-500"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    <i className={showPassword ? 'ri-eye-off-line text-lg' : 'ri-eye-line text-lg'}></i>
+                  </button>
+                </div>
               </label>
 
               {error && <p className="text-sm text-red-500">{error}</p>}
 
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting} className="justify-center">
                 {submitting ? 'Entrando…' : 'Entrar'}
               </Button>
             </form>
