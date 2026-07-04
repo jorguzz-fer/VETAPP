@@ -3973,6 +3973,209 @@
           }
         ]
       }
+    },
+    "/api/modelos": {
+      "get": {
+        "operationId": "ModelosController_list",
+        "parameters": [
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "receita",
+                "documento"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModeloDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ModelosController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/modelos/{id}": {
+      "patch": {
+        "operationId": "ModelosController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ModelosController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/modelos/{id}/gerar": {
+      "post": {
+        "operationId": "ModelosController_gerar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GerarModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloGeradoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -6899,6 +7102,103 @@
             "description": "Observação interna (opcional)"
           }
         }
+      },
+      "ModeloDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "nome",
+          "conteudo"
+        ]
+      },
+      "CreateModeloDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string",
+            "example": "Receita simples"
+          },
+          "conteudo": {
+            "type": "string",
+            "description": "Placeholders: {{animal}} {{especie}} {{raca}} {{tutor}} {{telefone}} {{data}} {{clinica}}"
+          }
+        },
+        "required": [
+          "tipo",
+          "nome",
+          "conteudo"
+        ]
+      },
+      "UpdateModeloDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        }
+      },
+      "GerarModeloDto": {
+        "type": "object",
+        "properties": {
+          "animalId": {
+            "type": "string",
+            "description": "Animal para preencher os placeholders"
+          }
+        },
+        "required": [
+          "animalId"
+        ]
+      },
+      "ModeloGeradoDto": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "titulo",
+          "conteudo"
+        ]
       }
     }
   }
