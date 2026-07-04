@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
@@ -19,7 +18,6 @@ import { PortalModule } from './modules/portal/portal.module';
 import { FiscalModule } from './modules/fiscal/fiscal.module';
 import { SiteModule } from './modules/site/site.module';
 import { StorageModule } from './modules/storage/storage.module';
-import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -43,9 +41,10 @@ import { RolesGuard } from './common/guards/roles.guard';
     FiscalModule,
     SiteModule,
   ],
-  providers: [
-    // RolesGuard global: rotas anotadas com @Roles são checadas; demais passam.
-    { provide: APP_GUARD, useClass: RolesGuard },
-  ],
+  // NB: RBAC (RolesGuard) NÃO é global. Um guard global roda ANTES dos guards de
+  // controller (JwtAuthGuard), então o RolesGuard leria req.auth antes de ele ser
+  // populado → 403 em toda rota com @Roles. Por isso o RolesGuard é aplicado junto
+  // do JwtAuthGuard, na ordem certa, nos controllers que usam @Roles
+  // (`@UseGuards(JwtAuthGuard, RolesGuard)`). Ver docs/blueprint §6.
 })
 export class AppModule {}
