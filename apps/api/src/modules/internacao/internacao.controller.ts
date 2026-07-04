@@ -5,10 +5,12 @@ import { InternacaoService } from './internacao.service';
 import {
   AdmitirDto,
   AltaDto,
+  CriarItemListaDto,
   ExecucaoDto,
   ExecutarResultDto,
   InternacaoDetalheDto,
   InternacaoResumoDto,
+  ItemListaDto,
   PrescreverDto,
 } from './internacao.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -31,6 +33,32 @@ export class InternacaoController {
   @ApiCreatedResponse({ type: InternacaoResumoDto })
   admitir(@Req() req: Request, @Body() dto: AdmitirDto): Promise<InternacaoResumoDto> {
     return this.internacao.admitir(req.auth!.tenantId, dto);
+  }
+
+  // Listas gerenciadas da admissão. DECLARAR ANTES de :id (senão o param captura
+  // "motivos"/"boxes").
+  @Get('motivos')
+  @ApiOkResponse({ type: [ItemListaDto] })
+  listMotivos(@Req() req: Request): Promise<ItemListaDto[]> {
+    return this.internacao.listMotivos(req.auth!.tenantId);
+  }
+
+  @Post('motivos')
+  @ApiCreatedResponse({ type: ItemListaDto })
+  criarMotivo(@Req() req: Request, @Body() dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.internacao.criarMotivo(req.auth!.tenantId, dto);
+  }
+
+  @Get('boxes')
+  @ApiOkResponse({ type: [ItemListaDto] })
+  listBoxes(@Req() req: Request): Promise<ItemListaDto[]> {
+    return this.internacao.listBoxes(req.auth!.tenantId);
+  }
+
+  @Post('boxes')
+  @ApiCreatedResponse({ type: ItemListaDto })
+  criarBox(@Req() req: Request, @Body() dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.internacao.criarBox(req.auth!.tenantId, dto);
   }
 
   @Get(':id')

@@ -1,4 +1,5 @@
-import { pgTable, uuid, text, timestamp, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { tenants } from './tenants';
 import { animais } from './animais';
 import { itensCatalogo } from './catalogo';
@@ -50,5 +51,35 @@ export const internacaoExecucoes = pgTable(
   }),
 );
 
+// Listas gerenciadas por tenant para a admissão (doc 05 §9.7 boxes). Nome único
+// por tenant (case-insensitive) → não duplica. Tenant-scoped → RLS.
+export const internacaoMotivos = pgTable(
+  'internacao_motivos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nomeUniq: uniqueIndex('internacao_motivos_nome_uniq').on(t.tenantId, sql`lower(${t.nome})`),
+  }),
+);
+
+export const internacaoBoxes = pgTable(
+  'internacao_boxes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nomeUniq: uniqueIndex('internacao_boxes_nome_uniq').on(t.tenantId, sql`lower(${t.nome})`),
+  }),
+);
+
 export type Internacao = typeof internacoes.$inferSelect;
 export type InternacaoExecucao = typeof internacaoExecucoes.$inferSelect;
+export type InternacaoMotivo = typeof internacaoMotivos.$inferSelect;
+export type InternacaoBox = typeof internacaoBoxes.$inferSelect;
