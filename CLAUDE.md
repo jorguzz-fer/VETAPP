@@ -132,8 +132,13 @@ Pendências conhecidas:
   `mfaSetupToken` (escopo `mfa_setup`, 15 min) → `POST /auth/mfa/forced-setup` +
   `/forced-enable` (liga MFA, emite recovery codes E a sessão). `JwtAuthGuard` recusa
   o token de setup como sessão. Front força o passo (QR → recovery codes) no login.
-- Fase 2 documentada (pendente): histórico/vigência de preços, migração de token
-  para cookie httpOnly/BFF, WebAuthn.
+- **Histórico/vigência de preços feito** (doc 13 §2): tabela `preco_historico`
+  (migração 0027, RLS fail-closed). Cada linha é um preço vigente a partir de
+  `vigente_desde` (quem alterou + quando). `catalogo.create` grava a vigência inicial;
+  `catalogo.update` grava nova vigência quando o `precoCentavos` muda. `GET
+  /api/catalogo/:id/precos` lista o histórico. UI em `/precos`: alterar preço (gera
+  vigência) + modal de histórico.
+- Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, WebAuthn.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe

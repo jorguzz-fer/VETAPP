@@ -42,3 +42,11 @@ export class ItemCatalogoDto {
   @ApiProperty() precoCentavos!: number;
   @ApiProperty() ativo!: boolean;
 }
+
+export class PrecoHistoricoDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() precoCentavos!: number;
+  @ApiProperty({ description: 'Vigente a partir de (ISO)' }) vigenteDesde!: string;
+  @ApiProperty({ type: String, nullable: true }) alteradoPor!: string | null;
+  @ApiProperty({ type: String, nullable: true }) alteradoPorNome!: string | null;
+}

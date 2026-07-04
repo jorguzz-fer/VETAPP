@@ -660,6 +660,22 @@ export interface paths {
         patch: operations["CatalogoController_update"];
         trace?: never;
     };
+    "/api/catalogo/{id}/precos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogoController_precos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/estoque": {
         parameters: {
             query?: never;
@@ -2159,6 +2175,14 @@ export interface components {
             tipo?: "produto" | "servico" | "exame" | "vacina" | "medicamento" | "cirurgia";
             precoCentavos?: number;
             ativo?: boolean;
+        };
+        PrecoHistoricoDto: {
+            id: string;
+            precoCentavos: number;
+            /** @description Vigente a partir de (ISO) */
+            vigenteDesde: string;
+            alteradoPor: string | null;
+            alteradoPorNome: string | null;
         };
         SaldoItemDto: {
             itemId: string;
@@ -3990,6 +4014,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemCatalogoDto"];
+                };
+            };
+        };
+    };
+    CatalogoController_precos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrecoHistoricoDto"][];
                 };
             };
         };
