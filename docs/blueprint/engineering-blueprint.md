@@ -91,6 +91,15 @@ máximo reuso e contratação mais simples). Ajuste por contexto.
 - **Contratos versionados** (OpenAPI) gerando clientes e tipos → menos drift.
 - **Evolução para serviços** só quando um módulo tiver escala/independência que
   justifique extração.
+  > **Padrão — provedor externo atrás de interface (driver pluggável)** (reusável):
+  > para integrações de terceiros com vendor lock-in potencial (fiscal, pagamento,
+  > mensageria, storage), defina uma **interface de domínio** (`XProvider`) + um
+  > **factory** que resolve o driver por configuração do tenant. O caso de uso fala
+  > só com a interface; trocar de fornecedor não toca no serviço. Comece com um
+  > driver **`manual`/no-op** que já entrega o ciclo de vida local (registro,
+  > numeração, status) sem bloquear no fornecedor; drivers reais entram depois.
+  > Fornecedor não plugado deve **falhar explícito** (não silencioso). Segredos do
+  > provedor (certificado, API key) **no cofre**, nunca no banco/repo.
 
 **Checklist**
 - [ ] Domínios mapeados; um diagrama de topologia no repo.
@@ -223,6 +232,15 @@ evoluindo para orquestração só quando necessário.
   auditoria imutável** (quem/o quê/quando).
 - **Proteções de fluxo**: rate limiting, lockout progressivo, alerta de novo
   device; verificação de e-mail e reset seguro (sem enumeração).
+  > **Padrão — superfície pública de escrita** (reusável): quando um site/landing
+  > público precisa aceitar input anônimo (agendar, contato, lead), prefira
+  > **solicitação que um humano confirma** a autoatendimento que escreve direto no
+  > sistema operacional. Não exponha estado interno (disponibilidade, agenda,
+  > catálogo de dados) para não virar oráculo de enumeração. Endureça a rota:
+  > **honeypot** (campo oculto), **rate limit** por IP+recurso, validação estrita e
+  > **resposta uniforme** (não revele se caiu no filtro anti-spam). Mantenha a
+  > superfície anônima **mínima e enumerável** (idealmente 1–2 rotas); todo o resto
+  > exige sessão. PII recebida é dado do tenant → tabela com RLS.
 - **Supply chain**: lockfile fixo, **SCA** (deps), **SAST**, **secret scanning** e
   scan de imagem na CI; atualização de dependências com SLA por severidade.
 - **SSDLC**: revisão de segurança no PR; testes de autorização automatizados;

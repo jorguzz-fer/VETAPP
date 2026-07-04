@@ -128,6 +128,35 @@ sensibilidade regulatória — validar com contador.**
 - Manter **modelo de demonstrativo** de venda impresso (doc 05 §4.12) como
   configuração de impressão, separado do fiscal.
 
+### 3.3 Implementado (fase 3 — MVP, provider-agnostic)
+
+Fatia **não-bloqueada** entregue (o resto depende de decisão de provedor +
+certificado + contador). Módulo `apps/api/src/modules/fiscal` + web `/fiscal`
+(restrito a admin/gestor/financeiro):
+
+- **Config do emitente por tenant** (`fiscal_config`, tenant-scoped com RLS): CNPJ,
+  razão social, inscrição municipal, regime tributário, série + próximo número da
+  NFS-e, provedor, ambiente (homolog/produção), ativo. **SEM segredos no banco** —
+  certificado A1 e credenciais do provedor vão para cofre (doc 02).
+- **Ciclo de vida da nota** (`notas_fiscais`, tenant-scoped com RLS): a partir de
+  uma fatura → `rascunho → emitida → cancelada` (e `processando`/`rejeitada` para
+  provedores assíncronos). Uma nota ativa por fatura. Número/série atribuídos na
+  emissão.
+- **Provedor pluggável** (`FiscalProvider` + `FiscalProviderFactory`): driver
+  **`manual`** implementado (numeração própria pela série do config; a clínica
+  controla a emissão). Drivers externos (Focus NFe / NFe.io / PlugNotas / SEFAZ /
+  prefeitura) são recusados de forma **explícita** até serem plugados — sem falha
+  silenciosa. Trocar de provedor não toca no serviço.
+- **Integração**: nota criada a partir da fatura (Financeiro); número da NFS-e
+  emitida aparece na 2ª via do **Portal do tutor**.
+- API: `GET/PUT /api/fiscal/config`, `GET /api/fiscal/notas`,
+  `POST /api/faturas/:faturaId/nota`, `POST /api/fiscal/notas/:id/emitir|cancelar`.
+
+**Pendente (o grosso do valor fiscal, requer decisão externa)**: integração real
+com **provedor fiscal** (emissão NFS-e junto à prefeitura / NF-e SEFAZ), certificado
+digital A1 no cofre, regras tributárias por item (CFOP/NCM/ISS/alíquotas),
+contingência, carta de correção, PDF/XML no storage, webhook de status assíncrono.
+
 ---
 
 ## 4. Site (presença pública da clínica)
@@ -146,6 +175,33 @@ Site público por tenant, com **agendamento online** ligado à Agenda (doc 05 §
 - **SEO** básico e desempenho (Core Web Vitals).
 - **Segurança**: o site é público, mas qualquer ação (agendar) passa pela API
   autenticada/rate-limited; nada de acesso direto a dados de clínica (doc 02/11).
+
+### 4.2 Implementado (fase 3 — MVP)
+
+Site institucional por tenant + **solicitação** de agendamento (decisão validada:
+a clínica confirma; sem escrita anônima direta na agenda). Módulo
+`apps/api/src/modules/site` + web (público `/clinica/[slug]`, gestão `/site`).
+
+- **CMS-lite por tenant** (`site_config`, tabela **global sem RLS** — leitura
+  pública por `slug` antes do contexto de tenant, como `users`; edição filtrada por
+  `tenant_id`; conteúdo público por design): slug, publicado, nome, sobre, serviços
+  (texto), endereço/telefone/WhatsApp/e-mail/horário, cor primária, logo (upload R2).
+- **Agendamento = solicitação** (`agendamento_solicitacoes`, **tenant-scoped com
+  RLS** — PII do visitante é dado da clínica): o visitante envia um pedido; a
+  recepção **confirma/recusa**. **Nada grava direto na agenda operacional** e a
+  disponibilidade **não** é exposta. A criação do agendamento real segue o fluxo
+  interno (o visitante ainda não é cliente).
+- **Superfície pública mínima e endurecida**: só `GET /api/public/clinica/:slug`
+  (conteúdo publicado) e `POST .../agendamento`. Esta é a **única rota anônima de
+  escrita** do sistema — protegida por **honeypot** + **rate limit** por IP+slug
+  (5/10min, em memória no MVP). Resposta uniforme (não vaza o filtro anti-spam).
+- **Captação**: campo "Como nos conheceu?" na solicitação (alimenta origem — §8.11).
+- Gestão restrita a admin/gestor (`/site`): edição do CMS + triagem das solicitações.
+
+**Pendente**: agendamento em tempo real com disponibilidade (exige expor slots com
+cuidado + escrita direta na agenda), conversão da solicitação → cliente+agendamento
+em 1 clique, integração Google Agenda/IA (doc 06), SEO/render server-side por
+domínio próprio, rate limit distribuído (Redis/WAF) para multi-instância.
 
 ---
 

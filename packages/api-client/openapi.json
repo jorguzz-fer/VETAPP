@@ -3243,6 +3243,571 @@
           }
         ]
       }
+    },
+    "/api/fiscal/config": {
+      "get": {
+        "operationId": "FiscalController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "FiscalController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFiscalConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas": {
+      "get": {
+        "operationId": "FiscalController_listNotas",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "rascunho",
+                "processando",
+                "emitida",
+                "rejeitada",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotaFiscalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{faturaId}/nota": {
+      "post": {
+        "operationId": "FiscalController_criar",
+        "parameters": [
+          {
+            "name": "faturaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/emitir": {
+      "post": {
+        "operationId": "FiscalController_emitir",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/cancelar": {
+      "post": {
+        "operationId": "FiscalController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/public/clinica/{slug}": {
+      "get": {
+        "operationId": "PublicSiteController_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSiteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/public/clinica/{slug}/agendamento": {
+      "post": {
+        "operationId": "PublicSiteController_solicitar",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSolicitacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/site/config": {
+      "get": {
+        "operationId": "SiteController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "SiteController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiteConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo/sign-upload": {
+      "post": {
+        "operationId": "SiteController_signLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo": {
+      "post": {
+        "operationId": "SiteController_confirmLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes": {
+      "get": {
+        "operationId": "SiteController_listSolicitacoes",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "nova",
+                "confirmada",
+                "recusada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SolicitacaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/confirmar": {
+      "post": {
+        "operationId": "SiteController_confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/recusar": {
+      "post": {
+        "operationId": "SiteController_recusar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -5586,6 +6151,16 @@
           },
           "criadaEm": {
             "type": "string"
+          },
+          "notaNumero": {
+            "type": "string",
+            "nullable": true,
+            "description": "Número da NFS-e, se emitida"
+          },
+          "notaStatus": {
+            "type": "string",
+            "nullable": true,
+            "description": "Status fiscal da fatura"
           }
         },
         "required": [
@@ -5594,7 +6169,9 @@
           "totalCentavos",
           "recebidoCentavos",
           "saldoCentavos",
-          "criadaEm"
+          "criadaEm",
+          "notaNumero",
+          "notaStatus"
         ]
       },
       "PortalFaturaItemDto": {
@@ -5676,6 +6253,427 @@
           "tenantId",
           "expiresAt"
         ]
+      },
+      "FiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string"
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string"
+          },
+          "ambiente": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "regimeTributario",
+          "serieNfse",
+          "proximoNumero",
+          "provedor",
+          "ambiente",
+          "ativo"
+        ]
+      },
+      "UpdateFiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string",
+            "enum": [
+              "simples",
+              "presumido",
+              "real"
+            ]
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "focus",
+              "nfe_io",
+              "plugnotas"
+            ]
+          },
+          "ambiente": {
+            "type": "string",
+            "enum": [
+              "homologacao",
+              "producao"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NotaFiscalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "faturaId": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "serie": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "emitidaEm": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "faturaId",
+          "responsavelId",
+          "tipo",
+          "status",
+          "valorCentavos",
+          "criadaEm"
+        ]
+      },
+      "CriarNotaDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "nfse",
+              "nfe"
+            ],
+            "default": "nfse"
+          }
+        }
+      },
+      "CancelarNotaDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Emitida em duplicidade"
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "PublicSiteDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "servicos"
+        ]
+      },
+      "CreateSolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "+55 11 99999-0000"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string",
+            "description": "Preferência de dia/horário (texto livre)"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Como nos conheceu?"
+          },
+          "website": {
+            "type": "string",
+            "description": "Deixe em branco (anti-spam)"
+          }
+        },
+        "required": [
+          "nome",
+          "telefone"
+        ]
+      },
+      "SiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "publicado"
+        ]
+      },
+      "UpdateSiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Slug da URL pública (a-z, 0-9, hífen)"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string",
+            "description": "Serviços em destaque, um por linha"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string",
+            "description": "Cor primária em hex (#RRGGBB)"
+          }
+        }
+      },
+      "SignLogoDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/png"
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "ConfirmLogoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "SolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "observacaoInterna": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "telefone",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "TriagemDto": {
+        "type": "object",
+        "properties": {
+          "observacao": {
+            "type": "string",
+            "description": "Observação interna (opcional)"
+          }
+        }
       }
     }
   }

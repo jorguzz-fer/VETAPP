@@ -34,6 +34,7 @@ export const navSections: NavSection[] = [
     items: [
       { label: 'Orçamentos', href: '/orcamentos', icon: 'ri-file-list-3-line' },
       { label: 'Faturas', href: '/faturas', icon: 'ri-bill-line' },
+      { label: 'Fiscal', href: '/fiscal', icon: 'ri-receipt-line', roles: ['admin', 'gestor', 'financeiro'] },
       { label: 'Saldos', href: '/saldos', icon: 'ri-scales-3-line' },
       { label: 'Tabela de preços', href: '/precos', icon: 'ri-price-tag-3-line' },
       { label: 'Estoque', href: '/estoque', icon: 'ri-archive-2-line' },
@@ -44,6 +45,7 @@ export const navSections: NavSection[] = [
     title: 'Gestão',
     items: [
       { label: 'Produtividade', href: '/produtividade', icon: 'ri-line-chart-line', roles: ['admin', 'gestor'] },
+      { label: 'Site', href: '/site', icon: 'ri-global-line', roles: ['admin', 'gestor'] },
       { label: 'Cadastros', href: '/cadastros', icon: 'ri-archive-line' },
       { label: 'Configurações', href: '/configuracoes', icon: 'ri-settings-3-line', roles: ['admin'] },
     ],

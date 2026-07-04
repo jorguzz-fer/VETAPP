@@ -197,6 +197,12 @@ export class PortalFaturaResumoDto {
 
   @ApiProperty()
   criadaEm!: string;
+
+  @ApiProperty({ type: String, nullable: true, description: 'Número da NFS-e, se emitida' })
+  notaNumero!: string | null;
+
+  @ApiProperty({ type: String, nullable: true, description: 'Status fiscal da fatura' })
+  notaStatus!: string | null;
 }
 
 export class PortalFaturaItemDto {

@@ -10,6 +10,8 @@ type Fatura = {
   totalCentavos: number;
   recebidoCentavos: number;
   saldoCentavos: number;
+  notaNumero: string | null;
+  notaStatus: string | null;
   criadaEm: string;
 };
 type Item = { descricao: string; valorCentavos: number };
@@ -69,7 +71,14 @@ export default function PortalFaturas() {
                   <p className="text-sm font-medium text-black dark:text-white">
                     {formatCentavos(f.totalCentavos)}
                   </p>
-                  <p className="text-xs text-gray-500">{formatData(f.criadaEm)}</p>
+                  <p className="text-xs text-gray-500">
+                    {formatData(f.criadaEm)}
+                    {f.notaNumero && f.notaStatus === 'emitida' && (
+                      <span className="ml-2 text-green-600">
+                        <i className="ri-receipt-line"></i> NFS-e {f.notaNumero}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   {f.saldoCentavos > 0 && f.status !== 'cancelada' && (
