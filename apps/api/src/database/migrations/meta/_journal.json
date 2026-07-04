@@ -99,6 +99,13 @@
       "when": 1719591700000,
       "tag": "0013_recebimentos",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1719591800000,
+      "tag": "0014_auth_tokens",
+      "breakpoints": true
     }
   ]
 }

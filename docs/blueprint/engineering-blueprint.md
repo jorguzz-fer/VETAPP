@@ -196,6 +196,15 @@ evoluindo para orquestração só quando necessário.
 - **Sessões/tokens**: web em **cookie httpOnly + Secure + SameSite** (token fora
   do JS); mobile/integração em **OAuth2/OIDC** com access token curto + **refresh
   rotativo** (detecção de replay). Revogação imediata em logout/troca de senha.
+  > **Padrão — refresh stateful com rotação por *family*** (reusável): access token
+  > stateless de TTL curto; refresh carrega só `{ sub, jti, family }` e todo o
+  > estado (expiração/revogação/encadeamento) fica numa tabela `refresh_tokens`. Cada
+  > refresh emite um novo `jti` na **mesma family** e revoga o anterior. Reapresentar
+  > um `jti` já revogado = **reuso** → revoga a *family* inteira (mata a cadeia de
+  > tokens derivados de um roubo). Logout revoga a family. A tabela é **global** (não
+  > tenant-scoped, sem RLS): o fluxo de auth roda antes de haver contexto de tenant, o
+  > escopo é por `jti`/`user_id`. Mesmo padrão serve para **recovery codes de MFA**
+  > (uso único, guardar só o hash argon2id, consumo marca `used_at`).
 - **RBAC** com menor privilégio; autorização a nível de objeto quando necessário.
 - **Superfície mínima**: único ingress público; serviços internos privados;
   admin/observabilidade só por rede interna/VPN.

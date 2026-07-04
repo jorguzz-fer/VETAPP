@@ -139,6 +139,68 @@
         ]
       }
     },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/mfa/status": {
       "get": {
         "operationId": "AuthController_mfaStatus",
@@ -211,7 +273,43 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OkResponseDto"
+                  "$ref": "#/components/schemas/MfaEnableResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_regenerateRecoveryCodes",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaEnableResponseDto"
                 }
               }
             }
@@ -2826,7 +2924,7 @@
           "code": {
             "type": "string",
             "example": "123456",
-            "description": "Código TOTP do autenticador"
+            "description": "Código TOTP ou recovery code"
           }
         },
         "required": [
@@ -2834,15 +2932,55 @@
           "code"
         ]
       },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token da sessão"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token da sessão a encerrar"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "OkResponseDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
       "MfaStatusDto": {
         "type": "object",
         "properties": {
           "enabled": {
             "type": "boolean"
+          },
+          "recoveryCodesRemaining": {
+            "type": "number",
+            "description": "Quantos recovery codes de uso único ainda restam"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "recoveryCodesRemaining"
         ]
       },
       "MfaSetupResponseDto": {
@@ -2874,15 +3012,23 @@
           "code"
         ]
       },
-      "OkResponseDto": {
+      "MfaEnableResponseDto": {
         "type": "object",
         "properties": {
           "ok": {
             "type": "boolean"
+          },
+          "recoveryCodes": {
+            "description": "Recovery codes de uso único — exibidos UMA vez, guarde-os",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
-          "ok"
+          "ok",
+          "recoveryCodes"
         ]
       },
       "AuthMeDto": {

@@ -86,9 +86,11 @@ export class MfaVerifyDto {
   @IsNotEmpty()
   mfaToken!: string;
 
-  @ApiProperty({ example: '123456', description: 'Código TOTP do autenticador' })
+  // Aceita TOTP (6 dígitos) OU recovery code (formato xxxx-xxxx). Comprimento
+  // frouxo de propósito; o service decide qual caminho validar.
+  @ApiProperty({ example: '123456', description: 'Código TOTP ou recovery code' })
   @IsString()
-  @Length(6, 6)
+  @Length(6, 20)
   code!: string;
 }
 
@@ -97,6 +99,20 @@ export class MfaCodeDto {
   @IsString()
   @Length(6, 6)
   code!: string;
+}
+
+export class RefreshDto {
+  @ApiProperty({ description: 'Refresh token da sessão' })
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
+}
+
+export class LogoutDto {
+  @ApiProperty({ description: 'Refresh token da sessão a encerrar' })
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
 }
 
 export class MfaSetupResponseDto {
@@ -110,6 +126,20 @@ export class MfaSetupResponseDto {
 export class MfaStatusDto {
   @ApiProperty()
   enabled!: boolean;
+
+  @ApiProperty({ description: 'Quantos recovery codes de uso único ainda restam' })
+  recoveryCodesRemaining!: number;
+}
+
+export class MfaEnableResponseDto {
+  @ApiProperty()
+  ok!: boolean;
+
+  @ApiProperty({
+    type: [String],
+    description: 'Recovery codes de uso único — exibidos UMA vez, guarde-os',
+  })
+  recoveryCodes!: string[];
 }
 
 export class GoogleLoginDto {
