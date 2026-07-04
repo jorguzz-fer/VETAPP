@@ -289,6 +289,17 @@ isolamento de dados.
   métricas (label), filas (no payload).
 - **Usuário em múltiplos tenants**: vínculo `membership` (user × tenant × papel);
   seleção de tenant ativo no login.
+  - **Lição estrutural — ler identidade ANTES do tenant:** o login precisa
+    descobrir os `membership` do usuário *antes* de haver `app.current_tenant`
+    para fixar. Sob RLS + app sem `BYPASSRLS`, ler `membership` sem tenant volta
+    **0 linhas** (fail-closed) e o login quebra ("sem acesso a nenhum tenant") —
+    bug **latente** que só aparece com o role restrito de produção (some com
+    conexão superusuário em dev). Correção sem bypass: policy PERMISSIVE **só de
+    SELECT** liberando a linha por `user_id = NULLIF(current_setting('app.current_user',true),'')::uuid`,
+    e o fluxo de auth fixa esse GUC (`withUser`) só para essa leitura. Fora do
+    login o GUC nunca é setado → policy inerte → isolamento por tenant intacto;
+    escrita continua exigindo o contexto de tenant. **Teste o login com o role
+    NOBYPASSRLS**, não só em dev.
 - **Ciclo de vida**: provisionamento + seed padrão; configuração por tenant;
   suspensão/exportação (portabilidade); exclusão auditada.
 - **Dados globais vs. do tenant**: catálogos comuns (read-only, compartilhados)
