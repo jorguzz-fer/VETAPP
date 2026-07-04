@@ -51,11 +51,15 @@ export default function AgendaPage() {
   const [profId, setProfId] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<{ from?: string; to?: string }>({});
   const calRef = useRef<FullCalendar>(null);
 
   const load = useCallback(async () => {
+    // Só busca a janela visível do calendário (via datesSet) — evita puxar toda a
+    // agenda do tenant conforme ela cresce.
+    if (!range.from || !range.to) return;
     const { data } = await api.GET('/api/agenda', {
-      params: { query: { profissionalId: filtroProf || undefined } },
+      params: { query: { profissionalId: filtroProf || undefined, from: range.from, to: range.to } },
     });
     const items = (data as Agendamento[]) ?? [];
     setEventos(
@@ -71,7 +75,7 @@ export default function AgendaPage() {
           classNames: a.status === 'concluido' ? ['opacity-60'] : undefined,
         })),
     );
-  }, [filtroProf]);
+  }, [filtroProf, range.from, range.to]);
 
   useEffect(() => {
     void load();
@@ -248,6 +252,7 @@ export default function AgendaPage() {
           height="auto"
           nowIndicator
           events={eventos}
+          datesSet={(arg) => setRange({ from: arg.startStr, to: arg.endStr })}
           dateClick={onDateClick}
           eventClick={onEventClick}
         />
