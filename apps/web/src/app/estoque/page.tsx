@@ -21,8 +21,20 @@ interface Movimento {
   tipo: string;
   quantidade: number;
   custoCentavos: number | null;
+  lote: string | null;
+  validade: string | null;
   motivo: string | null;
   criadoEm: string;
+}
+
+interface Vencimento {
+  itemId: string;
+  codigo: string;
+  nome: string;
+  lote: string | null;
+  validade: string;
+  quantidade: number;
+  diasParaVencer: number;
 }
 
 const TIPOS = ['entrada', 'saida', 'ajuste'] as const;
@@ -48,20 +60,35 @@ export default function EstoquePage() {
   const [error, setError] = useState<string | null>(null);
   const [expandido, setExpandido] = useState<string | null>(null);
   const [movimentos, setMovimentos] = useState<Movimento[]>([]);
-  const [form, setForm] = useState<{ itemId: string; tipo: TipoMov; quantidade: string; custo: string; motivo: string }>({
+  const [vencimentos, setVencimentos] = useState<Vencimento[]>([]);
+  const [form, setForm] = useState<{
+    itemId: string;
+    tipo: TipoMov;
+    quantidade: string;
+    custo: string;
+    lote: string;
+    validade: string;
+    motivo: string;
+  }>({
     itemId: '',
     tipo: 'entrada',
     quantidade: '',
     custo: '',
+    lote: '',
+    validade: '',
     motivo: '',
   });
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await api.GET('/api/estoque', {
-      params: { query: { search: search || undefined, apenasBaixo: apenasBaixo || undefined } },
-    });
+    const [{ data }, venc] = await Promise.all([
+      api.GET('/api/estoque', {
+        params: { query: { search: search || undefined, apenasBaixo: apenasBaixo || undefined } },
+      }),
+      api.GET('/api/estoque/vencimentos', { params: { query: { dias: 90 } } }),
+    ]);
     setSaldos((data as Saldo[]) ?? []);
+    setVencimentos((venc.data as Vencimento[]) ?? []);
     setLoading(false);
   }, [search, apenasBaixo]);
 
@@ -86,6 +113,8 @@ export default function EstoquePage() {
           form.tipo === 'entrada' && form.custo
             ? Math.round(parseFloat(form.custo.replace(',', '.')) * 100)
             : undefined,
+        lote: form.tipo === 'entrada' && form.lote ? form.lote : undefined,
+        validade: form.tipo === 'entrada' && form.validade ? form.validade : undefined,
         motivo: form.motivo || undefined,
       },
     });
@@ -94,7 +123,7 @@ export default function EstoquePage() {
       setError('Não foi possível registrar (estoque insuficiente?).');
       return;
     }
-    setForm({ itemId: '', tipo: 'entrada', quantidade: '', custo: '', motivo: '' });
+    setForm({ itemId: '', tipo: 'entrada', quantidade: '', custo: '', lote: '', validade: '', motivo: '' });
     setShowForm(false);
     void load();
     if (expandido) void abrirHistorico(expandido, true);
@@ -182,16 +211,36 @@ export default function EstoquePage() {
               />
             </label>
             {form.tipo === 'entrada' && (
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Custo unit. (R$)</span>
-                <input
-                  value={form.custo}
-                  onChange={(e) => setForm({ ...form, custo: e.target.value })}
-                  inputMode="decimal"
-                  className={inputCls}
-                  placeholder="9,90"
-                />
-              </label>
+              <>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Custo unit. (R$)</span>
+                  <input
+                    value={form.custo}
+                    onChange={(e) => setForm({ ...form, custo: e.target.value })}
+                    inputMode="decimal"
+                    className={inputCls}
+                    placeholder="9,90"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Lote</span>
+                  <input
+                    value={form.lote}
+                    onChange={(e) => setForm({ ...form, lote: e.target.value })}
+                    className={inputCls}
+                    placeholder="L-2027A"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Validade</span>
+                  <input
+                    type="date"
+                    value={form.validade}
+                    onChange={(e) => setForm({ ...form, validade: e.target.value })}
+                    className={inputCls}
+                  />
+                </label>
+              </>
             )}
             <label className="flex flex-col gap-1 text-sm md:col-span-3">
               <span className="text-gray-600 dark:text-gray-300">Observação</span>
@@ -207,6 +256,41 @@ export default function EstoquePage() {
               {error && <p className="text-sm text-red-500">{error}</p>}
             </div>
           </form>
+        </Card>
+      )}
+
+      {vencimentos.length > 0 && (
+        <Card>
+          <div className="flex items-center gap-2 mb-3">
+            <i className="ri-alarm-warning-line text-amber-500"></i>
+            <h2 className="text-base font-semibold text-black dark:text-white">Vencimentos próximos (90 dias)</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+                  <th className="py-2 font-medium">Item</th>
+                  <th className="py-2 font-medium">Lote</th>
+                  <th className="py-2 font-medium text-right">Qtd.</th>
+                  <th className="py-2 font-medium">Validade</th>
+                  <th className="py-2 font-medium text-right">Faltam</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vencimentos.map((v, i) => (
+                  <tr key={`${v.itemId}-${v.validade}-${i}`} className="border-b border-gray-50 dark:border-[#172036]/50">
+                    <td className="py-2 text-black dark:text-white">{v.codigo} · {v.nome}</td>
+                    <td className="py-2 text-gray-500 font-mono">{v.lote ?? '—'}</td>
+                    <td className="py-2 text-right text-gray-500">{v.quantidade}</td>
+                    <td className="py-2 text-gray-500">{new Date(v.validade).toLocaleDateString('pt-BR')}</td>
+                    <td className={`py-2 text-right font-medium ${v.diasParaVencer < 0 ? 'text-red-500' : v.diasParaVencer <= 30 ? 'text-amber-600' : 'text-gray-500'}`}>
+                      {v.diasParaVencer < 0 ? `vencido há ${-v.diasParaVencer}d` : `${v.diasParaVencer}d`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 
@@ -296,6 +380,10 @@ export default function EstoquePage() {
                                 </span>
                                 {m.custoCentavos != null && (
                                   <span className="text-gray-500">custo {brl(m.custoCentavos)}</span>
+                                )}
+                                {m.lote && <span className="text-gray-500">· lote {m.lote}</span>}
+                                {m.validade && (
+                                  <span className="text-gray-500">· val. {new Date(m.validade).toLocaleDateString('pt-BR')}</span>
                                 )}
                                 {m.motivo && <span className="text-gray-500">· {m.motivo}</span>}
                                 <span className="text-gray-400 ml-auto">

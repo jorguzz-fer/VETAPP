@@ -105,8 +105,16 @@ estocável (produto/medicamento/vacina) e há saldo, gera-se `saida` no estoque
 automaticamente — fechando o ciclo clínico→estoque→financeiro (o `item_id` também
 alimenta a comissão no `fatura_itens`). Não bloqueia o registro clínico se faltar
 saldo (fase 1 não permite saldo negativo): registra o evento e sinaliza
-`estoqueBaixado:false`. **Ainda fase 2+**: baixa na **venda** direta, lotes/
-validade, múltiplos depósitos, fornecedores/pedidos de compra, curva ABC.
+`estoqueBaixado:false`. **Ainda fase 2+**: baixa na **venda** direta, múltiplos
+depósitos, fornecedores/pedidos de compra, curva ABC.
+
+**Fase 2 — lote/validade implementados ✅**: a **entrada** de estoque registra `lote`
+e `validade` (migração 0029, colunas em `estoque_movimentos`). `GET
+/api/estoque/vencimentos?dias=90` lista os lotes a vencer (mais próximos primeiro,
+com dias restantes; vencidos sinalizados). UI `/estoque`: campos lote/validade na
+entrada, coluna no histórico e card **"Vencimentos próximos"**. **Ainda fase 3+**:
+rastreio de saldo **por lote** (consumo FIFO — hoje o alerta lista as entradas do
+período, sem descontar consumo por lote).
 
 **Fase 2 — histórico/vigência de preços implementado ✅**: tabela `preco_historico`
 (migração 0027, RLS fail-closed por tenant). Cada linha é um preço **vigente a partir

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
 export const TIPOS_MOVIMENTO = ['entrada', 'saida', 'ajuste'] as const;
 
@@ -26,6 +26,17 @@ export class CreateMovimentoDto {
   @IsInt()
   @Min(0)
   custoCentavos?: number;
+
+  @ApiPropertyOptional({ description: 'Lote (informado na entrada)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  lote?: string;
+
+  @ApiPropertyOptional({ description: 'Validade do lote (YYYY-MM-DD, entrada)', example: '2027-01-31' })
+  @IsOptional()
+  @IsDateString()
+  validade?: string;
 
   @ApiPropertyOptional({ description: 'Observação (NF, fornecedor, motivo do ajuste)' })
   @IsOptional()
@@ -57,8 +68,20 @@ export class MovimentoDto {
   @ApiProperty() tipo!: string;
   @ApiProperty() quantidade!: number;
   @ApiProperty({ type: Number, nullable: true }) custoCentavos!: number | null;
+  @ApiProperty({ type: String, nullable: true }) lote!: string | null;
+  @ApiProperty({ type: String, nullable: true }) validade!: string | null;
   @ApiProperty({ type: String, nullable: true }) motivo!: string | null;
   @ApiProperty() criadoEm!: string;
+}
+
+export class VencimentoDto {
+  @ApiProperty() itemId!: string;
+  @ApiProperty() codigo!: string;
+  @ApiProperty() nome!: string;
+  @ApiProperty({ type: String, nullable: true }) lote!: string | null;
+  @ApiProperty() validade!: string;
+  @ApiProperty({ description: 'Quantidade da entrada com este lote' }) quantidade!: number;
+  @ApiProperty({ description: 'Dias até vencer (negativo = já vencido)' }) diasParaVencer!: number;
 }
 
 export class MovimentoResultDto extends MovimentoDto {
