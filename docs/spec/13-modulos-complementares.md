@@ -128,6 +128,35 @@ sensibilidade regulatória — validar com contador.**
 - Manter **modelo de demonstrativo** de venda impresso (doc 05 §4.12) como
   configuração de impressão, separado do fiscal.
 
+### 3.3 Implementado (fase 3 — MVP, provider-agnostic)
+
+Fatia **não-bloqueada** entregue (o resto depende de decisão de provedor +
+certificado + contador). Módulo `apps/api/src/modules/fiscal` + web `/fiscal`
+(restrito a admin/gestor/financeiro):
+
+- **Config do emitente por tenant** (`fiscal_config`, tenant-scoped com RLS): CNPJ,
+  razão social, inscrição municipal, regime tributário, série + próximo número da
+  NFS-e, provedor, ambiente (homolog/produção), ativo. **SEM segredos no banco** —
+  certificado A1 e credenciais do provedor vão para cofre (doc 02).
+- **Ciclo de vida da nota** (`notas_fiscais`, tenant-scoped com RLS): a partir de
+  uma fatura → `rascunho → emitida → cancelada` (e `processando`/`rejeitada` para
+  provedores assíncronos). Uma nota ativa por fatura. Número/série atribuídos na
+  emissão.
+- **Provedor pluggável** (`FiscalProvider` + `FiscalProviderFactory`): driver
+  **`manual`** implementado (numeração própria pela série do config; a clínica
+  controla a emissão). Drivers externos (Focus NFe / NFe.io / PlugNotas / SEFAZ /
+  prefeitura) são recusados de forma **explícita** até serem plugados — sem falha
+  silenciosa. Trocar de provedor não toca no serviço.
+- **Integração**: nota criada a partir da fatura (Financeiro); número da NFS-e
+  emitida aparece na 2ª via do **Portal do tutor**.
+- API: `GET/PUT /api/fiscal/config`, `GET /api/fiscal/notas`,
+  `POST /api/faturas/:faturaId/nota`, `POST /api/fiscal/notas/:id/emitir|cancelar`.
+
+**Pendente (o grosso do valor fiscal, requer decisão externa)**: integração real
+com **provedor fiscal** (emissão NFS-e junto à prefeitura / NF-e SEFAZ), certificado
+digital A1 no cofre, regras tributárias por item (CFOP/NCM/ISS/alíquotas),
+contingência, carta de correção, PDF/XML no storage, webhook de status assíncrono.
+
 ---
 
 ## 4. Site (presença pública da clínica)

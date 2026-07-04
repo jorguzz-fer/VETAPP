@@ -3243,6 +3243,236 @@
           }
         ]
       }
+    },
+    "/api/fiscal/config": {
+      "get": {
+        "operationId": "FiscalController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "FiscalController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFiscalConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas": {
+      "get": {
+        "operationId": "FiscalController_listNotas",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "rascunho",
+                "processando",
+                "emitida",
+                "rejeitada",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotaFiscalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{faturaId}/nota": {
+      "post": {
+        "operationId": "FiscalController_criar",
+        "parameters": [
+          {
+            "name": "faturaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/emitir": {
+      "post": {
+        "operationId": "FiscalController_emitir",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/cancelar": {
+      "post": {
+        "operationId": "FiscalController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -5586,6 +5816,16 @@
           },
           "criadaEm": {
             "type": "string"
+          },
+          "notaNumero": {
+            "type": "string",
+            "nullable": true,
+            "description": "Número da NFS-e, se emitida"
+          },
+          "notaStatus": {
+            "type": "string",
+            "nullable": true,
+            "description": "Status fiscal da fatura"
           }
         },
         "required": [
@@ -5594,7 +5834,9 @@
           "totalCentavos",
           "recebidoCentavos",
           "saldoCentavos",
-          "criadaEm"
+          "criadaEm",
+          "notaNumero",
+          "notaStatus"
         ]
       },
       "PortalFaturaItemDto": {
@@ -5675,6 +5917,172 @@
           "token",
           "tenantId",
           "expiresAt"
+        ]
+      },
+      "FiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string"
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string"
+          },
+          "ambiente": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "regimeTributario",
+          "serieNfse",
+          "proximoNumero",
+          "provedor",
+          "ambiente",
+          "ativo"
+        ]
+      },
+      "UpdateFiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string",
+            "enum": [
+              "simples",
+              "presumido",
+              "real"
+            ]
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "focus",
+              "nfe_io",
+              "plugnotas"
+            ]
+          },
+          "ambiente": {
+            "type": "string",
+            "enum": [
+              "homologacao",
+              "producao"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NotaFiscalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "faturaId": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "serie": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "emitidaEm": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "faturaId",
+          "responsavelId",
+          "tipo",
+          "status",
+          "valorCentavos",
+          "criadaEm"
+        ]
+      },
+      "CriarNotaDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "nfse",
+              "nfe"
+            ],
+            "default": "nfse"
+          }
+        }
+      },
+      "CancelarNotaDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Emitida em duplicidade"
+          }
+        },
+        "required": [
+          "motivo"
         ]
       }
     }
