@@ -992,6 +992,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "profissionalId",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por profissional (\"minha agenda\")",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1038,6 +1047,201 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgendamentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/profissionais": {
+      "get": {
+        "operationId": "AgendaController_profissionais",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProfissionalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/tipos": {
+      "get": {
+        "operationId": "AgendaController_tipos",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TipoAtendimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AgendaController_createTipo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTipoAtendimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/tipos/{id}": {
+      "patch": {
+        "operationId": "AgendaController_updateTipo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTipoAtendimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/{id}/status": {
+      "patch": {
+        "operationId": "AgendaController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -2391,6 +2595,21 @@
           "status": {
             "type": "string"
           },
+          "tipoAtendimentoId": {
+            "type": "string"
+          },
+          "tipoNome": {
+            "type": "string"
+          },
+          "cor": {
+            "type": "string"
+          },
+          "profissionalId": {
+            "type": "string"
+          },
+          "profissionalNome": {
+            "type": "string"
+          },
           "animalId": {
             "type": "string"
           },
@@ -2424,7 +2643,15 @@
           "fim": {
             "type": "string",
             "example": "2026-07-01T14:30:00Z",
-            "description": "ISO 8601"
+            "description": "ISO 8601. Opcional com tipoAtendimentoId (usa a duração do tipo)."
+          },
+          "tipoAtendimentoId": {
+            "type": "string",
+            "description": "Tipo de atendimento (define duração/cor)"
+          },
+          "profissionalId": {
+            "type": "string",
+            "description": "Profissional responsável (membro do tenant)"
           },
           "animalId": {
             "type": "string"
@@ -2438,8 +2665,113 @@
         },
         "required": [
           "titulo",
-          "inicio",
-          "fim"
+          "inicio"
+        ]
+      },
+      "ProfissionalDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "role"
+        ]
+      },
+      "TipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "duracaoMinutos": {
+            "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "duracaoMinutos",
+          "cor",
+          "ativo"
+        ]
+      },
+      "CreateTipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Consulta"
+          },
+          "duracaoMinutos": {
+            "type": "number",
+            "example": 30,
+            "description": "Duração padrão em minutos"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff",
+            "description": "Cor do evento na agenda (hex)"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "UpdateTipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Consulta"
+          },
+          "duracaoMinutos": {
+            "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "agendado",
+              "confirmado",
+              "concluido",
+              "faltou",
+              "cancelado"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "ItemCatalogoDto": {

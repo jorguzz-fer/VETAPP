@@ -356,6 +356,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agenda/profissionais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_profissionais"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/tipos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_tipos"];
+        put?: never;
+        post: operations["AgendaController_createTipo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/tipos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateTipo"];
+        trace?: never;
+    };
+    "/api/agenda/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateStatus"];
+        trace?: never;
+    };
     "/api/agenda/{id}": {
         parameters: {
             query?: never;
@@ -778,6 +842,11 @@ export interface components {
             inicio: string;
             fim: string;
             status: string;
+            tipoAtendimentoId?: string;
+            tipoNome?: string;
+            cor?: string;
+            profissionalId?: string;
+            profissionalNome?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -791,13 +860,55 @@ export interface components {
              */
             inicio: string;
             /**
-             * @description ISO 8601
+             * @description ISO 8601. Opcional com tipoAtendimentoId (usa a duração do tipo).
              * @example 2026-07-01T14:30:00Z
              */
-            fim: string;
+            fim?: string;
+            /** @description Tipo de atendimento (define duração/cor) */
+            tipoAtendimentoId?: string;
+            /** @description Profissional responsável (membro do tenant) */
+            profissionalId?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
+        };
+        ProfissionalDto: {
+            userId: string;
+            nome: string;
+            role: string;
+        };
+        TipoAtendimentoDto: {
+            id: string;
+            nome: string;
+            duracaoMinutos: number;
+            cor: string | null;
+            ativo: boolean;
+        };
+        CreateTipoAtendimentoDto: {
+            /** @example Consulta */
+            nome: string;
+            /**
+             * @description Duração padrão em minutos
+             * @example 30
+             */
+            duracaoMinutos?: number;
+            /**
+             * @description Cor do evento na agenda (hex)
+             * @example #7c5cff
+             */
+            cor?: string;
+        };
+        UpdateTipoAtendimentoDto: {
+            /** @example Consulta */
+            nome?: string;
+            duracaoMinutos?: number;
+            /** @example #7c5cff */
+            cor?: string;
+            ativo?: boolean;
+        };
+        UpdateStatusDto: {
+            /** @enum {string} */
+            status: "agendado" | "confirmado" | "concluido" | "faltou" | "cancelado";
         };
         ItemCatalogoDto: {
             id: string;
@@ -1575,6 +1686,8 @@ export interface operations {
                 from?: string;
                 /** @description ISO 8601 */
                 to?: string;
+                /** @description Filtra por profissional ("minha agenda") */
+                profissionalId?: string;
             };
             header?: never;
             path?: never;
@@ -1611,6 +1724,121 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgendamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_profissionais: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfissionalDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_tipos: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_createTipo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTipoAtendimentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateTipo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTipoAtendimentoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
                 };
             };
         };
