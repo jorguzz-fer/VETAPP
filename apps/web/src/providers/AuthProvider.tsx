@@ -9,8 +9,9 @@ export interface AuthUser {
   role: string;
 }
 
-// login/googleLogin devolvem 'ok' (sessão criada) ou 'mfa' (falta o código TOTP).
-type LoginStep = 'ok' | 'mfa';
+// login/googleLogin devolvem 'ok' (sessão criada), 'mfa' (falta o código TOTP) ou
+// 'mfa_setup' (papel exige MFA e ainda não configurou — precisa concluir o setup).
+type LoginStep = 'ok' | 'mfa' | 'mfa_setup';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -18,6 +19,10 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<LoginStep>;
   googleLogin: (idToken: string) => Promise<LoginStep>;
   verifyMfa: (code: string) => Promise<void>;
+  // Setup forçado (MFA obrigatório por papel): 1) gera o segredo, 2) confirma o
+  // código, liga o MFA e completa a sessão devolvendo os recovery codes.
+  forcedMfaSetup: () => Promise<{ secret: string; otpauthUrl: string }>;
+  forcedMfaEnable: (code: string) => Promise<string[]>;
   register: (input: { tenantName: string; name: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
 }
@@ -32,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   // Token temporário do desafio MFA (escopo 'mfa'), entre o login e o código.
   const mfaTokenRef = useRef<string | null>(null);
+  // Token temporário do setup forçado (escopo 'mfa_setup'), quando o papel exige MFA.
+  const mfaSetupTokenRef = useRef<string | null>(null);
   // Timer da renovação proativa do access token.
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -124,6 +131,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         mfaTokenRef.current = data.mfaToken;
         return 'mfa';
       }
+      if (data.mfaSetupRequired && data.mfaSetupToken) {
+        mfaSetupTokenRef.current = data.mfaSetupToken;
+        return 'mfa_setup';
+      }
       if (!data.accessToken) throw new Error('Resposta inesperada do login');
       await finishSession(data.accessToken, data.refreshToken);
       return 'ok';
@@ -138,6 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.mfaRequired && data.mfaToken) {
         mfaTokenRef.current = data.mfaToken;
         return 'mfa';
+      }
+      if (data.mfaSetupRequired && data.mfaSetupToken) {
+        mfaSetupTokenRef.current = data.mfaSetupToken;
+        return 'mfa_setup';
       }
       if (!data.accessToken) throw new Error('Resposta inesperada do login');
       await finishSession(data.accessToken, data.refreshToken);
@@ -154,6 +169,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error || !data) throw new Error('Código inválido');
       mfaTokenRef.current = null;
       await finishSession(data.accessToken, data.refreshToken);
+    },
+    [finishSession],
+  );
+
+  const forcedMfaSetup = useCallback(async (): Promise<{ secret: string; otpauthUrl: string }> => {
+    const setupToken = mfaSetupTokenRef.current;
+    if (!setupToken) throw new Error('Sessão de configuração ausente — faça login novamente');
+    const { data, error } = await api.POST('/api/auth/mfa/forced-setup', { body: { setupToken } });
+    if (error || !data) throw new Error('Falha ao iniciar o setup do MFA');
+    return data;
+  }, []);
+
+  const forcedMfaEnable = useCallback(
+    async (code: string): Promise<string[]> => {
+      const setupToken = mfaSetupTokenRef.current;
+      if (!setupToken) throw new Error('Sessão de configuração ausente — faça login novamente');
+      const { data, error } = await api.POST('/api/auth/mfa/forced-enable', { body: { setupToken, code } });
+      if (error || !data) throw new Error('Código inválido');
+      mfaSetupTokenRef.current = null;
+      await finishSession(data.accessToken, data.refreshToken);
+      return data.recoveryCodes;
     },
     [finishSession],
   );
@@ -176,12 +212,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearRefreshTimer();
     tokenStore.clear();
     mfaTokenRef.current = null;
+    mfaSetupTokenRef.current = null;
     setUser(null);
   }, [clearRefreshTimer]);
 
   const value = useMemo(
-    () => ({ user, loading, login, googleLogin, verifyMfa, register, logout }),
-    [user, loading, login, googleLogin, verifyMfa, register, logout],
+    () => ({ user, loading, login, googleLogin, verifyMfa, forcedMfaSetup, forcedMfaEnable, register, logout }),
+    [user, loading, login, googleLogin, verifyMfa, forcedMfaSetup, forcedMfaEnable, register, logout],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

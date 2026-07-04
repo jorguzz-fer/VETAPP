@@ -33,6 +33,18 @@ interface MfaTokenPayload {
   scope: 'mfa';
 }
 
+// Token curto que autoriza APENAS o setup forçado de MFA (não é sessão). Emitido
+// no login quando o papel exige MFA e o usuário ainda não configurou (doc 02 §2.2).
+interface MfaSetupTokenPayload {
+  sub: string;
+  tenantId: string;
+  role: string;
+  scope: 'mfa_setup';
+}
+
+// Papéis com MFA OBRIGATÓRIO (doc 02 §2.2 / doc 07 §3): sem 2º fator não há sessão.
+const ROLES_MFA_OBRIGATORIO = new Set(['admin', 'gestor', 'financeiro']);
+
 // Payload do refresh JWT: carrega só o jti (= id da linha em refresh_tokens) e a
 // family. Todo o estado (revogação, expiração) mora no banco — o refresh é
 // stateful para permitir rotação e detecção de reuso (docs/spec/02 §2.2).
@@ -187,6 +199,52 @@ export class AuthService {
       ip: ip ?? null,
     });
     return tokens;
+  }
+
+  // ───────── MFA obrigatório por papel: setup forçado ─────────
+
+  /** Verifica o token de setup forçado (escopo 'mfa_setup') e devolve o payload. */
+  private async verifyMfaSetupToken(setupToken: string): Promise<MfaSetupTokenPayload> {
+    let payload: MfaSetupTokenPayload;
+    try {
+      payload = await this.jwt.verifyAsync<MfaSetupTokenPayload>(setupToken, {
+        secret: this.env.JWT_ACCESS_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException('Sessão de configuração expirada — faça login novamente');
+    }
+    if (payload.scope !== 'mfa_setup') throw new UnauthorizedException('Token inválido');
+    return payload;
+  }
+
+  /** Passo 1 do setup forçado: gera o segredo TOTP (autorizado pelo setupToken). */
+  async mfaForcedSetup(setupToken: string): Promise<MfaSetupResponseDto> {
+    const payload = await this.verifyMfaSetupToken(setupToken);
+    return this.mfaSetup(payload.sub);
+  }
+
+  /**
+   * Passo 2 do setup forçado: valida o código, liga o MFA, emite recovery codes E
+   * a sessão (o login só se completa aqui). Autorizado pelo setupToken.
+   */
+  async mfaForcedEnable(
+    setupToken: string,
+    code: string,
+    ip?: string,
+  ): Promise<{ accessToken: string; refreshToken: string; recoveryCodes: string[] }> {
+    const payload = await this.verifyMfaSetupToken(setupToken);
+    const enable = await this.mfaEnable(payload.sub, code); // valida + liga + recovery codes
+    const tokens = await this.issueTokens(payload.sub, payload.tenantId, payload.role);
+    await this.audit.registrar(payload.tenantId, {
+      userId: payload.sub,
+      acao: 'auth.login',
+      entidade: 'sessao',
+      entidadeId: payload.sub,
+      resumo: 'Login efetuado (MFA configurado — obrigatório por papel)',
+      detalhe: { via: 'mfa_setup_forcado' },
+      ip: ip ?? null,
+    });
+    return { ...tokens, recoveryCodes: enable.recoveryCodes };
   }
 
   // ───────── Sessão: refresh e logout ─────────
@@ -355,6 +413,16 @@ export class AuthService {
         { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 300 },
       );
       return { mfaRequired: true, mfaToken };
+    }
+
+    // MFA obrigatório por papel: sem 2º fator configurado, o login não emite sessão
+    // — devolve um token curto que só autoriza o setup forçado (doc 02 §2.2).
+    if (ROLES_MFA_OBRIGATORIO.has(member.role)) {
+      const mfaSetupToken = await this.jwt.signAsync(
+        { sub: userId, tenantId: member.tenantId, role: member.role, scope: 'mfa_setup' } satisfies MfaSetupTokenPayload,
+        { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 900 },
+      );
+      return { mfaSetupRequired: true, mfaSetupToken };
     }
 
     const tokens = await this.issueTokens(userId, member.tenantId, member.role);

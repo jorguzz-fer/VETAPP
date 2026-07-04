@@ -100,6 +100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/mfa/forced-setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_mfaForcedSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/forced-enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_mfaForcedEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/refresh": {
         parameters: {
             query?: never;
@@ -1719,6 +1751,10 @@ export interface components {
             mfaRequired?: boolean;
             /** @description Token temporário para concluir o MFA */
             mfaToken?: string;
+            /** @description MFA obrigatório para o papel e ainda não configurado: precisa concluir o setup para logar */
+            mfaSetupRequired?: boolean;
+            /** @description Token temporário (escopo mfa_setup) para o setup forçado */
+            mfaSetupToken?: string;
         };
         GoogleLoginDto: {
             /** @description id_token retornado pelo Google Identity Services */
@@ -1732,6 +1768,31 @@ export interface components {
              * @example 123456
              */
             code: string;
+        };
+        MfaForcedSetupDto: {
+            /** @description mfaSetupToken devolvido pelo login */
+            setupToken: string;
+        };
+        MfaSetupResponseDto: {
+            /** @description Segredo TOTP (base32) — exibir uma única vez */
+            secret: string;
+            /** @description URL otpauth:// para QR code */
+            otpauthUrl: string;
+        };
+        MfaForcedEnableDto: {
+            /** @description mfaSetupToken devolvido pelo login */
+            setupToken: string;
+            /**
+             * @description Código TOTP do app autenticador
+             * @example 123456
+             */
+            code: string;
+        };
+        MfaForcedEnableResponseDto: {
+            accessToken: string;
+            refreshToken: string;
+            /** @description Recovery codes de uso único — exibir uma única vez */
+            recoveryCodes: string[];
         };
         RefreshDto: {
             /** @description Refresh token da sessão */
@@ -1748,12 +1809,6 @@ export interface components {
             enabled: boolean;
             /** @description Quantos recovery codes de uso único ainda restam */
             recoveryCodesRemaining: number;
-        };
-        MfaSetupResponseDto: {
-            /** @description Segredo TOTP (base32) — exibir uma única vez */
-            secret: string;
-            /** @description URL otpauth:// para QR code */
-            otpauthUrl: string;
         };
         MfaCodeDto: {
             /** @example 123456 */
@@ -2868,6 +2923,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokensDto"];
+                };
+            };
+        };
+    };
+    AuthController_mfaForcedSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaForcedSetupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaSetupResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_mfaForcedEnable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaForcedEnableDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaForcedEnableResponseDto"];
                 };
             };
         };

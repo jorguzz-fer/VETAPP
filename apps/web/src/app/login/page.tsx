@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
+import QRCode from 'qrcode';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui/Button';
@@ -29,7 +30,7 @@ declare global {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, googleLogin, verifyMfa } = useAuth();
+  const { login, googleLogin, verifyMfa, forcedMfaSetup, forcedMfaEnable } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,37 @@ export default function LoginPage() {
   const [mfaStep, setMfaStep] = useState(false);
   const [code, setCode] = useState('');
 
+  // Etapa de setup forçado (MFA obrigatório por papel): QR + código + recovery codes.
+  const [setupStep, setSetupStep] = useState(false);
+  const [setupSecret, setSetupSecret] = useState('');
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const qrRef = useRef<HTMLCanvasElement>(null);
+
+  const startForcedSetup = useCallback(async () => {
+    setSetupStep(true);
+    try {
+      const data = await forcedMfaSetup();
+      setSetupSecret(data.secret);
+      if (qrRef.current) void QRCode.toCanvas(qrRef.current, data.otpauthUrl, { width: 200, margin: 1 });
+    } catch {
+      setError('Falha ao iniciar a configuração do MFA. Faça login novamente.');
+    }
+  }, [forcedMfaSetup]);
+
+  async function onSubmitForcedEnable(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const codes = await forcedMfaEnable(code);
+      setRecoveryCodes(codes);
+    } catch {
+      setError('Código inválido. Confira o app autenticador e tente de novo.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   const onGoogleCredential = useCallback(
@@ -47,12 +79,13 @@ export default function LoginPage() {
       try {
         const step = await googleLogin(resp.credential);
         if (step === 'mfa') setMfaStep(true);
+        else if (step === 'mfa_setup') await startForcedSetup();
         else router.push('/dashboard');
       } catch {
         setError('Login com Google falhou. Sua conta já está cadastrada?');
       }
     },
-    [googleLogin, router],
+    [googleLogin, router, startForcedSetup],
   );
 
   const initGoogle = useCallback(() => {
@@ -72,6 +105,7 @@ export default function LoginPage() {
     try {
       const step = await login(email, password);
       if (step === 'mfa') setMfaStep(true);
+      else if (step === 'mfa_setup') await startForcedSetup();
       else router.push('/dashboard');
     } catch {
       setError('E-mail ou senha inválidos.');
@@ -108,7 +142,58 @@ export default function LoginPage() {
           VETAPP
         </div>
 
-        {mfaStep ? (
+        {setupStep ? (
+          recoveryCodes ? (
+            <>
+              <p className="text-sm text-gray-500 mb-2">
+                MFA ativado! Guarde os <strong>códigos de recuperação</strong> abaixo — cada um serve uma vez, e
+                eles não serão exibidos de novo.
+              </p>
+              <div className="grid grid-cols-2 gap-2 my-4 font-mono text-sm">
+                {recoveryCodes.map((c) => (
+                  <span key={c} className="rounded bg-gray-50 dark:bg-[#15203c] px-2 py-1 text-center">{c}</span>
+                ))}
+              </div>
+              <Button onClick={() => router.push('/dashboard')} className="w-full justify-center">
+                Continuar
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500 mb-4">
+                Seu papel exige <strong>autenticação em duas etapas</strong>. Escaneie o QR no app autenticador
+                (Google Authenticator, Authy…) e digite o código para concluir.
+              </p>
+              <div className="flex justify-center mb-3">
+                <canvas ref={qrRef} />
+              </div>
+              {setupSecret && (
+                <p className="text-xs text-gray-400 text-center mb-4 break-all">
+                  Ou digite a chave: <span className="font-mono">{setupSecret}</span>
+                </p>
+              )}
+              <form onSubmit={onSubmitForcedEnable} className="flex flex-col gap-4">
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Código (6 dígitos)</span>
+                  <input
+                    required
+                    autoFocus
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className={`${inputCls} text-center text-lg tracking-[0.5em]`}
+                    placeholder="••••••"
+                  />
+                </label>
+                {error && <p className="text-sm text-red-500">{error}</p>}
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? 'Ativando…' : 'Ativar e entrar'}
+                </Button>
+              </form>
+            </>
+          )
+        ) : mfaStep ? (
           <>
             <p className="text-sm text-gray-500 mb-5">Digite o código do seu app autenticador</p>
             <form onSubmit={onSubmitMfa} className="flex flex-col gap-4">

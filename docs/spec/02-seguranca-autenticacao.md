@@ -42,8 +42,18 @@
 > tabela global sem RLS, escopo por `user_id`). `POST /auth/mfa/verify` aceita um
 > TOTP **ou** um recovery code (consumido → `used_at`). `POST /auth/mfa/recovery-codes`
 > regera o conjunto (exige TOTP; invalida os anteriores). Desativar o MFA apaga os
-> códigos. **Pendente**: MFA obrigatório por papel (exige fluxo de setup forçado),
-> WebAuthn, "lembrar dispositivo".
+> códigos.
+>
+> **MFA obrigatório por papel implementado** — papéis sensíveis (`admin`, `gestor`,
+> `financeiro`) **não recebem sessão sem 2º fator**. No login, se o papel exige MFA e
+> o usuário ainda não configurou, a API responde `mfaSetupRequired` + um
+> `mfaSetupToken` curto (JWT escopo `mfa_setup`, 15 min) que autoriza **apenas** o
+> setup forçado — `POST /auth/mfa/forced-setup` (gera o segredo TOTP) e
+> `POST /auth/mfa/forced-enable` (valida o código, liga o MFA, emite recovery codes E
+> a sessão). O `JwtAuthGuard` recusa o `mfa_setup` como token de sessão (tem `scope`).
+> Front: a tela de login entra no passo de setup (QR + código → recovery codes) antes
+> de liberar o app. **Pendente**: WebAuthn, "lembrar dispositivo", política de MFA
+> configurável por tenant.
 
 ### 2.3 Sessões e tokens
 - **Web**: sessão em **cookie httpOnly + Secure + SameSite=strict/lax**. Tokens
