@@ -43,6 +43,7 @@ export default function LoginPage() {
   // Etapa de setup forçado (MFA obrigatório por papel): QR + código + recovery codes.
   const [setupStep, setSetupStep] = useState(false);
   const [setupSecret, setSetupSecret] = useState('');
+  const [otpauthUrl, setOtpauthUrl] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const qrRef = useRef<HTMLCanvasElement>(null);
 
@@ -51,11 +52,20 @@ export default function LoginPage() {
     try {
       const data = await forcedMfaSetup();
       setSetupSecret(data.secret);
-      if (qrRef.current) void QRCode.toCanvas(qrRef.current, data.otpauthUrl, { width: 200, margin: 1 });
+      // Não desenha o QR aqui: o <canvas> só monta no próximo render. Guarda a URL
+      // e deixa o useEffect abaixo desenhar quando o canvas existir.
+      setOtpauthUrl(data.otpauthUrl);
     } catch {
       setError('Falha ao iniciar a configuração do MFA. Faça login novamente.');
     }
   }, [forcedMfaSetup]);
+
+  // Desenha o QR quando o canvas já está montado (setupStep) e temos a URL.
+  useEffect(() => {
+    if (setupStep && otpauthUrl && !recoveryCodes && qrRef.current) {
+      void QRCode.toCanvas(qrRef.current, otpauthUrl, { width: 200, margin: 1 });
+    }
+  }, [setupStep, otpauthUrl, recoveryCodes]);
 
   async function onSubmitForcedEnable(e: FormEvent) {
     e.preventDefault();

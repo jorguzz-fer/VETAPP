@@ -70,6 +70,10 @@ export class AuthService {
     if (env.GOOGLE_CLIENT_ID) {
       this.googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
     }
+    // Tolera ±1 passo (30s) de defasagem de relógio entre o servidor e o app
+    // autenticador — sem isso, qualquer skew rejeita códigos TOTP válidos
+    // (recomendado pelo otplib). Vale para todo authenticator.check().
+    authenticator.options = { window: 1 };
   }
 
   /**
