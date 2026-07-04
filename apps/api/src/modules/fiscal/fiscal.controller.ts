@@ -10,13 +10,14 @@ import {
   UpdateFiscalConfigDto,
 } from './fiscal.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { Roles } from '../../common/guards/roles.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 // Fiscal (doc 13 §3). Tenant vem sempre de req.auth. Restrito a admin/gestor/
-// financeiro (alta sensibilidade regulatória).
+// financeiro (alta sensibilidade regulatória). Ordem dos guards importa: o
+// JwtAuthGuard popula req.auth ANTES do RolesGuard lê-lo.
 @ApiTags('fiscal')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin', 'gestor', 'financeiro')
 @Controller()
 export class FiscalController {

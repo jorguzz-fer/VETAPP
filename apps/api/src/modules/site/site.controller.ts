@@ -12,13 +12,14 @@ import {
   UpdateSiteConfigDto,
 } from './site.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { Roles } from '../../common/guards/roles.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 // Gestão do site + triagem de solicitações (interno). Tenant sempre de req.auth.
-// Restrito a admin/gestor (CMS e leads de agendamento).
+// Restrito a admin/gestor (CMS e leads de agendamento). Ordem dos guards importa:
+// o JwtAuthGuard popula req.auth ANTES do RolesGuard lê-lo.
 @ApiTags('site')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin', 'gestor')
 @Controller('site')
 export class SiteController {
