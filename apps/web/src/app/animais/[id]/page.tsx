@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 interface Animal {
   id: string;
@@ -62,6 +63,15 @@ export default function ProntuarioPage() {
   const [valor, setValor] = useState('');
   const [faturar, setFaturar] = useState(true);
   const [anexoEvento, setAnexoEvento] = useState<File | null>(null);
+
+  // Internação: modal com listas gerenciadas (motivo/box) — escolhe da lista ou cria.
+  const [internarOpen, setInternarOpen] = useState(false);
+  const [motivoInput, setMotivoInput] = useState('');
+  const [boxInput, setBoxInput] = useState('');
+  const [motivos, setMotivos] = useState<{ id: string; nome: string }[]>([]);
+  const [boxes, setBoxes] = useState<{ id: string; nome: string }[]>([]);
+  const [internando, setInternando] = useState(false);
+  const [internarErr, setInternarErr] = useState<string | null>(null);
 
   // Itens do catálogo (tabela de preços) — selecionar preenche descrição/valor.
   const [catalogo, setCatalogo] = useState<{ id: string; codigo: string; nome: string; precoCentavos: number }[]>([]);
@@ -187,17 +197,41 @@ export default function ProntuarioPage() {
     }
   }
 
-  async function onInternar() {
-    const motivo = prompt(`Internar ${animal?.nome ?? 'o animal'} — motivo:`);
-    if (!motivo?.trim()) return;
-    const box = prompt('Box (opcional):') ?? undefined;
-    const { error } = await api.POST('/api/internacoes', {
-      body: { animalId: id, motivo: motivo.trim(), box: box?.trim() || undefined },
-    });
-    if (error) {
-      alert('Não foi possível internar (animal já internado?).');
+  function onInternar() {
+    setInternarErr(null);
+    setMotivoInput('');
+    setBoxInput('');
+    setInternarOpen(true);
+    void api
+      .GET('/api/internacoes/motivos')
+      .then(({ data }) => setMotivos((data as { id: string; nome: string }[]) ?? []));
+    void api
+      .GET('/api/internacoes/boxes')
+      .then(({ data }) => setBoxes((data as { id: string; nome: string }[]) ?? []));
+  }
+
+  async function confirmarInternar(e: FormEvent) {
+    e.preventDefault();
+    const motivo = motivoInput.trim();
+    const box = boxInput.trim();
+    if (!motivo) {
+      setInternarErr('Informe o motivo.');
       return;
     }
+    setInternando(true);
+    setInternarErr(null);
+    // Persiste na lista (dedup no servidor) o que for novo, para reaproveitar depois.
+    await api.POST('/api/internacoes/motivos', { body: { nome: motivo } });
+    if (box) await api.POST('/api/internacoes/boxes', { body: { nome: box } });
+    const { error } = await api.POST('/api/internacoes', {
+      body: { animalId: id, motivo, box: box || undefined },
+    });
+    setInternando(false);
+    if (error) {
+      setInternarErr('Não foi possível internar (animal já internado?).');
+      return;
+    }
+    setInternarOpen(false);
     router.push('/internacao');
   }
 
@@ -272,6 +306,54 @@ export default function ProntuarioPage() {
             </Button>
           </div>
         </div>
+
+        <Modal open={internarOpen} onClose={() => setInternarOpen(false)} title={`Internar ${animal.nome}`}>
+          <form onSubmit={confirmarInternar} className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Motivo *</span>
+              <input
+                list="internar-motivos"
+                autoFocus
+                value={motivoInput}
+                onChange={(e) => setMotivoInput(e.target.value)}
+                placeholder="Escolha da lista ou digite um novo…"
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
+              <datalist id="internar-motivos">
+                {motivos.map((m) => (
+                  <option key={m.id} value={m.nome} />
+                ))}
+              </datalist>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Box (opcional)</span>
+              <input
+                list="internar-boxes"
+                value={boxInput}
+                onChange={(e) => setBoxInput(e.target.value)}
+                placeholder="Escolha da lista ou digite um novo…"
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
+              <datalist id="internar-boxes">
+                {boxes.map((b) => (
+                  <option key={b.id} value={b.nome} />
+                ))}
+              </datalist>
+            </label>
+            <p className="text-xs text-gray-400">
+              Motivos e boxes novos são salvos na lista automaticamente (sem duplicar).
+            </p>
+            {internarErr && <p className="text-sm text-red-500">{internarErr}</p>}
+            <div className="flex justify-end gap-2 mt-1">
+              <Button type="button" variant="ghost" onClick={() => setInternarOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={internando}>
+                {internando ? 'Internando…' : 'Internar'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
 
         {editAnimal && (
           <form onSubmit={onSaveAnimal} className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3 md:items-end">

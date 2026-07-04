@@ -692,6 +692,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internacoes/motivos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listMotivos"];
+        put?: never;
+        post: operations["InternacaoController_criarMotivo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/boxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listBoxes"];
+        put?: never;
+        post: operations["InternacaoController_criarBox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internacoes/{id}": {
         parameters: {
             query?: never;
@@ -1856,6 +1888,14 @@ export interface components {
             motivo: string;
             /** @example Box 2 */
             box?: string;
+        };
+        ItemListaDto: {
+            id: string;
+            nome: string;
+        };
+        CriarItemListaDto: {
+            /** @example Pós-operatório */
+            nome: string;
         };
         ExecucaoDto: {
             id: string;
@@ -3549,6 +3589,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InternacaoResumoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_listMotivos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarMotivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_listBoxes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarBox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
                 };
             };
         };

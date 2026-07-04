@@ -1,10 +1,12 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { DatabaseService, type Database } from '../../database/database.service';
 import {
   animais,
   estoqueMovimentos,
+  internacaoBoxes,
   internacaoExecucoes,
+  internacaoMotivos,
   internacoes,
   itensCatalogo,
   prontuarioEventos,
@@ -14,10 +16,12 @@ import { FaturamentoService } from '../financeiro/faturamento.service';
 import type {
   AdmitirDto,
   AltaDto,
+  CriarItemListaDto,
   ExecucaoDto,
   ExecutarResultDto,
   InternacaoDetalheDto,
   InternacaoResumoDto,
+  ItemListaDto,
   PrescreverDto,
 } from './internacao.dto';
 
@@ -32,6 +36,53 @@ export class InternacaoService {
     private readonly database: DatabaseService,
     private readonly faturamento: FaturamentoService,
   ) {}
+
+  // ───────── Listas gerenciadas da admissão (motivos/boxes) ─────────
+
+  listMotivos(tenantId: string): Promise<ItemListaDto[]> {
+    return this.listaSimples(tenantId, internacaoMotivos);
+  }
+
+  criarMotivo(tenantId: string, dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.criarItemLista(tenantId, internacaoMotivos, dto.nome);
+  }
+
+  listBoxes(tenantId: string): Promise<ItemListaDto[]> {
+    return this.listaSimples(tenantId, internacaoBoxes);
+  }
+
+  criarBox(tenantId: string, dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.criarItemLista(tenantId, internacaoBoxes, dto.nome);
+  }
+
+  private listaSimples(
+    tenantId: string,
+    tabela: typeof internacaoMotivos | typeof internacaoBoxes,
+  ): Promise<ItemListaDto[]> {
+    return this.database.withTenant(tenantId, (tx) =>
+      tx.select({ id: tabela.id, nome: tabela.nome }).from(tabela).orderBy(asc(tabela.nome)).limit(500),
+    );
+  }
+
+  /** Cria o item se não existir (dedup case-insensitive) — nunca duplica. */
+  private criarItemLista(
+    tenantId: string,
+    tabela: typeof internacaoMotivos | typeof internacaoBoxes,
+    nomeRaw: string,
+  ): Promise<ItemListaDto> {
+    const nome = nomeRaw.trim();
+    if (!nome) throw new BadRequestException('Nome obrigatório');
+    return this.database.withTenant(tenantId, async (tx) => {
+      const existente = await tx
+        .select({ id: tabela.id, nome: tabela.nome })
+        .from(tabela)
+        .where(sql`lower(${tabela.nome}) = lower(${nome})`)
+        .limit(1);
+      if (existente[0]) return existente[0];
+      const [row] = await tx.insert(tabela).values({ tenantId, nome }).returning({ id: tabela.id, nome: tabela.nome });
+      return row;
+    });
+  }
 
   async admitir(tenantId: string, dto: AdmitirDto): Promise<InternacaoResumoDto> {
     return this.database.withTenant(tenantId, async (tx) => {

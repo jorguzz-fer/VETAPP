@@ -1,6 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
+// Item de uma lista gerenciada da admissão (motivo/box).
+export class ItemListaDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() nome!: string;
+}
+
+export class CriarItemListaDto {
+  @ApiProperty({ example: 'Pós-operatório' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  nome!: string;
+}
+
 export class AdmitirDto {
   @ApiProperty({ description: 'Animal a internar' })
   @IsUUID()
