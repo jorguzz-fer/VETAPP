@@ -47,7 +47,12 @@ export class ProntuarioService {
    * Registra um evento clínico e, se tiver valor e `faturar`, lança automaticamente
    * na fatura ABERTA do responsável (doc 04 §3). Anexo opcional (key já enviada).
    */
-  async createEvento(tenantId: string, animalId: string, dto: CreateEventoDto): Promise<EventoDto> {
+  async createEvento(
+    tenantId: string,
+    animalId: string,
+    dto: CreateEventoDto,
+    autorUserId?: string,
+  ): Promise<EventoDto> {
     if (dto.anexoKey && !dto.anexoKey.startsWith(`${tenantId}/animais/${animalId}/`)) {
       throw new BadRequestException('Chave de anexo inválida para este animal');
     }
@@ -73,6 +78,8 @@ export class ProntuarioService {
           descricao: `${dto.tipo}: ${dto.descricao}`,
           valorCentavos: dto.valorCentavos!,
           eventoId: ev.id,
+          // Quem registra o atendimento é comissionado (doc 05 §5).
+          profissionalId: autorUserId ?? null,
         });
       }
       return ev;

@@ -708,6 +708,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comissoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_apurar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/minhas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_minhas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/regras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_regras"];
+        put?: never;
+        post: operations["ComissoesController_upsertRegra"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/regras/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ComissoesController_removeRegra"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1216,6 +1280,41 @@ export interface components {
             ok: boolean;
             /** @description Total lançado na fatura aberta (centavos) */
             totalCentavos: number;
+        };
+        ApuracaoColaboradorDto: {
+            userId: string;
+            nome: string;
+            /** @description Base comissionável no período (centavos) */
+            baseCentavos: number;
+            /** @description Comissão apurada no período (centavos) */
+            comissaoCentavos: number;
+            lancamentos: number;
+        };
+        ApuracaoLinhaDto: {
+            descricao: string;
+            valorCentavos: number;
+            percentBps: number;
+            comissaoCentavos: number;
+            criadoEm: string;
+        };
+        RegraDto: {
+            id: string;
+            userId: string;
+            userNome: string;
+            itemId: string | null;
+            itemNome: string | null;
+            percentBps: number;
+        };
+        CreateRegraDto: {
+            /** @description Colaborador (membro do tenant) */
+            userId: string;
+            /** @description Item do catálogo; ausente = regra geral do colaborador */
+            itemId?: string;
+            /**
+             * @description Percentual em basis points (10% = 1000)
+             * @example 1000
+             */
+            percentBps: number;
         };
     };
     responses: never;
@@ -2497,6 +2596,117 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConverterResultDto"];
+                };
+            };
+        };
+    };
+    ComissoesController_apurar: {
+        parameters: {
+            query?: {
+                /** @description ISO 8601 */
+                from?: string;
+                /** @description ISO 8601 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApuracaoColaboradorDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_minhas: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApuracaoLinhaDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_regras: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegraDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_upsertRegra: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegraDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegraDto"];
+                };
+            };
+        };
+    };
+    ComissoesController_removeRegra: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
                 };
             };
         };

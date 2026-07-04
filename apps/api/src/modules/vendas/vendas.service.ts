@@ -140,7 +140,7 @@ export class VendasService {
   }
 
   /** Converte o orçamento em cobrança: lança cada linha na fatura aberta. */
-  async converter(tenantId: string, id: string): Promise<ConverterResultDto> {
+  async converter(tenantId: string, id: string, vendedorUserId?: string): Promise<ConverterResultDto> {
     return this.database.withTenant(tenantId, async (tx) => {
       const { orcamento } = await this.carregar(tx, id);
       if (orcamento.status === 'convertido') throw new BadRequestException('Orçamento já convertido');
@@ -156,6 +156,9 @@ export class VendasService {
         await this.faturamento.lancar(tx, tenantId, orcamento.responsavelId, {
           descricao: `orçamento: ${linha.descricao}${linha.quantidade > 1 ? ` x${linha.quantidade}` : ''}`,
           valorCentavos: valor,
+          itemId: linha.itemId,
+          // Quem converte a venda é comissionado (doc 05 §5).
+          profissionalId: vendedorUserId ?? null,
         });
         total += valor;
       }

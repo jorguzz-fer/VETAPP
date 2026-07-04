@@ -95,6 +95,21 @@ Fatia mínima (`apps/api/src/modules/vendas` + `/orcamentos` no web):
 | 5.2 Extratos | `/v2/comercial/comissao/extratos` | 🟡 MELHORAR — **não mostrar histórico antigo por padrão** |
 | 5.3 Minhas comissões | `/v2/comercial/comissao/minhascomissoes` | 🟢 MANTER — "cada um vê o seu" por login |
 
+### 5.4 Fase 1 — implementado ✅
+Fatia mínima (`apps/api/src/modules/comissoes` + `/comissoes` no web):
+- **Regras** por colaborador em **basis points** (10% = 1000; inteiro, nunca
+  float): regra geral e regra **por item do catálogo** (sobrepõe a geral).
+- **Atribuição automática do profissional** no faturamento acoplado
+  (`fatura_itens.profissional_id`/`item_id`): quem registra o atendimento,
+  executa a medicação da internação ou converte o orçamento é o comissionado.
+- **Fechamento** (5.1): apuração consolidada por colaborador no período.
+  **Minhas comissões** (5.3): extrato do próprio login, sem histórico antigo
+  por padrão (5.2 — período default = mês corrente).
+- API: `GET /api/comissoes`, `GET /api/comissoes/minhas`,
+  `GET/POST /api/comissoes/regras`, `DELETE /api/comissoes/regras/:id`.
+- Fase 2: status de fechamento/pago (integra Contas a pagar — doc 13 §1),
+  extratos históricos, override de profissional no lançamento.
+
 ## 6. Inteligência
 | Tela | Legado | Decisão |
 |------|--------|---------|
