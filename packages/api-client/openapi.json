@@ -1877,6 +1877,299 @@
           }
         ]
       }
+    },
+    "/api/orcamentos": {
+      "get": {
+        "operationId": "VendasController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "aberto",
+                "aprovado",
+                "recusado",
+                "convertido"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "responsavelId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrcamentoResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "VendasController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrcamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}": {
+      "get": {
+        "operationId": "VendasController_detalhe",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/itens": {
+      "post": {
+        "operationId": "VendasController_addItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddOrcamentoItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoItemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/itens/{linhaId}": {
+      "delete": {
+        "operationId": "VendasController_removeItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "linhaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/status": {
+      "patch": {
+        "operationId": "VendasController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrcamentoStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/converter": {
+      "post": {
+        "operationId": "VendasController_converter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConverterResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -3280,6 +3573,189 @@
             "example": "Alta com retorno em 7 dias"
           }
         }
+      },
+      "OrcamentoResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "observacoes",
+          "criadoEm"
+        ]
+      },
+      "CreateOrcamentoDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string",
+            "description": "Responsável (cliente) do orçamento"
+          },
+          "observacoes": {
+            "type": "string",
+            "example": "Pacote pós-cirúrgico"
+          }
+        },
+        "required": [
+          "responsavelId"
+        ]
+      },
+      "OrcamentoItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos"
+        ]
+      },
+      "OrcamentoDetalheDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          },
+          "linhas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrcamentoItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "observacoes",
+          "criadoEm",
+          "linhas"
+        ]
+      },
+      "AddOrcamentoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (herda nome/preço)"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 1
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor unitário em centavos; default = preço do catálogo"
+          }
+        }
+      },
+      "UpdateOrcamentoStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "aprovado",
+              "recusado"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ConverterResultDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "totalCentavos": {
+            "type": "number",
+            "description": "Total lançado na fatura aberta (centavos)"
+          }
+        },
+        "required": [
+          "ok",
+          "totalCentavos"
+        ]
       }
     }
   }

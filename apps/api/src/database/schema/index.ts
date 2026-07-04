@@ -9,3 +9,4 @@ export * from './catalogo';
 export * from './estoque';
 export * from './internacao';
 export * from './tipos-atendimento';
+export * from './orcamentos';

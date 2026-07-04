@@ -612,6 +612,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orcamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["VendasController_list"];
+        put?: never;
+        post: operations["VendasController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["VendasController_detalhe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/itens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["VendasController_addItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/itens/{linhaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["VendasController_removeItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["VendasController_updateStatus"];
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/converter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["VendasController_converter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1067,6 +1163,59 @@ export interface components {
         AltaDto: {
             /** @example Alta com retorno em 7 dias */
             observacoes?: string;
+        };
+        OrcamentoResumoDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            itens: number;
+            observacoes: string | null;
+            criadoEm: string;
+        };
+        CreateOrcamentoDto: {
+            /** @description Responsável (cliente) do orçamento */
+            responsavelId: string;
+            /** @example Pacote pós-cirúrgico */
+            observacoes?: string;
+        };
+        OrcamentoItemDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number;
+        };
+        OrcamentoDetalheDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            itens: number;
+            observacoes: string | null;
+            criadoEm: string;
+            linhas: components["schemas"]["OrcamentoItemDto"][];
+        };
+        AddOrcamentoItemDto: {
+            /** @description Item do catálogo (herda nome/preço) */
+            itemId?: string;
+            /** @description Descrição livre (obrigatória sem itemId) */
+            descricao?: string;
+            /** @example 1 */
+            quantidade?: number;
+            /** @description Valor unitário em centavos; default = preço do catálogo */
+            valorCentavos?: number;
+        };
+        UpdateOrcamentoStatusDto: {
+            /** @enum {string} */
+            status: "aprovado" | "recusado";
+        };
+        ConverterResultDto: {
+            ok: boolean;
+            /** @description Total lançado na fatura aberta (centavos) */
+            totalCentavos: number;
         };
     };
     responses: never;
@@ -2187,6 +2336,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InternacaoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_list: {
+        parameters: {
+            query?: {
+                status?: "aberto" | "aprovado" | "recusado" | "convertido";
+                responsavelId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"][];
+                };
+            };
+        };
+    };
+    VendasController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrcamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_detalhe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoDetalheDto"];
+                };
+            };
+        };
+    };
+    VendasController_addItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddOrcamentoItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoItemDto"];
+                };
+            };
+        };
+    };
+    VendasController_removeItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                linhaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    VendasController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrcamentoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_converter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConverterResultDto"];
                 };
             };
         };

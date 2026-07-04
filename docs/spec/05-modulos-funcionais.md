@@ -73,6 +73,19 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 4.12 Modelo de demonstrativo | `/config/modelodemonstrativo/...` | ⚪ DEFINIR — config de impressão |
 | 4.13 Configuração (regras de venda) | `/venda/configuracao/...` | 🟢 MANTER → mover p/ área de **Configuração** |
 
+### 4.14 Fase 1 — implementado ✅ (Orçamentos)
+Fatia mínima (`apps/api/src/modules/vendas` + `/orcamentos` no web):
+- **Orçamento acoplado à ficha do cliente** (§2.2): botão "Orçamento" na ficha;
+  itens **por código do catálogo** (preço herdado, congelado na inclusão) ou
+  lançamento livre; quantidade e valor unitário em centavos.
+- **Ciclo**: `aberto → aprovado/recusado → convertido`. **Converter** lança cada
+  linha na fatura aberta do responsável (`FaturamentoService`), fechando
+  orçamento → venda → cobrança.
+- API: `GET/POST /api/orcamentos`, `GET /api/orcamentos/:id`,
+  `POST/DELETE .../itens`, `PATCH .../status`, `POST .../converter`.
+- Fase 2: modelos de orçamento/pacotes (4.11), dashboard único de vendas (4.2),
+  regras de venda/descontos (4.13), demonstrativo de impressão (4.12).
+
 ## 5. Comissionamento
 > Cada item/serviço tem regra de comissão por colaborador.
 

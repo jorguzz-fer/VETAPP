@@ -32,6 +32,7 @@ export const navSections: NavSection[] = [
   {
     title: 'Comercial',
     items: [
+      { label: 'Orçamentos', href: '/orcamentos', icon: 'ri-file-list-3-line' },
       { label: 'Faturas', href: '/faturas', icon: 'ri-bill-line' },
       { label: 'Tabela de preços', href: '/precos', icon: 'ri-price-tag-3-line' },
       { label: 'Estoque', href: '/estoque', icon: 'ri-archive-2-line' },
