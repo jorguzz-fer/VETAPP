@@ -5637,12 +5637,22 @@
           "valorCentavos": {
             "type": "number"
           },
+          "itemId": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
           "data": {
             "type": "string"
           },
           "anexoUrl": {
             "type": "string",
             "description": "URL assinada (curta) do anexo, se houver"
+          },
+          "estoqueBaixado": {
+            "type": "boolean",
+            "description": "Estoque baixado automaticamente neste registro"
           }
         },
         "required": [
@@ -5675,6 +5685,15 @@
           "valorCentavos": {
             "type": "number",
             "description": "Valor em centavos (ex.: 15000 = R$ 150,00)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (dá baixa no estoque se estocável)"
+          },
+          "quantidade": {
+            "type": "number",
+            "default": 1,
+            "description": "Quantidade do item (baixa de estoque)"
           },
           "faturar": {
             "type": "boolean",

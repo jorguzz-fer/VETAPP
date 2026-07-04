@@ -12,6 +12,10 @@ export const prontuarioEventos = pgTable(
     animalId: uuid('animal_id').notNull().references(() => animais.id, { onDelete: 'cascade' }),
     tipo: text('tipo').notNull(), // atendimento | peso | vacina | exame | receita | observacao | internacao
     descricao: text('descricao').notNull(),
+    // Item do catálogo referenciado (opcional). Se estocável, o evento dá baixa
+    // automática no estoque (doc 13 §2). FK em SQL (0025) p/ evitar ciclo de import.
+    itemId: uuid('item_id'),
+    quantidade: integer('quantidade').notNull().default(1),
     // Dinheiro em centavos (inteiro) — evita float (blueprint §10). Null = sem faturamento.
     valorCentavos: integer('valor_centavos'),
     // Anexo opcional (documento/exame/vídeo) no storage (R2); leitura via URL assinada.

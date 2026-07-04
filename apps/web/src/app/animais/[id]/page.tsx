@@ -61,6 +61,8 @@ export default function ProntuarioPage() {
   const [tipo, setTipo] = useState<Tipo>('atendimento');
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
+  const [itemId, setItemId] = useState<string>('');
+  const [quantidade, setQuantidade] = useState('1');
   const [faturar, setFaturar] = useState(true);
   const [anexoEvento, setAnexoEvento] = useState<File | null>(null);
 
@@ -89,8 +91,9 @@ export default function ProntuarioPage() {
     });
   }, [showForm, catalogo.length]);
 
-  function onPickCatalogo(itemId: string) {
-    const item = catalogo.find((c) => c.id === itemId);
+  function onPickCatalogo(selId: string) {
+    setItemId(selId);
+    const item = catalogo.find((c) => c.id === selId);
     if (!item) return;
     setDescricao(`${item.nome} (cód. ${item.codigo})`);
     setValor((item.precoCentavos / 100).toFixed(2).replace('.', ','));
@@ -157,13 +160,19 @@ export default function ProntuarioPage() {
         anexoKey = sign.data.key;
       }
 
+      const qtd = Math.max(1, parseInt(quantidade, 10) || 1);
       const { data } = await api.POST('/api/animais/{id}/eventos', {
         params: { path: { id } },
-        body: { tipo, descricao, valorCentavos, faturar, anexoKey },
+        body: { tipo, descricao, valorCentavos, faturar, anexoKey, itemId: itemId || undefined, quantidade: qtd },
       });
       if (data) {
+        if (itemId && !data.estoqueBaixado) {
+          alert('Evento registrado, mas o estoque não foi baixado (item não estocável ou sem saldo).');
+        }
         setDescricao('');
         setValor('');
+        setItemId('');
+        setQuantidade('1');
         setAnexoEvento(null);
         setShowForm(false);
         await load();
@@ -532,6 +541,20 @@ export default function ProntuarioPage() {
                 className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
               />
             </label>
+            {itemId && (
+              <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                <span className="text-gray-600 dark:text-gray-300">
+                  Quantidade (baixa do estoque, se o item for estocável)
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  value={quantidade}
+                  onChange={(e) => setQuantidade(e.target.value)}
+                  className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500 w-32"
+                />
+              </label>
+            )}
             <label className="flex flex-col gap-1 text-sm md:col-span-2">
               <span className="text-gray-600 dark:text-gray-300">Descrição</span>
               <input

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, faturaItens, faturas, prontuarioEventos } from '../../database/schema';
+import { animais, estoqueMovimentos, faturaItens, faturas, itensCatalogo, prontuarioEventos } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import { FaturamentoService } from '../financeiro/faturamento.service';
 import type {
@@ -12,6 +12,10 @@ import type {
 } from './prontuario.dto';
 
 type EventoRow = typeof prontuarioEventos.$inferSelect;
+
+// Tipos de item do catálogo com saldo físico (mesma regra dos módulos Estoque e
+// Internação). Serviços/exames/cirurgias não controlam estoque.
+const TIPOS_ESTOCAVEIS = new Set(['produto', 'medicamento', 'vacina']);
 
 @Injectable()
 export class ProntuarioService {
@@ -56,9 +60,16 @@ export class ProntuarioService {
     if (dto.anexoKey && !dto.anexoKey.startsWith(`${tenantId}/animais/${animalId}/`)) {
       throw new BadRequestException('Chave de anexo inválida para este animal');
     }
-    const evento = await this.database.withTenant(tenantId, async (tx) => {
+    const quantidade = dto.quantidade && dto.quantidade > 0 ? dto.quantidade : 1;
+    const { evento, estoqueBaixado } = await this.database.withTenant(tenantId, async (tx) => {
       const animal = await tx.query.animais.findFirst({ where: eq(animais.id, animalId) });
       if (!animal) throw new NotFoundException('Animal não encontrado');
+
+      // Item do catálogo (opcional): valida existência e escopo do tenant.
+      if (dto.itemId) {
+        const item = await tx.query.itensCatalogo.findFirst({ where: eq(itensCatalogo.id, dto.itemId) });
+        if (!item) throw new BadRequestException('Item do catálogo inválido');
+      }
 
       const [ev] = await tx
         .insert(prontuarioEventos)
@@ -67,10 +78,36 @@ export class ProntuarioService {
           animalId,
           tipo: dto.tipo,
           descricao: dto.descricao,
+          itemId: dto.itemId ?? null,
+          quantidade,
           valorCentavos: dto.valorCentavos ?? null,
           anexoKey: dto.anexoKey ?? null,
         })
         .returning();
+
+      // Baixa automática de estoque: só quando o item é estocável e há saldo (fase
+      // 1 não permite saldo negativo; o registro clínico não é bloqueado por isso —
+      // mesma regra da internação, doc 13 §2).
+      let baixou = false;
+      if (dto.itemId) {
+        const item = await tx.query.itensCatalogo.findFirst({ where: eq(itensCatalogo.id, dto.itemId) });
+        if (item && TIPOS_ESTOCAVEIS.has(item.tipo)) {
+          const [{ saldo }] = await tx
+            .select({ saldo: sql<number>`coalesce(sum(${estoqueMovimentos.quantidade}), 0)::int` })
+            .from(estoqueMovimentos)
+            .where(eq(estoqueMovimentos.itemId, dto.itemId));
+          if (saldo >= quantidade) {
+            await tx.insert(estoqueMovimentos).values({
+              tenantId,
+              itemId: dto.itemId,
+              tipo: 'saida',
+              quantidade: -quantidade,
+              motivo: `prontuário: ${dto.descricao}`,
+            });
+            baixou = true;
+          }
+        }
+      }
 
       const deveFaturar = (dto.valorCentavos ?? 0) > 0 && dto.faturar !== false;
       if (deveFaturar) {
@@ -78,14 +115,15 @@ export class ProntuarioService {
           descricao: `${dto.tipo}: ${dto.descricao}`,
           valorCentavos: dto.valorCentavos!,
           eventoId: ev.id,
-          // Quem registra o atendimento é comissionado (doc 05 §5).
+          // Rastreio p/ comissão: item de origem e quem registrou (doc 05 §5).
+          itemId: dto.itemId ?? null,
           profissionalId: autorUserId ?? null,
         });
       }
-      return ev;
+      return { evento: ev, estoqueBaixado: baixou };
     });
 
-    return this.toEventoDto(evento);
+    return { ...(await this.toEventoDto(evento)), estoqueBaixado };
   }
 
   async getFaturaAberta(tenantId: string, responsavelId: string): Promise<FaturaDto | null> {
@@ -120,6 +158,8 @@ export class ProntuarioService {
       animalId: r.animalId,
       tipo: r.tipo,
       descricao: r.descricao,
+      itemId: r.itemId,
+      quantidade: r.quantidade,
       valorCentavos: r.valorCentavos,
       data: r.data as unknown as string,
       anexoUrl: await this.storage.signDownload(r.anexoKey),

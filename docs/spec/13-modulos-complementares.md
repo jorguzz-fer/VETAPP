@@ -98,10 +98,15 @@ Fatia mínima entregue (`apps/api/src/modules/estoque` + `/estoque` no web):
 - API: `GET /api/estoque`, `GET /api/estoque/:itemId/movimentos`,
   `POST /api/estoque/movimentos`, `PATCH /api/estoque/:itemId/minimo`.
 
-**Fase 2**: baixa automática (venda / medicação na internação — fecha o ciclo
-clínico→estoque→financeiro), lotes/validade, múltiplos depósitos, fornecedores/
-pedidos de compra, curva ABC. A baixa automática depende de o evento do prontuário
-passar a referenciar o **item de catálogo** (hoje o evento tem só `valorCentavos`).
+**Fase 2 — baixa automática implementada ✅**: além da internação (medicação
+executada), **o evento do prontuário** agora referencia o item do catálogo
+(`item_id` + `quantidade`, migração 0025). Ao registrar um evento cujo item é
+estocável (produto/medicamento/vacina) e há saldo, gera-se `saida` no estoque
+automaticamente — fechando o ciclo clínico→estoque→financeiro (o `item_id` também
+alimenta a comissão no `fatura_itens`). Não bloqueia o registro clínico se faltar
+saldo (fase 1 não permite saldo negativo): registra o evento e sinaliza
+`estoqueBaixado:false`. **Ainda fase 2+**: baixa na **venda** direta, lotes/
+validade, múltiplos depósitos, fornecedores/pedidos de compra, curva ABC.
 
 ---
 
