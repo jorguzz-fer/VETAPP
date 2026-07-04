@@ -158,6 +158,14 @@ evoluindo para orquestração só quando necessário.
   reproduzível.
 - **CI/CD**: pipeline que builda, testa, escaneia e publica imagem; deploy
   automatizado (rolling/blue-green quando possível) com rollback fácil.
+  > **Lição estrutural — migrations no *release*, nunca no *build*:** o `docker build`
+  > roda sem (e não deve ter) acesso ao banco de produção — migrar ali é errado e
+  > costuma nem ser possível. Rode as migrations no **start do container** (entrypoint:
+  > `migrate && exec app`), idempotente e **fail-fast** (schema quebrado = container
+  > não sobe). Use o papel **admin** (DDL/RLS) só aqui; a app roda com o papel restrito.
+  > Evite "pre-deploy commands" de PaaS que executam no **container antigo** (são
+  > pulados se ele estiver morto) — o entrypoint sempre roda com a imagem nova. Deixe
+  > um flag de opt-out (`RUN_MIGRATIONS=false`) para quem gere o schema à parte.
 - **Backups + DR**: backup automatizado do banco (dump + PITR quando der), cópia
   off-site cifrada; **testar restauração** periodicamente. Definir **RPO/RTO**.
 - **Custo/FinOps**: dimensionar para o uso real; storage com egress baixo;

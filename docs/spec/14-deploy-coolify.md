@@ -38,13 +38,21 @@ migrations/DDL/RLS) e `DATABASE_URL` (`vetapp_app`, runtime da app).
 
 ## Migrations
 
-Rodar a cada deploy com migration nova (usa `DATABASE_ADMIN_URL`):
+**Rodam automaticamente no START do container da API** (entrypoint do Dockerfile:
+`node dist/database/migrate.js && exec node dist/main.js`), usando `DATABASE_ADMIN_URL`.
+São idempotentes (o drizzle aplica só o que falta) e **fail-fast**: se a migration
+falhar, o container não sobe com schema quebrado. **Nada manual no deploy normal.**
 
-```
-pnpm --filter @vetapp/api db:migrate
-```
+- **NÃO** roda no `docker build` (a imagem é construída sem acesso ao banco; um build
+  jamais deve tocar dados de produção). O lugar correto é o *release*/start.
+- Requer `DATABASE_ADMIN_URL` setada nas ENVs da API (papel admin — DDL + RLS).
+- Para gerir o schema à parte, defina `RUN_MIGRATIONS=false` (o boot pula o migrate).
+- Fallback manual (raro — ex.: reaplicar após restore): no Terminal da API,
+  `node dist/database/migrate.js`.
 
-Recomendado como **pre-deploy command** da API no Coolify.
+> Evita o pre-deploy command do Coolify de propósito: ele roda no **container antigo**
+> e é pulado se ele estiver morto ("Skipping"). O entrypoint sempre roda com a imagem
+> nova.
 
 ## ENVs — API
 

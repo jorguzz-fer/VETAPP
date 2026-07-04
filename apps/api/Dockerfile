@@ -32,4 +32,9 @@ COPY --chown=node:node --from=build /out/node_modules ./node_modules
 COPY --chown=node:node --from=build /app/apps/api/dist ./dist
 COPY --chown=node:node --from=build /app/apps/api/src/database/migrations ./src/database/migrations
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+# Aplica as migrations (como admin, via DATABASE_ADMIN_URL) no START do container,
+# antes de subir a API. Idempotente: o drizzle só aplica o que falta. Se a migration
+# falhar, o `&&` aborta e o container não sobe com schema quebrado (fail-fast).
+# `exec` passa PID 1 para o node (SIGTERM → shutdown gracioso). Para pular (schema
+# gerido à parte), defina RUN_MIGRATIONS=false.
+CMD ["sh", "-c", "if [ \"$RUN_MIGRATIONS\" != \"false\" ]; then node dist/database/migrate.js; fi && exec node dist/main.js"]
