@@ -1890,9 +1890,13 @@ export interface components {
             tipo: string;
             descricao: string;
             valorCentavos?: number;
+            itemId?: string;
+            quantidade?: number;
             data: string;
             /** @description URL assinada (curta) do anexo, se houver */
             anexoUrl?: string;
+            /** @description Estoque baixado automaticamente neste registro */
+            estoqueBaixado?: boolean;
         };
         CreateEventoDto: {
             /** @enum {string} */
@@ -1901,6 +1905,13 @@ export interface components {
             descricao: string;
             /** @description Valor em centavos (ex.: 15000 = R$ 150,00) */
             valorCentavos?: number;
+            /** @description Item do catálogo (dá baixa no estoque se estocável) */
+            itemId?: string;
+            /**
+             * @description Quantidade do item (baixa de estoque)
+             * @default 1
+             */
+            quantidade: number;
             /**
              * @description Gera lançamento na fatura do cliente
              * @default true

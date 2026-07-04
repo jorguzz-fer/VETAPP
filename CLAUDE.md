@@ -119,8 +119,14 @@ Pendências conhecidas:
   `/auth/logout`; renovação proativa no front) e **recovery codes de MFA**
   (`mfa_recovery_codes`, `/auth/mfa/recovery-codes`, aceitos no `/auth/mfa/verify`;
   UI em `/configuracoes`). Tabelas globais sem RLS (escopo por `jti`/`user_id`).
-- Fase 2 documentada (pendente): histórico/vigência de preços, baixa automática de
-  estoque (exige evento do prontuário referenciar item de catálogo), **MFA
+- **Baixa automática de estoque feita** (doc 13 §2): o evento do prontuário passa a
+  referenciar um item do catálogo (`item_id` + `quantidade`, migração 0025). Ao
+  registrar, se o item é estocável (produto/medicamento/vacina) e há saldo, gera
+  `saida` no estoque automaticamente (mesma regra da internação; não bloqueia o
+  registro clínico se faltar saldo — sinaliza `estoqueBaixado:false`). `item_id`
+  também vai ao `fatura_itens` (comissão). UI: picker de catálogo + quantidade na
+  ficha do animal.
+- Fase 2 documentada (pendente): histórico/vigência de preços, **MFA
   obrigatório por papel**, migração de token para cookie httpOnly/BFF, WebAuthn.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
