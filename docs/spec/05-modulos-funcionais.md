@@ -44,6 +44,16 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 3.2 Escala | `/escala/escala.php` | 🟡 MANTER com ressalva (útil quando cresce) |
 | 3.3 Config. da Agenda | `/config/agenda/agenda.php` | 🟡 MELHORAR — corrigir navegabilidade (fluxo "trava"); criar usuário já cria agenda |
 
+### 3.4 Fase 1 avançada — implementado ✅
+- **Tipos de atendimento** (§8.5): cadastro (nome, duração padrão, cor) em
+  `/cadastros`; agendar com tipo deriva o fim automaticamente e colore o evento.
+- **Profissional por agendamento** (validado como membro do tenant) + filtro por
+  profissional na agenda, incluindo **"Minha agenda"** (3.1, agenda por login).
+- **Status**: `agendado | confirmado | concluido | faltou | cancelado`
+  (`PATCH /api/agenda/:id/status`).
+- Fase 2: Google Agenda + IA (doc 06), escala (3.2), "criar usuário cria
+  agenda" (3.3), agendamento online (Site, doc 13 §4).
+
 ## 4. Vendas
 > Tema: **muita redundância**. Objetivo: **um dashboard único de vendas**.
 

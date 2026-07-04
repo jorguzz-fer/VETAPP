@@ -71,8 +71,10 @@ O teste **autoritativo** de isolamento é `apps/api/test/tenant-isolation.spec.t
 Feito: scaffolds (api/web), clientes & animais, prontuário + faturamento acoplado,
 signup/cadastro, agenda, storage R2 (foto + anexos), catálogo/tabela de preços,
 MFA + Google, financeiro (faturas + baixa), estoque (saldo/movimentações/mínimo),
-**internação** (admissão → mapa de execução com baixa de estoque + faturamento
-automáticos → alta; faturamento compartilhado via `FaturamentoService`).
+internação (admissão → mapa de execução com baixa de estoque + faturamento
+automáticos → alta; faturamento compartilhado via `FaturamentoService`),
+**agenda avançada** (tipos de atendimento com duração/cor em `/cadastros`,
+profissional por agendamento, "minha agenda", status).
 **App em produção** (Coolify/VPS): runbook e troubleshooting em `docs/spec/14`.
 
 Pendências conhecidas:

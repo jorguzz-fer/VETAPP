@@ -71,6 +71,13 @@
       "when": 1719591300000,
       "tag": "0009_internacao",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1719591400000,
+      "tag": "0010_tipos_atendimento",
+      "breakpoints": true
     }
   ]
 }
