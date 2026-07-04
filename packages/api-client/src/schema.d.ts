@@ -308,6 +308,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/faturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/faturas/{id}/pagar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinanceiroController_pagar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agenda": {
         parameters: {
             query?: never;
@@ -372,38 +404,6 @@ export interface paths {
         patch: operations["CatalogoController_update"];
         trace?: never;
     };
-    "/api/faturas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FinanceiroController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/faturas/{id}/pagar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["FinanceiroController_pagar"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/estoque": {
         parameters: {
             query?: never;
@@ -466,6 +466,86 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["EstoqueController_minimo"];
+        trace?: never;
+    };
+    "/api/internacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_list"];
+        put?: never;
+        post: operations["InternacaoController_admitir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_detalhe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/execucoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_prescrever"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/execucoes/{execId}/executar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_executar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/alta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_alta"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -683,6 +763,15 @@ export interface components {
             totalCentavos: number;
             itens: components["schemas"]["FaturaItemDto"][];
         };
+        FaturaResumoDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            itens: number;
+            criadaEm: string;
+        };
         AgendamentoDto: {
             id: string;
             titulo: string;
@@ -742,15 +831,6 @@ export interface components {
             precoCentavos?: number;
             ativo?: boolean;
         };
-        FaturaResumoDto: {
-            id: string;
-            responsavelId: string;
-            responsavelNome: string;
-            status: string;
-            totalCentavos: number;
-            itens: number;
-            criadaEm: string;
-        };
         SaldoItemDto: {
             itemId: string;
             codigo: string;
@@ -798,6 +878,84 @@ export interface components {
         SetMinimoDto: {
             /** @example 5 */
             estoqueMinimo: number;
+        };
+        InternacaoResumoDto: {
+            id: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            motivo: string;
+            box: string | null;
+            status: string;
+            entradaEm: string;
+            altaEm: string | null;
+            /** @description Prescrições ainda não executadas */
+            pendentes: number;
+        };
+        AdmitirDto: {
+            /** @description Animal a internar */
+            animalId: string;
+            /** @example Pós-operatório de castração */
+            motivo: string;
+            /** @example Box 2 */
+            box?: string;
+        };
+        ExecucaoDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number | null;
+            executadaEm: string | null;
+        };
+        InternacaoDetalheDto: {
+            id: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            motivo: string;
+            box: string | null;
+            status: string;
+            entradaEm: string;
+            altaEm: string | null;
+            /** @description Prescrições ainda não executadas */
+            pendentes: number;
+            observacoes: string | null;
+            execucoes: components["schemas"]["ExecucaoDto"][];
+        };
+        PrescreverDto: {
+            /** @description Item do catálogo (medicamento/procedimento) */
+            itemId?: string;
+            /**
+             * @description Descrição livre (obrigatória sem itemId)
+             * @example Dipirona 25mg/kg IV
+             */
+            descricao?: string;
+            /**
+             * @description Quantidade (baixa de estoque por execução)
+             * @example 1
+             */
+            quantidade?: number;
+            /** @description Valor unitário em centavos; default = preço do catálogo */
+            valorCentavos?: number;
+        };
+        ExecutarResultDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number | null;
+            executadaEm: string | null;
+            /** @description false quando não havia saldo em estoque (execução registrada mesmo assim) */
+            estoqueBaixado: boolean;
+            /** @description true quando o valor foi lançado na fatura aberta */
+            faturado: boolean;
+        };
+        AltaDto: {
+            /** @example Alta com retorno em 7 dias */
+            observacoes?: string;
         };
     };
     responses: never;
@@ -1368,6 +1526,48 @@ export interface operations {
             };
         };
     };
+    FinanceiroController_list: {
+        parameters: {
+            query?: {
+                status?: "aberta" | "paga" | "cancelada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FaturaResumoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_pagar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
     AgendaController_list: {
         parameters: {
             query?: {
@@ -1533,48 +1733,6 @@ export interface operations {
             };
         };
     };
-    FinanceiroController_list: {
-        parameters: {
-            query?: {
-                status?: "aberta" | "paga" | "cancelada";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FaturaResumoDto"][];
-                };
-            };
-        };
-    };
-    FinanceiroController_pagar: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OkDto"];
-                };
-            };
-        };
-    };
     EstoqueController_saldos: {
         parameters: {
             query?: {
@@ -1664,6 +1822,143 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaldoItemDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_list: {
+        parameters: {
+            query?: {
+                status?: "internado" | "alta";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_admitir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdmitirDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_detalhe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoDetalheDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_prescrever: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrescreverDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_executar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                execId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutarResultDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_alta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AltaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"];
                 };
             };
         };

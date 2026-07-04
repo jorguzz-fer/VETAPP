@@ -893,6 +893,84 @@
         ]
       }
     },
+    "/api/faturas": {
+      "get": {
+        "operationId": "FinanceiroController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "aberta",
+                "paga",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FaturaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{id}/pagar": {
+      "post": {
+        "operationId": "FinanceiroController_pagar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/agenda": {
       "get": {
         "operationId": "AgendaController_list",
@@ -1185,84 +1263,6 @@
         ]
       }
     },
-    "/api/faturas": {
-      "get": {
-        "operationId": "FinanceiroController_list",
-        "parameters": [
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "aberta",
-                "paga",
-                "cancelada"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FaturaResumoDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "financeiro"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/faturas/{id}/pagar": {
-      "post": {
-        "operationId": "FinanceiroController_pagar",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OkDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "financeiro"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/api/estoque": {
       "get": {
         "operationId": "EstoqueController_saldos",
@@ -1422,6 +1422,250 @@
         },
         "tags": [
           "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes": {
+      "get": {
+        "operationId": "InternacaoController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "internado",
+                "alta"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InternacaoResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_admitir",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdmitirDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}": {
+      "get": {
+        "operationId": "InternacaoController_detalhe",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/execucoes": {
+      "post": {
+        "operationId": "InternacaoController_prescrever",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrescreverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecucaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/execucoes/{execId}/executar": {
+      "post": {
+        "operationId": "InternacaoController_executar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "execId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutarResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/alta": {
+      "post": {
+        "operationId": "InternacaoController_alta",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AltaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
         ],
         "security": [
           {
@@ -2094,6 +2338,41 @@
           "itens"
         ]
       },
+      "FaturaResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "criadaEm"
+        ]
+      },
       "AgendamentoDto": {
         "type": "object",
         "properties": {
@@ -2258,41 +2537,6 @@
           }
         }
       },
-      "FaturaResumoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "responsavelId": {
-            "type": "string"
-          },
-          "responsavelNome": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "totalCentavos": {
-            "type": "number"
-          },
-          "itens": {
-            "type": "number"
-          },
-          "criadaEm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "responsavelId",
-          "responsavelNome",
-          "status",
-          "totalCentavos",
-          "itens",
-          "criadaEm"
-        ]
-      },
       "SaldoItemDto": {
         "type": "object",
         "properties": {
@@ -2453,6 +2697,257 @@
         "required": [
           "estoqueMinimo"
         ]
+      },
+      "InternacaoResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "box": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "entradaEm": {
+            "type": "string"
+          },
+          "altaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendentes": {
+            "type": "number",
+            "description": "Prescrições ainda não executadas"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "motivo",
+          "box",
+          "status",
+          "entradaEm",
+          "altaEm",
+          "pendentes"
+        ]
+      },
+      "AdmitirDto": {
+        "type": "object",
+        "properties": {
+          "animalId": {
+            "type": "string",
+            "description": "Animal a internar"
+          },
+          "motivo": {
+            "type": "string",
+            "example": "Pós-operatório de castração"
+          },
+          "box": {
+            "type": "string",
+            "example": "Box 2"
+          }
+        },
+        "required": [
+          "animalId",
+          "motivo"
+        ]
+      },
+      "ExecucaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "executadaEm": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos",
+          "executadaEm"
+        ]
+      },
+      "InternacaoDetalheDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "box": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "entradaEm": {
+            "type": "string"
+          },
+          "altaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendentes": {
+            "type": "number",
+            "description": "Prescrições ainda não executadas"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "execucoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExecucaoDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "motivo",
+          "box",
+          "status",
+          "entradaEm",
+          "altaEm",
+          "pendentes",
+          "observacoes",
+          "execucoes"
+        ]
+      },
+      "PrescreverDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (medicamento/procedimento)"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)",
+            "example": "Dipirona 25mg/kg IV"
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Quantidade (baixa de estoque por execução)",
+            "example": 1
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor unitário em centavos; default = preço do catálogo"
+          }
+        }
+      },
+      "ExecutarResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "executadaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "estoqueBaixado": {
+            "type": "boolean",
+            "description": "false quando não havia saldo em estoque (execução registrada mesmo assim)"
+          },
+          "faturado": {
+            "type": "boolean",
+            "description": "true quando o valor foi lançado na fatura aberta"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos",
+          "executadaEm",
+          "estoqueBaixado",
+          "faturado"
+        ]
+      },
+      "AltaDto": {
+        "type": "object",
+        "properties": {
+          "observacoes": {
+            "type": "string",
+            "example": "Alta com retorno em 7 dias"
+          }
+        }
       }
     }
   }

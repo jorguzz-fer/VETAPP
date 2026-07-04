@@ -121,6 +121,21 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 9.6 Modelos de prescrição | `/internamento/prescricaomodelo/...` | 🟢 MANTER (acelera prescrição) |
 | 9.7 Boxes | `/v3/internacao/boxes` | 🟢 **ATIVAR** — cadastrar boxes físicos (base do tablet por box) |
 
+### 9.8 Fase 1 — implementado ✅
+Fatia mínima entregue (`apps/api/src/modules/internacao` + `/internacao` no web):
+- **Admissão explícita** (9.4): animal + motivo + box (texto livre; cadastro de
+  boxes 9.7 fica p/ fase 2). Vira evento na linha do tempo do animal.
+- **Mapa de execução** (9.2): prescrever item do catálogo (preço herdado) ou
+  lançamento livre; **executar = baixa de estoque automática** (itens estocáveis;
+  a execução clínica nunca é bloqueada por falta de saldo — sinaliza no retorno)
+  **+ faturamento automático** na fatura aberta do responsável (helper
+  compartilhado `FaturamentoService`, usado também pelo prontuário).
+- **Alta** (9.4): encerra e registra na linha do tempo. Painel lista internados
+  com pendências (9.1). TV/tablet por box, parâmetros clínicos (9.5) e modelos
+  de prescrição (9.6) → fase 2.
+- API: `GET/POST /api/internacoes`, `GET /api/internacoes/:id`,
+  `POST .../execucoes`, `POST .../execucoes/:execId/executar`, `POST .../alta`.
+
 ---
 
 ## Reposicionamento de telas (resumo)
