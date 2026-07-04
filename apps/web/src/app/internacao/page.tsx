@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 interface Internacao {
   id: string;
@@ -37,6 +38,22 @@ interface ItemCatalogo {
   precoCentavos: number;
 }
 
+interface ModeloPrescricao {
+  id: string;
+  nome: string;
+  itens: { itemId: string | null; descricao: string; quantidade: number }[];
+}
+
+interface Parametro {
+  id: string;
+  pesoKg: number | null;
+  temperaturaC: number | null;
+  fc: number | null;
+  fr: number | null;
+  observacao: string | null;
+  registradoEm: string;
+}
+
 const brl = (c: number) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const inputCls =
   'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
@@ -61,6 +78,23 @@ export default function InternacaoPage() {
     valor: '',
   });
 
+  // Modelos de prescrição + parâmetros clínicos (doc 05 §9.5/§9.6).
+  const [modelos, setModelos] = useState<ModeloPrescricao[]>([]);
+  const [modeloSel, setModeloSel] = useState('');
+  const [parametros, setParametros] = useState<Parametro[]>([]);
+  const [paramForm, setParamForm] = useState({ pesoKg: '', temperaturaC: '', fc: '', fr: '', observacao: '' });
+  // Modal de gestão de modelos de prescrição.
+  const [tplOpen, setTplOpen] = useState(false);
+  const [tplNome, setTplNome] = useState('');
+  const [tplItens, setTplItens] = useState<{ itemId: string; descricao: string; quantidade: string }[]>([
+    { itemId: '', descricao: '', quantidade: '1' },
+  ]);
+
+  const loadModelos = useCallback(async () => {
+    const { data } = await api.GET('/api/internacoes/modelos-prescricao');
+    setModelos((data as ModeloPrescricao[]) ?? []);
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await api.GET('/api/internacoes', {
@@ -78,7 +112,8 @@ export default function InternacaoPage() {
     void api.GET('/api/catalogo', { params: { query: {} } }).then(({ data }) => {
       setItens((data as ItemCatalogo[]) ?? []);
     });
-  }, []);
+    void loadModelos();
+  }, [loadModelos]);
 
   async function abrir(id: string, forcar = false) {
     if (expandida === id && !forcar) {
@@ -86,8 +121,61 @@ export default function InternacaoPage() {
       return;
     }
     setExpandida(id);
+    setModeloSel('');
     const { data } = await api.GET('/api/internacoes/{id}', { params: { path: { id } } });
     setExecucoes(((data as { execucoes?: Execucao[] })?.execucoes as Execucao[]) ?? []);
+    const p = await api.GET('/api/internacoes/{id}/parametros', { params: { path: { id } } });
+    setParametros((p.data as Parametro[]) ?? []);
+  }
+
+  async function aplicarModelo(internacaoId: string) {
+    if (!modeloSel) return;
+    await api.POST('/api/internacoes/{id}/aplicar-modelo', {
+      params: { path: { id: internacaoId } },
+      body: { modeloId: modeloSel },
+    });
+    setModeloSel('');
+    void abrir(internacaoId, true);
+    void load();
+  }
+
+  async function onParametro(e: FormEvent, internacaoId: string) {
+    e.preventDefault();
+    const num = (v: string) => (v.trim() ? Number(v.replace(',', '.')) : undefined);
+    const body = {
+      pesoKg: num(paramForm.pesoKg),
+      temperaturaC: num(paramForm.temperaturaC),
+      fc: paramForm.fc.trim() ? parseInt(paramForm.fc, 10) : undefined,
+      fr: paramForm.fr.trim() ? parseInt(paramForm.fr, 10) : undefined,
+      observacao: paramForm.observacao.trim() || undefined,
+    };
+    if (Object.values(body).every((v) => v === undefined)) return;
+    await api.POST('/api/internacoes/{id}/parametros', { params: { path: { id: internacaoId } }, body });
+    setParamForm({ pesoKg: '', temperaturaC: '', fc: '', fr: '', observacao: '' });
+    const p = await api.GET('/api/internacoes/{id}/parametros', { params: { path: { id: internacaoId } } });
+    setParametros((p.data as Parametro[]) ?? []);
+  }
+
+  async function salvarTemplate(e: FormEvent) {
+    e.preventDefault();
+    const itens = tplItens
+      .filter((it) => it.itemId || it.descricao.trim())
+      .map((it) => ({
+        itemId: it.itemId || undefined,
+        descricao: it.descricao.trim() || undefined,
+        quantidade: parseInt(it.quantidade || '1', 10),
+      }));
+    if (!tplNome.trim() || itens.length === 0) return;
+    await api.POST('/api/internacoes/modelos-prescricao', { body: { nome: tplNome.trim(), itens } });
+    setTplNome('');
+    setTplItens([{ itemId: '', descricao: '', quantidade: '1' }]);
+    void loadModelos();
+  }
+
+  async function removerTemplate(id: string) {
+    if (!confirm('Excluir este modelo de prescrição?')) return;
+    await api.DELETE('/api/internacoes/modelos-prescricao/{id}', { params: { path: { id } } });
+    void loadModelos();
   }
 
   async function onPrescrever(e: FormEvent, internacaoId: string) {
@@ -143,11 +231,16 @@ export default function InternacaoPage() {
             Executar prescrição = baixa de estoque + faturamento automático. Admissão pelo prontuário do animal.
           </p>
         </div>
-        {internados > 0 && (
-          <span className="text-sm text-gray-500">
-            Internados: <span className="font-semibold text-primary-600">{internados}</span>
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {internados > 0 && (
+            <span className="text-sm text-gray-500">
+              Internados: <span className="font-semibold text-primary-600">{internados}</span>
+            </span>
+          )}
+          <Button variant="ghost" onClick={() => setTplOpen(true)}>
+            <i className="ri-file-list-3-line"></i> Modelos de prescrição
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -232,6 +325,25 @@ export default function InternacaoPage() {
                   {expandida === i.id && (
                     <tr className="bg-gray-50/60 dark:bg-[#15203c]/40">
                       <td colSpan={7} className="px-3 py-3">
+                        {i.status === 'internado' && modelos.length > 0 && (
+                          <div className="flex items-end gap-2 mb-3">
+                            <label className="flex flex-col gap-1 text-xs flex-1">
+                              <span className="text-gray-600 dark:text-gray-300">Aplicar modelo de prescrição</span>
+                              <select value={modeloSel} onChange={(e) => setModeloSel(e.target.value)} className={inputCls}>
+                                <option value="">— escolha —</option>
+                                {modelos.map((m) => (
+                                  <option key={m.id} value={m.id}>
+                                    {m.nome} ({m.itens.length} itens)
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <Button type="button" variant="ghost" disabled={!modeloSel} onClick={() => aplicarModelo(i.id)}>
+                              <i className="ri-add-line"></i> Aplicar
+                            </Button>
+                          </div>
+                        )}
+
                         {i.status === 'internado' && (
                           <form onSubmit={(e) => onPrescrever(e, i.id)} className="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3 md:items-end">
                             <label className="flex flex-col gap-1 text-xs md:col-span-2">
@@ -320,6 +432,51 @@ export default function InternacaoPage() {
                             ))}
                           </ul>
                         )}
+
+                        <div className="mt-4 border-t border-gray-100 dark:border-[#172036] pt-3">
+                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Parâmetros clínicos</p>
+                          {i.status === 'internado' && (
+                            <form onSubmit={(e) => onParametro(e, i.id)} className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 md:items-end">
+                              <label className="flex flex-col gap-1 text-xs">
+                                <span className="text-gray-600 dark:text-gray-300">Peso (kg)</span>
+                                <input value={paramForm.pesoKg} onChange={(e) => setParamForm({ ...paramForm, pesoKg: e.target.value })} inputMode="decimal" className={inputCls} />
+                              </label>
+                              <label className="flex flex-col gap-1 text-xs">
+                                <span className="text-gray-600 dark:text-gray-300">Temp (°C)</span>
+                                <input value={paramForm.temperaturaC} onChange={(e) => setParamForm({ ...paramForm, temperaturaC: e.target.value })} inputMode="decimal" className={inputCls} />
+                              </label>
+                              <label className="flex flex-col gap-1 text-xs">
+                                <span className="text-gray-600 dark:text-gray-300">FC (bpm)</span>
+                                <input value={paramForm.fc} onChange={(e) => setParamForm({ ...paramForm, fc: e.target.value })} inputMode="numeric" className={inputCls} />
+                              </label>
+                              <label className="flex flex-col gap-1 text-xs">
+                                <span className="text-gray-600 dark:text-gray-300">FR (rpm)</span>
+                                <input value={paramForm.fr} onChange={(e) => setParamForm({ ...paramForm, fr: e.target.value })} inputMode="numeric" className={inputCls} />
+                              </label>
+                              <label className="flex flex-col gap-1 text-xs">
+                                <span className="text-gray-600 dark:text-gray-300">Obs</span>
+                                <input value={paramForm.observacao} onChange={(e) => setParamForm({ ...paramForm, observacao: e.target.value })} className={inputCls} />
+                              </label>
+                              <Button type="submit" variant="ghost">Registrar</Button>
+                            </form>
+                          )}
+                          {parametros.length === 0 ? (
+                            <p className="text-xs text-gray-400">Sem parâmetros registrados.</p>
+                          ) : (
+                            <ul className="flex flex-col gap-1 text-xs">
+                              {parametros.map((p) => (
+                                <li key={p.id} className="flex flex-wrap items-center gap-3 text-gray-600 dark:text-gray-300">
+                                  <span className="text-gray-400">{new Date(p.registradoEm).toLocaleString('pt-BR')}</span>
+                                  {p.pesoKg != null && <span>{p.pesoKg} kg</span>}
+                                  {p.temperaturaC != null && <span>{p.temperaturaC} °C</span>}
+                                  {p.fc != null && <span>FC {p.fc}</span>}
+                                  {p.fr != null && <span>FR {p.fr}</span>}
+                                  {p.observacao && <span className="text-gray-500">— {p.observacao}</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -329,6 +486,95 @@ export default function InternacaoPage() {
           </table>
         )}
       </Card>
+
+      <Modal open={tplOpen} onClose={() => setTplOpen(false)} title="Modelos de prescrição">
+        <div className="flex flex-col gap-4">
+          <form onSubmit={salvarTemplate} className="flex flex-col gap-2">
+            <input
+              value={tplNome}
+              onChange={(e) => setTplNome(e.target.value)}
+              placeholder="Nome do modelo (ex.: Pós-cirúrgico)"
+              className={inputCls}
+            />
+            <div className="flex flex-col gap-2">
+              {tplItens.map((it, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <select
+                    value={it.itemId}
+                    onChange={(e) =>
+                      setTplItens(tplItens.map((x, i) => (i === idx ? { ...x, itemId: e.target.value } : x)))
+                    }
+                    className={`${inputCls} flex-1 text-sm`}
+                  >
+                    <option value="">— item livre —</option>
+                    {itens.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.codigo} — {c.nome}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={it.descricao}
+                    onChange={(e) =>
+                      setTplItens(tplItens.map((x, i) => (i === idx ? { ...x, descricao: e.target.value } : x)))
+                    }
+                    placeholder="Descrição"
+                    className={`${inputCls} flex-1 text-sm`}
+                  />
+                  <input
+                    value={it.quantidade}
+                    onChange={(e) =>
+                      setTplItens(tplItens.map((x, i) => (i === idx ? { ...x, quantidade: e.target.value } : x)))
+                    }
+                    inputMode="numeric"
+                    className={`${inputCls} w-16 text-sm`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTplItens(tplItens.filter((_, i) => i !== idx))}
+                    className="text-gray-400 hover:text-red-500"
+                    aria-label="Remover linha"
+                  >
+                    <i className="ri-close-line"></i>
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setTplItens([...tplItens, { itemId: '', descricao: '', quantidade: '1' }])}
+                className="text-xs text-primary-500 self-start"
+              >
+                <i className="ri-add-line"></i> Adicionar item
+              </button>
+            </div>
+            <Button type="submit">Salvar modelo</Button>
+          </form>
+
+          <div className="border-t border-gray-100 dark:border-[#172036] pt-3">
+            {modelos.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhum modelo ainda.</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-gray-100 dark:divide-[#172036]">
+                {modelos.map((m) => (
+                  <li key={m.id} className="flex items-center justify-between gap-3 py-2">
+                    <span className="text-sm text-black dark:text-white">
+                      {m.nome} <span className="text-xs text-gray-400">({m.itens.length} itens)</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removerTemplate(m.id)}
+                      className="text-gray-400 hover:text-red-500"
+                      aria-label="Excluir"
+                    >
+                      <i className="ri-delete-bin-line"></i>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

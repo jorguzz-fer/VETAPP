@@ -2236,6 +2236,108 @@
         ]
       }
     },
+    "/api/internacoes/modelos-prescricao": {
+      "get": {
+        "operationId": "InternacaoController_listModelosPrescricao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModeloPrescricaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_criarModeloPrescricao",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarModeloPrescricaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloPrescricaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/modelos-prescricao/{id}": {
+      "delete": {
+        "operationId": "InternacaoController_removerModeloPrescricao",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/internacoes/{id}": {
       "get": {
         "operationId": "InternacaoController_detalhe",
@@ -2256,6 +2358,135 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InternacaoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/aplicar-modelo": {
+      "post": {
+        "operationId": "InternacaoController_aplicarModelo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AplicarModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExecucaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/parametros": {
+      "get": {
+        "operationId": "InternacaoController_listParametros",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParametroDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_registrarParametro",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarParametroDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParametroDto"
                 }
               }
             }
@@ -5687,6 +5918,84 @@
           "nome"
         ]
       },
+      "ModeloPrescricaoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "itemId",
+          "descricao",
+          "quantidade"
+        ]
+      },
+      "ModeloPrescricaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModeloPrescricaoItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "itens"
+        ]
+      },
+      "CriarModeloPrescricaoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "CriarModeloPrescricaoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Pós-cirúrgico padrão"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriarModeloPrescricaoItemDto"
+            }
+          }
+        },
+        "required": [
+          "nome",
+          "itens"
+        ]
+      },
       "ExecucaoDto": {
         "type": "object",
         "properties": {
@@ -5786,6 +6095,84 @@
           "observacoes",
           "execucoes"
         ]
+      },
+      "AplicarModeloDto": {
+        "type": "object",
+        "properties": {
+          "modeloId": {
+            "type": "string",
+            "description": "Modelo de prescrição a aplicar na internação"
+          }
+        },
+        "required": [
+          "modeloId"
+        ]
+      },
+      "ParametroDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "pesoKg": {
+            "type": "number",
+            "nullable": true
+          },
+          "temperaturaC": {
+            "type": "number",
+            "nullable": true
+          },
+          "fc": {
+            "type": "number",
+            "nullable": true
+          },
+          "fr": {
+            "type": "number",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "registradoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "pesoKg",
+          "temperaturaC",
+          "fc",
+          "fr",
+          "observacao",
+          "registradoEm"
+        ]
+      },
+      "RegistrarParametroDto": {
+        "type": "object",
+        "properties": {
+          "pesoKg": {
+            "type": "number",
+            "description": "Peso em kg",
+            "example": 4.2
+          },
+          "temperaturaC": {
+            "type": "number",
+            "description": "Temperatura em °C",
+            "example": 38.5
+          },
+          "fc": {
+            "type": "number",
+            "description": "Frequência cardíaca (bpm)"
+          },
+          "fr": {
+            "type": "number",
+            "description": "Frequência respiratória (rpm)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
       },
       "PrescreverDto": {
         "type": "object",
