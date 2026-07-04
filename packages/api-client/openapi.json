@@ -904,6 +904,7 @@
             "schema": {
               "enum": [
                 "aberta",
+                "parcial",
                 "paga",
                 "cancelada"
               ],
@@ -956,6 +957,268 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{id}/recebimentos": {
+      "post": {
+        "operationId": "FinanceiroController_receber",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceberResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "FinanceiroController_recebimentos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecebimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/financeiro/saldos": {
+      "get": {
+        "operationId": "FinanceiroController_saldos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SaldoClienteDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/financeiro/saldos/{responsavelId}": {
+      "get": {
+        "operationId": "FinanceiroController_saldoDe",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaldoClienteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/formas-recebimento": {
+      "get": {
+        "operationId": "FinanceiroController_formas",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormaRecebimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "FinanceiroController_createForma",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFormaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormaRecebimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/formas-recebimento/{id}": {
+      "patch": {
+        "operationId": "FinanceiroController_updateForma",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormaRecebimentoDto"
                 }
               }
             }
@@ -3123,6 +3386,10 @@
           "totalCentavos": {
             "type": "number"
           },
+          "recebidoCentavos": {
+            "type": "number",
+            "description": "Total já recebido (soma dos recebimentos)"
+          },
           "itens": {
             "type": "number"
           },
@@ -3136,9 +3403,180 @@
           "responsavelNome",
           "status",
           "totalCentavos",
+          "recebidoCentavos",
           "itens",
           "criadaEm"
         ]
+      },
+      "ReceberDto": {
+        "type": "object",
+        "properties": {
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor recebido em centavos (≤ saldo em aberto)"
+          },
+          "formaId": {
+            "type": "string",
+            "description": "Forma de recebimento"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "valorCentavos"
+        ]
+      },
+      "ReceberResultDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "recebidoCentavos": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ok",
+          "status",
+          "recebidoCentavos",
+          "saldoCentavos"
+        ]
+      },
+      "RecebimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "formaId": {
+            "type": "string",
+            "nullable": true
+          },
+          "formaNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "valorCentavos",
+          "formaId",
+          "formaNome",
+          "observacao",
+          "criadoEm"
+        ]
+      },
+      "SaldoClienteDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "devedorCentavos": {
+            "type": "number",
+            "description": "Saldo devedor em aberto (centavos)"
+          },
+          "faturasAbertas": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "responsavelId",
+          "responsavelNome",
+          "devedorCentavos",
+          "faturasAbertas"
+        ]
+      },
+      "FormaRecebimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "taxaBps": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo",
+          "taxaBps",
+          "ativo"
+        ]
+      },
+      "CreateFormaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Pix"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "dinheiro",
+              "pix",
+              "cartao_credito",
+              "cartao_debito",
+              "transferencia",
+              "outro"
+            ]
+          },
+          "taxaBps": {
+            "type": "number",
+            "description": "Taxa em basis points (2,5% = 250)",
+            "example": 0
+          }
+        },
+        "required": [
+          "nome",
+          "tipo"
+        ]
+      },
+      "UpdateFormaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "taxaBps": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
       },
       "AgendamentoDto": {
         "type": "object",

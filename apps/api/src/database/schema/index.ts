@@ -11,3 +11,4 @@ export * from './internacao';
 export * from './tipos-atendimento';
 export * from './orcamentos';
 export * from './comissoes';
+export * from './recebimentos';

@@ -32,6 +32,7 @@ export default function FichaClientePage() {
   const router = useRouter();
   const id = params.id;
   const [ficha, setFicha] = useState<Ficha | null>(null);
+  const [saldo, setSaldo] = useState<{ devedorCentavos: number; faturasAbertas: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [editing, setEditing] = useState(false);
@@ -54,6 +55,12 @@ export default function FichaClientePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void api.GET('/api/financeiro/saldos/{responsavelId}', { params: { path: { responsavelId: id } } }).then(({ data }) => {
+      setSaldo((data as { devedorCentavos: number; faturasAbertas: number }) ?? null);
+    });
+  }, [id]);
 
   async function onSaveEdit(e: FormEvent) {
     e.preventDefault();
@@ -150,7 +157,14 @@ export default function FichaClientePage() {
         ) : (
           <>
             <div className="flex items-start justify-between">
-              <h1 className="text-lg font-semibold text-black dark:text-white">{ficha.nome}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg font-semibold text-black dark:text-white">{ficha.nome}</h1>
+                {saldo && saldo.devedorCentavos > 0 && (
+                  <span className="text-xs rounded-full px-2.5 py-0.5 bg-red-50 text-red-500" title={`${saldo.faturasAbertas} fatura(s) em aberto`}>
+                    Devendo {(saldo.devedorCentavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={onNovoOrcamento}><i className="ri-file-list-3-line"></i> Orçamento</Button>
                 <Button variant="ghost" onClick={() => setEditing(true)}><i className="ri-edit-line"></i> Editar</Button>

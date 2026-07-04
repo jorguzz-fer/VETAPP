@@ -87,6 +87,9 @@ Pendências conhecidas:
 - **Branch protection** em `main` (ação manual no GitHub UI — exigir PR + checks
   `API (lint · types · test · build)` e `Web (typecheck · build)`).
 - Próximos módulos do mapa (`docs/spec/13`): **Fiscal**, **Site**, **Portal do tutor**.
+- **Financeiro fase 2 feito**: recebimento parcial (`recebimentos`, status
+  derivado), formas de recebimento (taxa em bps, em `/cadastros`), saldo do
+  cliente (`/api/financeiro/saldos`, `/saldos`).
 - Fase 2 documentada: histórico/vigência de preços, baixa automática de estoque
   (exige evento do prontuário referenciar item de catálogo), rotação/revogação de
   refresh token, recovery codes, WebAuthn, recebimentos parciais.

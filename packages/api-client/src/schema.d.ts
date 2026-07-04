@@ -340,6 +340,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/faturas/{id}/recebimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_recebimentos"];
+        put?: never;
+        post: operations["FinanceiroController_receber"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/financeiro/saldos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_saldos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/financeiro/saldos/{responsavelId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_saldoDe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/formas-recebimento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_formas"];
+        put?: never;
+        post: operations["FinanceiroController_createForma"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/formas-recebimento/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["FinanceiroController_updateForma"];
+        trace?: never;
+    };
     "/api/agenda": {
         parameters: {
             query?: never;
@@ -1025,8 +1105,61 @@ export interface components {
             responsavelNome: string;
             status: string;
             totalCentavos: number;
+            /** @description Total já recebido (soma dos recebimentos) */
+            recebidoCentavos: number;
             itens: number;
             criadaEm: string;
+        };
+        ReceberDto: {
+            /** @description Valor recebido em centavos (≤ saldo em aberto) */
+            valorCentavos: number;
+            /** @description Forma de recebimento */
+            formaId?: string;
+            observacao?: string;
+        };
+        ReceberResultDto: {
+            ok: boolean;
+            status: string;
+            recebidoCentavos: number;
+            saldoCentavos: number;
+        };
+        RecebimentoDto: {
+            id: string;
+            valorCentavos: number;
+            formaId: string | null;
+            formaNome: string | null;
+            observacao: string | null;
+            criadoEm: string;
+        };
+        SaldoClienteDto: {
+            responsavelId: string;
+            responsavelNome: string;
+            /** @description Saldo devedor em aberto (centavos) */
+            devedorCentavos: number;
+            faturasAbertas: number;
+        };
+        FormaRecebimentoDto: {
+            id: string;
+            nome: string;
+            tipo: string;
+            taxaBps: number;
+            ativo: boolean;
+        };
+        CreateFormaDto: {
+            /** @example Pix */
+            nome: string;
+            /** @enum {string} */
+            tipo: "dinheiro" | "pix" | "cartao_credito" | "cartao_debito" | "transferencia" | "outro";
+            /**
+             * @description Taxa em basis points (2,5% = 250)
+             * @example 0
+             */
+            taxaBps?: number;
+        };
+        UpdateFormaDto: {
+            nome?: string;
+            taxaBps?: number;
+            ativo?: boolean;
         };
         AgendamentoDto: {
             id: string;
@@ -1951,7 +2084,7 @@ export interface operations {
     FinanceiroController_list: {
         parameters: {
             query?: {
-                status?: "aberta" | "paga" | "cancelada";
+                status?: "aberta" | "parcial" | "paga" | "cancelada";
             };
             header?: never;
             path?: never;
@@ -1986,6 +2119,161 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_recebimentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecebimentoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_receber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceberDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceberResultDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_saldos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoClienteDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_saldoDe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoClienteDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_formas: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_createForma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFormaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_updateForma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFormaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"];
                 };
             };
         };

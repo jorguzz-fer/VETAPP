@@ -92,6 +92,13 @@
       "when": 1719591600000,
       "tag": "0012_comissoes",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1719591700000,
+      "tag": "0013_recebimentos",
+      "breakpoints": true
     }
   ]
 }
