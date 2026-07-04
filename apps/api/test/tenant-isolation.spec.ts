@@ -210,4 +210,22 @@ describe('Isolamento de tenant (RLS)', () => {
     expect(rows[0].user_id).toBe(USER_1);
     expect(rows[0].role).toBe('gestor');
   });
+
+  // ── Robustez fiscal: número único por (tenant, série, número) — migração 0019 ──
+  it('fiscal: mesmo número emitido colide; rascunhos (número NULL) convivem', async (ctx) => {
+    if (!dockerAvailable || !adminSql) return ctx.skip();
+    const [resp] = await adminSql`SELECT id FROM responsaveis WHERE tenant_id = ${TENANT_A} LIMIT 1`;
+    const [fat] = await adminSql`SELECT id FROM faturas WHERE tenant_id = ${TENANT_A} LIMIT 1`;
+    const nota = (numero: string | null) =>
+      adminSql!`INSERT INTO notas_fiscais (tenant_id, fatura_id, responsavel_id, status, serie, numero, valor_centavos)
+        VALUES (${TENANT_A}, ${fat.id}, ${resp.id}, ${numero ? 'emitida' : 'rascunho'}, '1', ${numero}, 10000)`;
+    // Índice é PARCIAL (WHERE numero IS NOT NULL): dois rascunhos convivem.
+    await nota(null);
+    await nota(null);
+    // Primeiro número emitido ok; repetir o mesmo (tenant, série, número) é barrado.
+    await nota('100');
+    await expect(nota('100')).rejects.toThrow();
+    // Número diferente na mesma série: ok.
+    await nota('101');
+  });
 });

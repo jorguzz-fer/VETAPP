@@ -390,6 +390,17 @@ pelo próprio front).
   `tenant_id` se multitenant).
 - **Soft-delete + auditoria** em entidades sensíveis (nada some sem rastro).
 - **Backups/DR**: ver seção 5.
+  > **Lição estrutural — concorrência em saldos e sequências:** operações do tipo
+  > "lê o estado atual, valida, escreve o próximo" (baixar recebimento sobre um
+  > saldo, atribuir o próximo número de nota/pedido a partir de um contador) são
+  > **race conditions** clássicas: dois requests simultâneos leem o mesmo valor e
+  > ambos gravam → over-payment, número duplicado. Uma transação **não basta** — o
+  > `READ COMMITTED` do Postgres deixa os dois lerem antes de qualquer commit.
+  > Trave a linha de agregação/contador com **`SELECT ... FOR UPDATE`** no início da
+  > transação (serializa os concorrentes na mesma linha) **e** proteja com uma
+  > **constraint/unique index** no banco como backstop (ex.: `UNIQUE (tenant, série,
+  > número)` parcial para números atribuídos). App-lock + DB-constraint: cinto e
+  > suspensório. Faça a baixa integral na **mesma** transação, nunca em duas.
 
 **Checklist**
 - [ ] Migrations no repo, aplicadas por CI/CD.
