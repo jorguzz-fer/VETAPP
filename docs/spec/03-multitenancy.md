@@ -73,6 +73,40 @@ await db.transaction(async (tx) => {
 - Trocar de tenant exige nova resolução de permissões (e, conforme política,
   reautenticação).
 
+### 4.1 Ler os vínculos no login sem BYPASSRLS (`app.current_user`)
+
+O login é um paradoxo de RLS: precisa **descobrir a que tenants o usuário
+pertence** (`memberships`) **antes** de existir um `app.current_tenant` para
+fixar. Como a app conecta como `vetapp_app` (`NOBYPASSRLS`), uma leitura de
+`memberships` sem tenant fixado cai na policy fail-closed e volta **zero linhas**
+— o usuário recebe "sem acesso a nenhum tenant" mesmo tendo vínculo (bug latente
+que só aparece com o role restrito de produção; some quando a conexão é
+superusuário em dev).
+
+Solução **fail-closed, sem bypass**: uma segunda policy PERMISSIVE **só de
+SELECT** em `memberships` que libera a linha quando `app.current_user` casa com o
+`user_id`:
+
+```sql
+CREATE POLICY "memberships_self_read" ON "memberships"
+  FOR SELECT
+  USING ("user_id" = NULLIF(current_setting('app.current_user', true), '')::uuid);
+```
+
+O fluxo de auth usa `DatabaseService.withUser(userId, fn)` (fixa
+`app.current_user` via `SET LOCAL`) apenas para essa leitura. Garantias:
+- **Não vaza entre tenants**: fora do login, `app.current_user` nunca é setado →
+  `NULLIF(...,'')` vira NULL → a policy é inerte; as queries normais (que fixam
+  `app.current_tenant`) continuam sob `memberships_tenant_isolation`.
+- **Escrita permanece tenant-scoped**: a policy é `FOR SELECT`, então `INSERT`
+  em `memberships` (register) continua exigindo `withTenant`.
+- **Escopo mínimo**: `app.current_user` só resolve identidade (memberships);
+  nunca substitui o `app.current_tenant` dos dados operacionais.
+
+Prova na CI: `test/tenant-isolation.spec.ts` cobre self-read multi-tenant,
+não-vazamento entre usuários, fail-closed sem GUC e isolamento por tenant
+preservado.
+
 ## 5. Ciclo de vida do tenant
 - **Provisionamento**: criar tenant → seed de dados padrão (tipos de atendimento,
   parâmetros clínicos, papéis) → criar primeiro admin (com MFA obrigatório).

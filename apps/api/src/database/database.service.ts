@@ -36,6 +36,20 @@ export class DatabaseService implements OnModuleDestroy {
     });
   }
 
+  /**
+   * Executa `fn` fixando `app.current_user` (não o tenant). Usado só pelo fluxo de
+   * autenticação para ler os vínculos (`memberships`) do próprio usuário ANTES de
+   * existir contexto de tenant — a policy `memberships_self_read` (migração 0018)
+   * libera apenas as linhas cujo `user_id` casa com esse GUC. Fora do login o GUC
+   * nunca é setado, então o isolamento por tenant das demais queries fica intacto.
+   */
+  async withUser<T>(userId: string, fn: (tx: Database) => Promise<T>): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.current_user', ${userId}, true)`);
+      return fn(tx as unknown as Database);
+    });
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.client.end({ timeout: 5 });
   }
