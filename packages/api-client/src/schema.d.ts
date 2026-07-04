@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_buscarAnimais"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}": {
         parameters: {
             query?: never;
@@ -1526,6 +1542,15 @@ export interface components {
              */
             nascimento?: string;
         };
+        BuscaAnimalDto: {
+            id: string;
+            nome: string;
+            especie?: string;
+            raca?: string;
+            status: string;
+            responsavelId: string;
+            responsavelNome: string;
+        };
         UpdateAnimalDto: {
             nome?: string;
             codigo?: string;
@@ -2677,6 +2702,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_buscarAnimais: {
+        parameters: {
+            query?: {
+                /** @description Nome do animal ou nome/telefone do tutor */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuscaAnimalDto"][];
                 };
             };
         };

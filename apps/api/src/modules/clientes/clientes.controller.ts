@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { ClientesService } from './clientes.service';
 import {
   AnimalDto,
+  BuscaAnimalDto,
   ConfirmFotoDto,
   CreateAnimalDto,
   CreateResponsavelDto,
@@ -72,6 +73,13 @@ export class ClientesController {
   @ApiCreatedResponse({ type: AnimalDto })
   addAnimal(@Req() req: Request, @Param('id') id: string, @Body() dto: CreateAnimalDto): Promise<AnimalDto> {
     return this.clientes.createAnimal(req.auth!.tenantId, id, dto);
+  }
+
+  @Get('animais')
+  @ApiQuery({ name: 'search', required: false, description: 'Nome do animal ou nome/telefone do tutor' })
+  @ApiOkResponse({ type: [BuscaAnimalDto] })
+  buscarAnimais(@Req() req: Request, @Query('search') search?: string): Promise<BuscaAnimalDto[]> {
+    return this.clientes.buscarAnimais(req.auth!.tenantId, search);
   }
 
   @Get('animais/:id')

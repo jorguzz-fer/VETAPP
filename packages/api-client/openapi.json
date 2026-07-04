@@ -629,6 +629,45 @@
         ]
       }
     },
+    "/api/animais": {
+      "get": {
+        "operationId": "ClientesController_buscarAnimais",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Nome do animal ou nome/telefone do tutor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BuscaAnimalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}": {
       "get": {
         "operationId": "ClientesController_animal",
@@ -4297,6 +4336,39 @@
         },
         "required": [
           "nome"
+        ]
+      },
+      "BuscaAnimalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string"
+          },
+          "raca": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "status",
+          "responsavelId",
+          "responsavelNome"
         ]
       },
       "UpdateAnimalDto": {
