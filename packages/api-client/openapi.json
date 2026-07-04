@@ -2170,6 +2170,202 @@
           }
         ]
       }
+    },
+    "/api/comissoes": {
+      "get": {
+        "operationId": "ComissoesController_apurar",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApuracaoColaboradorDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/minhas": {
+      "get": {
+        "operationId": "ComissoesController_minhas",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApuracaoLinhaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/regras": {
+      "get": {
+        "operationId": "ComissoesController_regras",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RegraDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ComissoesController_upsertRegra",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegraDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegraDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/regras/{id}": {
+      "delete": {
+        "operationId": "ComissoesController_removeRegra",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -3755,6 +3951,117 @@
         "required": [
           "ok",
           "totalCentavos"
+        ]
+      },
+      "ApuracaoColaboradorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "baseCentavos": {
+            "type": "number",
+            "description": "Base comissionável no período (centavos)"
+          },
+          "comissaoCentavos": {
+            "type": "number",
+            "description": "Comissão apurada no período (centavos)"
+          },
+          "lancamentos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "baseCentavos",
+          "comissaoCentavos",
+          "lancamentos"
+        ]
+      },
+      "ApuracaoLinhaDto": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "percentBps": {
+            "type": "number"
+          },
+          "comissaoCentavos": {
+            "type": "number"
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "descricao",
+          "valorCentavos",
+          "percentBps",
+          "comissaoCentavos",
+          "criadoEm"
+        ]
+      },
+      "RegraDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "userNome": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentBps": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "userNome",
+          "itemId",
+          "itemNome",
+          "percentBps"
+        ]
+      },
+      "CreateRegraDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Colaborador (membro do tenant)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo; ausente = regra geral do colaborador"
+          },
+          "percentBps": {
+            "type": "number",
+            "description": "Percentual em basis points (10% = 1000)",
+            "example": 1000
+          }
+        },
+        "required": [
+          "userId",
+          "percentBps"
         ]
       }
     }

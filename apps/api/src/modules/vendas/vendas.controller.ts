@@ -69,6 +69,6 @@ export class VendasController {
   @Post(':id/converter')
   @ApiOkResponse({ type: ConverterResultDto })
   converter(@Req() req: Request, @Param('id') id: string): Promise<ConverterResultDto> {
-    return this.vendas.converter(req.auth!.tenantId, id);
+    return this.vendas.converter(req.auth!.tenantId, id, req.auth!.userId);
   }
 }

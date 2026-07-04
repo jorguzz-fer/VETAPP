@@ -85,6 +85,13 @@
       "when": 1719591500000,
       "tag": "0011_orcamentos",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1719591600000,
+      "tag": "0012_comissoes",
+      "breakpoints": true
     }
   ]
 }

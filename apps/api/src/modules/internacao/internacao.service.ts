@@ -138,7 +138,7 @@ export class InternacaoService {
    * fatura automático (doc 05 §9.2). A execução clínica NUNCA é bloqueada por
    * falta de saldo — nesse caso registra sem movimento e sinaliza no retorno.
    */
-  async executar(tenantId: string, id: string, execId: string): Promise<ExecutarResultDto> {
+  async executar(tenantId: string, id: string, execId: string, executorUserId?: string): Promise<ExecutarResultDto> {
     return this.database.withTenant(tenantId, async (tx) => {
       const { internacao, animal } = await this.carregar(tx, tenantId, id);
       if (internacao.status !== 'internado') throw new BadRequestException('Internação não está ativa');
@@ -185,6 +185,9 @@ export class InternacaoService {
         await this.faturamento.lancar(tx, tenantId, animal.responsavelId, {
           descricao: `internação: ${exec.descricao}${exec.quantidade > 1 ? ` x${exec.quantidade}` : ''}`,
           valorCentavos: total,
+          itemId: exec.itemId,
+          // Quem executa é comissionado (doc 05 §5/§9.2).
+          profissionalId: executorUserId ?? null,
         });
         faturado = true;
       }

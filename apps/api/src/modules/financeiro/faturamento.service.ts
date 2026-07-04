@@ -17,18 +17,29 @@ export class FaturamentoService {
     return nova;
   }
 
-  /** Lança um item na fatura aberta do responsável e atualiza o total. */
+  /**
+   * Lança um item na fatura aberta do responsável e atualiza o total.
+   * itemId/profissionalId alimentam o comissionamento (doc 05 §5).
+   */
   async lancar(
     tx: Database,
     tenantId: string,
     responsavelId: string,
-    item: { descricao: string; valorCentavos: number; eventoId?: string | null },
+    item: {
+      descricao: string;
+      valorCentavos: number;
+      eventoId?: string | null;
+      itemId?: string | null;
+      profissionalId?: string | null;
+    },
   ): Promise<void> {
     const fatura = await this.faturaAbertaOuNova(tx, tenantId, responsavelId);
     await tx.insert(faturaItens).values({
       tenantId,
       faturaId: fatura.id,
       eventoId: item.eventoId ?? null,
+      itemId: item.itemId ?? null,
+      profissionalId: item.profissionalId ?? null,
       descricao: item.descricao,
       valorCentavos: item.valorCentavos,
     });

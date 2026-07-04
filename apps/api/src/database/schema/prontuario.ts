@@ -50,6 +50,10 @@ export const faturaItens = pgTable(
     tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
     faturaId: uuid('fatura_id').notNull().references(() => faturas.id, { onDelete: 'cascade' }),
     eventoId: uuid('evento_id').references(() => prontuarioEventos.id, { onDelete: 'set null' }),
+    // Rastreio p/ comissão (doc 05 §5): item do catálogo de origem e quem
+    // executou/vendeu. FKs em SQL (0012); sem import aqui p/ evitar ciclo.
+    itemId: uuid('item_id'),
+    profissionalId: uuid('profissional_id'),
     descricao: text('descricao').notNull(),
     valorCentavos: integer('valor_centavos').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

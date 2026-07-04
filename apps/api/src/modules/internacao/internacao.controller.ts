@@ -52,7 +52,7 @@ export class InternacaoController {
     @Param('id') id: string,
     @Param('execId') execId: string,
   ): Promise<ExecutarResultDto> {
-    return this.internacao.executar(req.auth!.tenantId, id, execId);
+    return this.internacao.executar(req.auth!.tenantId, id, execId, req.auth!.userId);
   }
 
   @Post(':id/alta')
