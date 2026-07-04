@@ -3473,6 +3473,341 @@
           }
         ]
       }
+    },
+    "/api/public/clinica/{slug}": {
+      "get": {
+        "operationId": "PublicSiteController_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSiteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/public/clinica/{slug}/agendamento": {
+      "post": {
+        "operationId": "PublicSiteController_solicitar",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSolicitacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/site/config": {
+      "get": {
+        "operationId": "SiteController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "SiteController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiteConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo/sign-upload": {
+      "post": {
+        "operationId": "SiteController_signLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo": {
+      "post": {
+        "operationId": "SiteController_confirmLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes": {
+      "get": {
+        "operationId": "SiteController_listSolicitacoes",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "nova",
+                "confirmada",
+                "recusada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SolicitacaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/confirmar": {
+      "post": {
+        "operationId": "SiteController_confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/recusar": {
+      "post": {
+        "operationId": "SiteController_recusar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -6084,6 +6419,261 @@
         "required": [
           "motivo"
         ]
+      },
+      "PublicSiteDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "servicos"
+        ]
+      },
+      "CreateSolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "+55 11 99999-0000"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string",
+            "description": "Preferência de dia/horário (texto livre)"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Como nos conheceu?"
+          },
+          "website": {
+            "type": "string",
+            "description": "Deixe em branco (anti-spam)"
+          }
+        },
+        "required": [
+          "nome",
+          "telefone"
+        ]
+      },
+      "SiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "publicado"
+        ]
+      },
+      "UpdateSiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Slug da URL pública (a-z, 0-9, hífen)"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string",
+            "description": "Serviços em destaque, um por linha"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string",
+            "description": "Cor primária em hex (#RRGGBB)"
+          }
+        }
+      },
+      "SignLogoDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/png"
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "ConfirmLogoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "SolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "observacaoInterna": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "telefone",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "TriagemDto": {
+        "type": "object",
+        "properties": {
+          "observacao": {
+            "type": "string",
+            "description": "Observação interna (opcional)"
+          }
+        }
       }
     }
   }

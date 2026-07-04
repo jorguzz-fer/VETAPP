@@ -86,7 +86,15 @@ mapeamento (doc 05) completa** — restam os complementares do doc 13.
 Pendências conhecidas:
 - **Branch protection** em `main` (ação manual no GitHub UI — exigir PR + checks
   `API (lint · types · test · build)` e `Web (typecheck · build)`).
-- Próximos módulos do mapa (`docs/spec/13`): **Site**.
+- **Doc 13 (complementares) completo**: Financeiro fase 2, Fiscal, Site, Portal
+  do tutor — todos com MVP entregue. Próximas frentes são aprofundamentos (fase 3+).
+- **Site público MVP feito** (doc 13 §4.2): CMS-lite por tenant (`site_config`,
+  tabela global — leitura pública por slug; edição por `tenant_id`) e **solicitação
+  de agendamento** (`agendamento_solicitacoes`, RLS) — a clínica confirma, nada
+  grava direto na agenda. Público: `/clinica/[slug]` + `GET/POST /api/public/clinica/:slug`
+  (única rota anônima de escrita — honeypot + rate limit por IP+slug). Gestão em
+  `/site` (admin/gestor): CMS + triagem. Pendente: agendamento em tempo real,
+  conversão solicitação→cliente, Google Agenda/IA, rate limit distribuído.
 - **Fiscal MVP feito** (doc 13 §3.3, provider-agnostic): config do emitente por
   tenant (`fiscal_config`, RLS) e ciclo da nota (`notas_fiscais`, RLS) a partir da
   fatura (`rascunho→emitida→cancelada`). **Provedor pluggável** (`FiscalProvider` +

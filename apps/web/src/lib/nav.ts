@@ -45,6 +45,7 @@ export const navSections: NavSection[] = [
     title: 'Gestão',
     items: [
       { label: 'Produtividade', href: '/produtividade', icon: 'ri-line-chart-line', roles: ['admin', 'gestor'] },
+      { label: 'Site', href: '/site', icon: 'ri-global-line', roles: ['admin', 'gestor'] },
       { label: 'Cadastros', href: '/cadastros', icon: 'ri-archive-line' },
       { label: 'Configurações', href: '/configuracoes', icon: 'ri-settings-3-line', roles: ['admin'] },
     ],

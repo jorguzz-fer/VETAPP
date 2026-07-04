@@ -1236,6 +1236,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/public/clinica/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicSiteController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/clinica/{slug}/agendamento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicSiteController_solicitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SiteController_getConfig"];
+        put: operations["SiteController_updateConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config/logo/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_signLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_confirmLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SiteController_listSolicitacoes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes/{id}/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes/{id}/recusar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_recusar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2038,6 +2166,91 @@ export interface components {
         CancelarNotaDto: {
             /** @example Emitida em duplicidade */
             motivo: string;
+        };
+        PublicSiteDto: {
+            slug: string;
+            nomeExibicao?: string;
+            sobre?: string;
+            servicos: string[];
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            corPrimaria?: string;
+            logoUrl?: string;
+        };
+        CreateSolicitacaoDto: {
+            /** @example Maria Silva */
+            nome: string;
+            /** @example +55 11 99999-0000 */
+            telefone: string;
+            email?: string;
+            petNome?: string;
+            servicoDesejado?: string;
+            /** @description Preferência de dia/horário (texto livre) */
+            preferencia?: string;
+            mensagem?: string;
+            /** @description Como nos conheceu? */
+            origem?: string;
+            /** @description Deixe em branco (anti-spam) */
+            website?: string;
+        };
+        SiteConfigDto: {
+            id: string;
+            slug?: string;
+            publicado: boolean;
+            nomeExibicao?: string;
+            sobre?: string;
+            servicos?: string;
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            corPrimaria?: string;
+            logoUrl?: string;
+        };
+        UpdateSiteConfigDto: {
+            /** @description Slug da URL pública (a-z, 0-9, hífen) */
+            slug?: string;
+            publicado?: boolean;
+            nomeExibicao?: string;
+            sobre?: string;
+            /** @description Serviços em destaque, um por linha */
+            servicos?: string;
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            /** @description Cor primária em hex (#RRGGBB) */
+            corPrimaria?: string;
+        };
+        SignLogoDto: {
+            /** @example image/png */
+            contentType: string;
+        };
+        ConfirmLogoDto: {
+            key: string;
+        };
+        SolicitacaoDto: {
+            id: string;
+            nome: string;
+            telefone: string;
+            email?: string;
+            petNome?: string;
+            servicoDesejado?: string;
+            preferencia?: string;
+            mensagem?: string;
+            origem?: string;
+            status: string;
+            observacaoInterna?: string;
+            criadaEm: string;
+        };
+        TriagemDto: {
+            /** @description Observação interna (opcional) */
+            observacao?: string;
         };
     };
     responses: never;
@@ -4125,6 +4338,211 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    PublicSiteController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSiteDto"];
+                };
+            };
+        };
+    };
+    PublicSiteController_solicitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSolicitacaoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    SiteController_getConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_updateConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSiteConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_signLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignLogoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    SiteController_confirmLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmLogoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_listSolicitacoes: {
+        parameters: {
+            query?: {
+                status?: "nova" | "confirmada" | "recusada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"][];
+                };
+            };
+        };
+    };
+    SiteController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriagemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"];
+                };
+            };
+        };
+    };
+    SiteController_recusar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriagemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"];
                 };
             };
         };

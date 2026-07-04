@@ -232,6 +232,15 @@ evoluindo para orquestração só quando necessário.
   auditoria imutável** (quem/o quê/quando).
 - **Proteções de fluxo**: rate limiting, lockout progressivo, alerta de novo
   device; verificação de e-mail e reset seguro (sem enumeração).
+  > **Padrão — superfície pública de escrita** (reusável): quando um site/landing
+  > público precisa aceitar input anônimo (agendar, contato, lead), prefira
+  > **solicitação que um humano confirma** a autoatendimento que escreve direto no
+  > sistema operacional. Não exponha estado interno (disponibilidade, agenda,
+  > catálogo de dados) para não virar oráculo de enumeração. Endureça a rota:
+  > **honeypot** (campo oculto), **rate limit** por IP+recurso, validação estrita e
+  > **resposta uniforme** (não revele se caiu no filtro anti-spam). Mantenha a
+  > superfície anônima **mínima e enumerável** (idealmente 1–2 rotas); todo o resto
+  > exige sessão. PII recebida é dado do tenant → tabela com RLS.
 - **Supply chain**: lockfile fixo, **SCA** (deps), **SAST**, **secret scanning** e
   scan de imagem na CI; atualização de dependências com SLA por severidade.
 - **SSDLC**: revisão de segurança no PR; testes de autorização automatizados;

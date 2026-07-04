@@ -176,6 +176,33 @@ Site público por tenant, com **agendamento online** ligado à Agenda (doc 05 §
 - **Segurança**: o site é público, mas qualquer ação (agendar) passa pela API
   autenticada/rate-limited; nada de acesso direto a dados de clínica (doc 02/11).
 
+### 4.2 Implementado (fase 3 — MVP)
+
+Site institucional por tenant + **solicitação** de agendamento (decisão validada:
+a clínica confirma; sem escrita anônima direta na agenda). Módulo
+`apps/api/src/modules/site` + web (público `/clinica/[slug]`, gestão `/site`).
+
+- **CMS-lite por tenant** (`site_config`, tabela **global sem RLS** — leitura
+  pública por `slug` antes do contexto de tenant, como `users`; edição filtrada por
+  `tenant_id`; conteúdo público por design): slug, publicado, nome, sobre, serviços
+  (texto), endereço/telefone/WhatsApp/e-mail/horário, cor primária, logo (upload R2).
+- **Agendamento = solicitação** (`agendamento_solicitacoes`, **tenant-scoped com
+  RLS** — PII do visitante é dado da clínica): o visitante envia um pedido; a
+  recepção **confirma/recusa**. **Nada grava direto na agenda operacional** e a
+  disponibilidade **não** é exposta. A criação do agendamento real segue o fluxo
+  interno (o visitante ainda não é cliente).
+- **Superfície pública mínima e endurecida**: só `GET /api/public/clinica/:slug`
+  (conteúdo publicado) e `POST .../agendamento`. Esta é a **única rota anônima de
+  escrita** do sistema — protegida por **honeypot** + **rate limit** por IP+slug
+  (5/10min, em memória no MVP). Resposta uniforme (não vaza o filtro anti-spam).
+- **Captação**: campo "Como nos conheceu?" na solicitação (alimenta origem — §8.11).
+- Gestão restrita a admin/gestor (`/site`): edição do CMS + triagem das solicitações.
+
+**Pendente**: agendamento em tempo real com disponibilidade (exige expor slots com
+cuidado + escrita direta na agenda), conversão da solicitação → cliente+agendamento
+em 1 clique, integração Google Agenda/IA (doc 06), SEO/render server-side por
+domínio próprio, rate limit distribuído (Redis/WAF) para multi-instância.
+
 ---
 
 ## 5. Portal do cliente (tutor)
