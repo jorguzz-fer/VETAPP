@@ -94,3 +94,19 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=<client-id>.apps.googleusercontent.com
 - `https://<DOMINIO_WEB>` → resource Web (porta 3000).
 - Postgres/Redis **sem** porta pública; só rede interna do Coolify.
 - `CORS_ORIGINS` (API) = domínio do Web; `NEXT_PUBLIC_API_URL` (Web) = domínio da API.
+- **Cloudflare + subdomínio de 2 níveis** (`api.app.dominio.com`): o Universal SSL
+  grátis só cobre 1 nível (`*.dominio.com`) → `ERR_SSL_VERSION_OR_CIPHER_MISMATCH`.
+  Solução: registro **DNS only** (nuvem cinza) para o Let's Encrypt do Coolify
+  emitir o cert, ou usar subdomínio de 1 nível.
+
+## Troubleshooting (aprendido no primeiro deploy real)
+
+| Sintoma | Causa | Fix |
+|---------|-------|-----|
+| Build: `open Dockerfile: no such file` | Dockerfile Location no padrão `/Dockerfile` | apontar `/apps/api/Dockerfile` ou `/apps/web/Dockerfile` |
+| Build: `nest: not found` / `next` ausente | Coolify injeta `NODE_ENV=production` no build → pnpm pula devDeps | resolvido no Dockerfile (`NODE_ENV=development pnpm install`) |
+| Build morre **sem mensagem**, exit 255, progresso cortado | OOM/pico de recurso no VPS (checar `df -h /` e `free -m` de dentro de qualquer container) | re-tentar; adicionar **swap** (`fallocate -l 2G /swapfile ...`) — VPS compartilhado sem swap mata builds |
+| API: `getaddrinfo EAI_AGAIN <host>` | hostname do Postgres errado na env (ex.: **letra O × zero**) ou fora da rede | **copiar/colar** a "Postgres URL (internal)" (nunca redigitar); validar com `getent hosts <host>` no Terminal da API |
+| Browser: "CORS error" (sem status) | resposta não veio do Nest (Traefik 502 com API caída) ou origin `www` fora do `CORS_ORIGINS` | subir a API; incluir variantes www/não-www no `CORS_ORIGINS` |
+| Register 500 com body válido | DTO de entrada **sem class-validator** + `ValidationPipe whitelist:true` remove tudo → `undefined` na query | todo DTO com `@Body` precisa de validadores (ver doc 12 §7) |
+| Pre-deployment "Skipping" | comando pre-deploy roda no container **antigo**; se está morto, pula | rodar `node dist/database/migrate.js` no Terminal da API após subir |
