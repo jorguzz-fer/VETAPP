@@ -76,8 +76,11 @@ automáticos → alta; faturamento compartilhado via `FaturamentoService`),
 agenda avançada (tipos de atendimento com duração/cor em `/cadastros`,
 profissional por agendamento, "minha agenda", status), vendas/orçamentos
 (acoplado à ficha do cliente, itens por código, converter → fatura aberta),
-**comissionamento** (regras % por colaborador/item em basis points, profissional
-gravado no `fatura_itens`, fechamento + "minhas comissões").
+comissionamento (regras % por colaborador/item em basis points, profissional
+gravado no `fatura_itens`, fechamento + "minhas comissões"), **painel por
+persona** (`/api/dashboard`, KPIs reais recortados por papel) e **produtividade**
+(`/api/inteligencia/produtividade`, produção por colaborador). **Fase 1 do
+mapeamento (doc 05) completa** — restam os complementares do doc 13.
 **App em produção** (Coolify/VPS): runbook e troubleshooting em `docs/spec/14`.
 
 Pendências conhecidas:

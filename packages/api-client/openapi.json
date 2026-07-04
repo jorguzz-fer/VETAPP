@@ -2366,6 +2366,80 @@
           }
         ]
       }
+    },
+    "/api/dashboard": {
+      "get": {
+        "operationId": "DashboardController_resumo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dashboard"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/inteligencia/produtividade": {
+      "get": {
+        "operationId": "InteligenciaController_produtividade",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProdutividadeDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inteligencia"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -4062,6 +4136,123 @@
         "required": [
           "userId",
           "percentBps"
+        ]
+      },
+      "ProximoAgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "inicio": {
+            "type": "string"
+          },
+          "profissionalNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "inicio",
+          "profissionalNome",
+          "cor"
+        ]
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "agendamentosHoje": {
+            "type": "number"
+          },
+          "minhaAgendaHoje": {
+            "type": "number"
+          },
+          "proximos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProximoAgendamentoDto"
+            }
+          },
+          "internados": {
+            "type": "number"
+          },
+          "execucoesPendentes": {
+            "type": "number"
+          },
+          "faturasAbertas": {
+            "type": "number"
+          },
+          "faturasAbertasCentavos": {
+            "type": "number"
+          },
+          "receitaMesCentavos": {
+            "type": "number"
+          },
+          "estoqueAbaixoMinimo": {
+            "type": "number"
+          },
+          "orcamentosAbertos": {
+            "type": "number"
+          },
+          "clientes": {
+            "type": "number"
+          },
+          "minhasComissoesMesCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "agendamentosHoje",
+          "minhaAgendaHoje",
+          "proximos",
+          "internados",
+          "execucoesPendentes",
+          "faturasAbertas",
+          "faturasAbertasCentavos",
+          "receitaMesCentavos",
+          "estoqueAbaixoMinimo",
+          "orcamentosAbertos",
+          "clientes",
+          "minhasComissoesMesCentavos"
+        ]
+      },
+      "ProdutividadeDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "lancamentos": {
+            "type": "number",
+            "description": "Lançamentos faturados atribuídos ao colaborador"
+          },
+          "receitaCentavos": {
+            "type": "number",
+            "description": "Receita gerada (centavos)"
+          },
+          "agendamentosConcluidos": {
+            "type": "number",
+            "description": "Agendamentos concluídos no período"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "lancamentos",
+          "receitaCentavos",
+          "agendamentosConcluidos"
         ]
       }
     }

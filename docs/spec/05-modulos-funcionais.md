@@ -14,6 +14,12 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
   única: gestão vê gerencial; recepção vê agenda/fila; médico vê sua agenda +
   pendências do dia. Painel configurável por papel. Definir o layout final
   **depois** que os módulos estiverem fechados.
+- **Fase 1 — implementado ✅**: `GET /api/dashboard` devolve o superset de KPIs
+  reais (agenda de hoje + próximos, internados, execuções pendentes, receita do
+  mês, faturas em aberto, estoque abaixo do mínimo, orçamentos, clientes,
+  "minhas comissões"); a home recorta por papel — gestão vê o gerencial,
+  veterinário vê "minha agenda"/comissões, demais veem o operacional.
+  Layout configurável e gráficos → fase 2 (timezone por tenant idem).
 
 ## 2. Atendimento Clínico (núcleo)
 ### 2.1 Lista de clientes/pacientes — 🟢 MANTER
@@ -115,6 +121,11 @@ Fatia mínima (`apps/api/src/modules/comissoes` + `/comissoes` no web):
 |------|--------|---------|
 | 6.1 Produtividade | `/v2/inteligencia/produtividade` | 🟢 MANTER (a mais elogiada). Agrupar por colaborador **e por setor**; não misturar entidades estranhas |
 | 6.2 Vendas (analytics) | `/v2/inteligencia/vendas` | 🟡 **Unificar com o dashboard de vendas (4.2)** |
+
+**Fase 1 — implementado ✅ (6.1)**: `GET /api/inteligencia/produtividade?from&to`
+— produção por colaborador (lançamentos faturados atribuídos, receita gerada,
+agendamentos concluídos, % do total) na página `/produtividade` (admin/gestor).
+Agrupamento por setor e analytics de vendas unificado (6.2) → fase 2.
 
 ## 7. Consultas
 | Tela | Legado | Decisão |

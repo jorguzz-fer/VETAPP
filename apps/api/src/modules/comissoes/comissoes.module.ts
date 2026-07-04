@@ -8,5 +8,6 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
   imports: [JwtModule.register({})],
   controllers: [ComissoesController],
   providers: [ComissoesService, JwtAuthGuard],
+  exports: [ComissoesService],
 })
 export class ComissoesModule {}
