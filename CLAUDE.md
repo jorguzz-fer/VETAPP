@@ -138,6 +138,11 @@ Pendências conhecidas:
   `catalogo.update` grava nova vigência quando o `precoCentavos` muda. `GET
   /api/catalogo/:id/precos` lista o histórico. UI em `/precos`: alterar preço (gera
   vigência) + modal de histórico.
+- **Exportação LGPD do titular feita** (doc 09 §5, doc 02 §6): `GET
+  /api/lgpd/clientes/:responsavelId/export` (admin/gestor, auditado `lgpd.exportar`) —
+  JSON agregado (cadastro + pets/prontuário + faturas/itens/recebimentos + agendamentos)
+  sob `withTenant`+RLS, sem chaves internas. UI: botão "Exportar (LGPD)" na ficha do
+  cliente. Atende acesso + portabilidade. Pendente: exclusão/anonimização, retenção.
 - Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, WebAuthn.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
