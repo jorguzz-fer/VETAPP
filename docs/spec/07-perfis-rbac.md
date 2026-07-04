@@ -48,6 +48,23 @@ Legenda: ✅ total · ➖ parcial/condicional · — sem acesso.
   comissão do próprio colaborador; internação sob responsabilidade do vet).
 - Negação por padrão: nenhuma rota de negócio sem checagem de papel + tenant.
 
+## 3.1 Gestão de usuários e acessos (implementado)
+Área **admin** em `/configuracoes` (API `/api/usuarios`, guard `admin`):
+- **Listar** a equipe do tenant (nome, e-mail, papel, status, MFA on/off).
+- **Criar** colaborador (nome + e-mail + papel): se o e-mail é novo, cria a conta
+  e devolve uma **senha temporária** (mostrada uma vez, o admin repassa; o
+  colaborador troca depois); se o e-mail já existe (usuário multi-tenant), apenas
+  **vincula** ao tenant com o papel — sem mexer na senha.
+- **Trocar papel**, **ativar/desativar** (status global da conta), **resetar
+  senha** (nova temporária) e **remover acesso** ao tenant (apaga o `membership`,
+  não a conta global).
+- **Travas anti-lockout**: não dá para rebaixar/desativar/remover **a si mesmo**
+  nem o **último admin** da clínica.
+- Usuário × tenant continua sendo o `membership` (doc 03 §4); acesso sempre por
+  `withTenant` + RLS.
+- Follow-up: onboarding por **convite** (link, como o portal do tutor) no lugar da
+  senha temporária; forçar troca no 1º login; MFA obrigatório por papel (doc 02).
+
 ## 4. Extensibilidade
 - Papéis e permissões são **dados** (tabelas `role`/`permission`), permitindo:
   - papéis customizados por tenant no futuro;

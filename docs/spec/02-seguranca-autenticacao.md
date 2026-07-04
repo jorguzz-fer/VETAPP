@@ -125,7 +125,10 @@ Tradução concreta da diretriz:
   minimização e retenção definidas por política.
 - **Trilha de auditoria** imutável (quem fez o quê, quando, em qual tenant) —
   corresponde ao módulo "Log" mantido (item 7.3 do mapeamento), elevado a
-  requisito de segurança.
+  requisito de segurança. **[NA FILA]** tabela `audit_log` append-only por tenant
+  (ação, entidade/id, `user_id`, `request_id`, timestamp, diff resumido), gravada
+  nas escritas sensíveis (auth, usuários/acessos, financeiro, fiscal, prontuário)
+  e consultável por admin — insumo direto do LGPD (doc 09 §5).
 - Direitos do titular (acesso, correção, exclusão) suportados por processo.
 - Preferência por **hospedagem em região no Brasil** **[A DEFINIR]**.
 

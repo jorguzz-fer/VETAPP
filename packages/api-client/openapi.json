@@ -4571,6 +4571,182 @@
           }
         ]
       }
+    },
+    "/api/usuarios": {
+      "get": {
+        "operationId": "UsuariosController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "UsuariosController_criar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CriarUsuarioResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{userId}": {
+      "patch": {
+        "operationId": "UsuariosController_atualizar",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "UsuariosController_remover",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{userId}/reset-senha": {
+      "post": {
+        "operationId": "UsuariosController_resetSenha",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SenhaTemporariaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -7749,6 +7925,156 @@
         "required": [
           "titulo",
           "conteudo"
+        ]
+      },
+      "UsuarioDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "active | disabled"
+          },
+          "mfaEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "email",
+          "role",
+          "status",
+          "mfaEnabled"
+        ]
+      },
+      "CriarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Dra. Carla Nunes"
+          },
+          "email": {
+            "type": "string",
+            "example": "carla@clinica.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "role"
+        ]
+      },
+      "CriarUsuarioResultDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "active | disabled"
+          },
+          "mfaEnabled": {
+            "type": "boolean"
+          },
+          "senhaTemporaria": {
+            "type": "string",
+            "nullable": true,
+            "description": "Senha temporária (mostrada só uma vez). Null quando o usuário já existia (mantém a senha atual)."
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "email",
+          "role",
+          "status",
+          "mfaEnabled",
+          "senhaTemporaria"
+        ]
+      },
+      "AtualizarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ]
+          }
+        }
+      },
+      "SenhaTemporariaDto": {
+        "type": "object",
+        "properties": {
+          "senhaTemporaria": {
+            "type": "string",
+            "description": "Nova senha temporária (mostrada só uma vez)."
+          }
+        },
+        "required": [
+          "senhaTemporaria"
         ]
       }
     }
