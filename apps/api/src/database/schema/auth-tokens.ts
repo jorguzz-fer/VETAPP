@@ -1,5 +1,6 @@
 import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
 import { users } from './users';
+import { tutorCredentials } from './portal';
 
 // Tabelas de infraestrutura de AUTH — globais (não tenant-scoped, como `users`).
 // Não têm RLS: são acessadas pelo fluxo de auth ANTES de haver contexto de
@@ -42,5 +43,30 @@ export const mfaRecoveryCodes = pgTable(
   }),
 );
 
+// Refresh tokens do PORTAL DO TUTOR — mesmo padrão stateful da gestão (rotação por
+// family + detecção de reuso + revogação), mas escopado por credencial do tutor.
+// Global/sem RLS (auth do tutor é separada da gestão; escopo por jti/credentialId).
+export const tutorRefreshTokens = pgTable(
+  'tutor_refresh_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // = jti do refresh JWT do tutor
+    credentialId: uuid('credential_id')
+      .notNull()
+      .references(() => tutorCredentials.id, { onDelete: 'cascade' }),
+    tenantId: uuid('tenant_id').notNull(),
+    responsavelId: uuid('responsavel_id').notNull(),
+    family: uuid('family').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    replacedById: uuid('replaced_by_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    credentialIdx: index('tutor_refresh_tokens_credential_idx').on(t.credentialId),
+    familyIdx: index('tutor_refresh_tokens_family_idx').on(t.family),
+  }),
+);
+
 export type RefreshToken = typeof refreshTokens.$inferSelect;
 export type MfaRecoveryCode = typeof mfaRecoveryCodes.$inferSelect;
+export type TutorRefreshToken = typeof tutorRefreshTokens.$inferSelect;

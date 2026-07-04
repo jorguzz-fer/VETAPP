@@ -74,9 +74,17 @@
 > Apresentar um `jti` **já revogado** = reuso (replay/roubo) → **revoga a family
 > inteira** e recusa. `POST /auth/logout` revoga a family (best-effort, idempotente).
 > O access token segue stateless (`{ sub, tenantId, role }`, TTL curto). Frontend:
-> renovação **proativa** ~60s antes do `exp` (não intercepta 401). **Pendente**:
-> migrar do Bearer/localStorage para **cookie httpOnly/BFF**; lista de revogação por
-> troca de senha; limpeza periódica de tokens expirados.
+> renovação **proativa** ~60s antes do `exp` (não intercepta 401).
+>
+> **Portal do tutor com o MESMO padrão** — o refresh do tutor deixou de ser stateless:
+> agora é stateful com rotação por family + detecção de reuso + revogação
+> (`tutor_refresh_tokens`, migração 0026, tabela global sem RLS escopada por
+> `jti`/`credential_id`). `POST /portal/refresh` rotaciona (revoga o `jti` apresentado,
+> emite novo par na mesma family; jti já revogado → revoga a family). `POST /portal/logout`
+> passa a revogar a family de verdade. Revogar o acesso do tutor pela clínica também
+> derruba a family no próximo refresh. **Pendente**: migrar do Bearer/localStorage para
+> **cookie httpOnly/BFF**; lista de revogação por troca de senha; limpeza periódica de
+> tokens expirados (gestão e tutor).
 
 ### 2.4 Proteções de fluxo
 - Rate limiting e **lockout progressivo** por usuário/IP em login e MFA.

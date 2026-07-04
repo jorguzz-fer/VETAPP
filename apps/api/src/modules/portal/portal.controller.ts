@@ -62,10 +62,9 @@ export class PortalController {
   @Post('logout')
   @HttpCode(200)
   @ApiOkResponse({ type: OkDto })
-  logout(@Body() _dto: PortalLogoutDto): OkDto {
-    // Refresh do tutor é stateless nesta versão (sem revogação server-side —
-    // ver follow-up no doc 02). O logout local descarta os tokens no front.
-    return { ok: true };
+  logout(@Body() dto: PortalLogoutDto): Promise<OkDto> {
+    // Revoga a family do refresh apresentado (stateful — doc 02 §2.2).
+    return this.auth.logout(dto.refreshToken);
   }
 
   // ───────── Dados do tutor (protegido) ─────────
