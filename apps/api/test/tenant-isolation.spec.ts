@@ -18,6 +18,9 @@ const TENANT_A = '11111111-1111-1111-1111-111111111111';
 const TENANT_B = '22222222-2222-2222-2222-222222222222';
 const ITEM_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const ITEM_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+// USER_1 pertence aos dois tenants (A e B); USER_2 só ao A. Provam o login sob RLS.
+const USER_1 = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+const USER_2 = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 
 let container: StartedPostgreSqlContainer | undefined;
 let adminSql: postgres.Sql | undefined;
@@ -45,6 +48,15 @@ beforeAll(async () => {
 
   // Seed de dois tenants e um responsável de cada (superusuário ignora o RLS).
   await adminSql`INSERT INTO tenants (id, name) VALUES (${TENANT_A}, 'Tenant A'), (${TENANT_B}, 'Tenant B')`;
+
+  // Usuários + vínculos: USER_1 em A e B, USER_2 só em A. (users é global, sem RLS.)
+  await adminSql`INSERT INTO users (id, email, name, password_hash) VALUES
+    (${USER_1}, 'u1@example.com', 'User 1', 'x'),
+    (${USER_2}, 'u2@example.com', 'User 2', 'x')`;
+  await adminSql`INSERT INTO memberships (tenant_id, user_id, role) VALUES
+    (${TENANT_A}, ${USER_1}, 'admin'),
+    (${TENANT_B}, ${USER_1}, 'gestor'),
+    (${TENANT_A}, ${USER_2}, 'recepcao')`;
   await adminSql`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_A}, 'Cliente A'), (${TENANT_B}, 'Cliente B')`;
 
   // Estoque: item por tenant + movimentos (A: +10 -3 = 7 | B: +5) para provar
@@ -152,5 +164,50 @@ describe('Isolamento de tenant (RLS)', () => {
     });
     // Só os movimentos de A entram na soma: 10 - 3 = 7 (os +5 de B ficam invisíveis).
     expect(rows[0].saldo).toBe(7);
+  });
+
+  // ── Login sob RLS: memberships_self_read (migração 0018) ──
+  // O login roda antes de haver tenant fixado; precisa ler os vínculos do próprio
+  // usuário fixando app.current_user, sem BYPASSRLS e sem vazar entre tenants.
+
+  it('login: fixando app.current_user, o usuário lê TODOS os seus vínculos (multi-tenant)', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_user', ${USER_1}, true)`;
+      return tx`SELECT tenant_id, role FROM memberships ORDER BY role`;
+    });
+    // USER_1 pertence a A (admin) e B (gestor) — os dois vínculos aparecem.
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.tenant_id).sort()).toEqual([TENANT_A, TENANT_B].sort());
+  });
+
+  it('login: app.current_user só enxerga os PRÓPRIOS vínculos, não os de outro usuário', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_user', ${USER_2}, true)`;
+      return tx`SELECT tenant_id, role FROM memberships`;
+    });
+    // USER_2 só tem vínculo em A — não vê os de USER_1.
+    expect(rows).toHaveLength(1);
+    expect(rows[0].tenant_id).toBe(TENANT_A);
+    expect(rows[0].role).toBe('recepcao');
+  });
+
+  it('sem nenhum GUC, memberships fica invisível (fail-closed)', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const rows = await appSql`SELECT 1 FROM memberships`;
+    expect(rows).toHaveLength(0);
+  });
+
+  it('memberships continua isolado por tenant nas queries normais (app.current_tenant)', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    // Fixando o tenant B, vê-se só o vínculo de B — o self_read (sem current_user) fica inerte.
+    const rows = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_B}, true)`;
+      return tx`SELECT user_id, role FROM memberships`;
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].user_id).toBe(USER_1);
+    expect(rows[0].role).toBe('gestor');
   });
 });

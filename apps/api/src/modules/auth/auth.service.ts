@@ -292,9 +292,12 @@ export class AuthService {
 
   /** Resolve membership/tenant e decide entre tokens de sessão ou desafio MFA. */
   private async resolveLogin(userId: string, mfaEnabled: boolean, tenantId?: string): Promise<LoginResultDto> {
-    const memberList = await this.database.db.query.memberships.findMany({
-      where: eq(memberships.userId, userId),
-    });
+    // Leitura dos próprios vínculos antes de haver contexto de tenant: fixa
+    // app.current_user para a policy memberships_self_read (migração 0018) liberar
+    // as linhas deste usuário sob RLS (a app conecta como vetapp_app, sem BYPASSRLS).
+    const memberList = await this.database.withUser(userId, (tx) =>
+      tx.query.memberships.findMany({ where: eq(memberships.userId, userId) }),
+    );
     if (memberList.length === 0) {
       throw new UnauthorizedException('Usuário sem acesso a nenhum tenant');
     }

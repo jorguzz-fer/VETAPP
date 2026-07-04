@@ -127,6 +127,13 @@
       "when": 1719592100000,
       "tag": "0017_site",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1719592200000,
+      "tag": "0018_auth_current_user",
+      "breakpoints": true
     }
   ]
 }
