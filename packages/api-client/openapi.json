@@ -1996,6 +1996,44 @@
         ]
       }
     },
+    "/api/catalogo/{id}/precos": {
+      "get": {
+        "operationId": "CatalogoController_precos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrecoHistoricoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/estoque": {
       "get": {
         "operationId": "EstoqueController_saldos",
@@ -6404,6 +6442,36 @@
             "type": "boolean"
           }
         }
+      },
+      "PrecoHistoricoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "vigenteDesde": {
+            "type": "string",
+            "description": "Vigente a partir de (ISO)"
+          },
+          "alteradoPor": {
+            "type": "string",
+            "nullable": true
+          },
+          "alteradoPorNome": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "precoCentavos",
+          "vigenteDesde",
+          "alteradoPor",
+          "alteradoPorNome"
+        ]
       },
       "SaldoItemDto": {
         "type": "object",

@@ -1,8 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, ilike, ne, or } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, ne, or } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { itensCatalogo } from '../../database/schema';
-import type { CreateItemDto, ItemCatalogoDto, UpdateItemDto } from './catalogo.dto';
+import { itensCatalogo, precoHistorico, users } from '../../database/schema';
+import type { CreateItemDto, ItemCatalogoDto, PrecoHistoricoDto, UpdateItemDto } from './catalogo.dto';
 
 @Injectable()
 export class CatalogoService {
@@ -26,19 +26,28 @@ export class CatalogoService {
     });
   }
 
-  async create(tenantId: string, dto: CreateItemDto): Promise<ItemCatalogoDto> {
+  async create(tenantId: string, dto: CreateItemDto, actorUserId?: string): Promise<ItemCatalogoDto> {
     return this.database.withTenant(tenantId, async (tx) => {
       const existente = await tx.query.itensCatalogo.findFirst({
         where: and(eq(itensCatalogo.tenantId, tenantId), eq(itensCatalogo.codigo, dto.codigo)),
       });
       if (existente) throw new ConflictException(`Código "${dto.codigo}" já está em uso`);
       const [row] = await tx.insert(itensCatalogo).values({ ...dto, tenantId }).returning();
+      // Vigência inicial: primeiro preço do item (doc 13 §2).
+      await tx.insert(precoHistorico).values({
+        tenantId,
+        itemId: row.id,
+        precoCentavos: row.precoCentavos,
+        alteradoPor: actorUserId ?? null,
+      });
       return row;
     });
   }
 
-  async update(tenantId: string, id: string, dto: UpdateItemDto): Promise<ItemCatalogoDto> {
+  async update(tenantId: string, id: string, dto: UpdateItemDto, actorUserId?: string): Promise<ItemCatalogoDto> {
     return this.database.withTenant(tenantId, async (tx) => {
+      const atual = await tx.query.itensCatalogo.findFirst({ where: eq(itensCatalogo.id, id) });
+      if (!atual) throw new NotFoundException('Item não encontrado');
       // Troca de código revalida unicidade (como no create) → 409 amigável em vez
       // de estourar 500 na violação do índice único do banco.
       if (dto.codigo) {
@@ -56,9 +65,43 @@ export class CatalogoService {
         .set({ ...dto, updatedAt: new Date() })
         .where(eq(itensCatalogo.id, id))
         .returning();
-      if (!row) throw new NotFoundException('Item não encontrado');
+      // Mudança de preço → nova vigência no histórico (só quando o valor muda).
+      if (dto.precoCentavos !== undefined && dto.precoCentavos !== atual.precoCentavos) {
+        await tx.insert(precoHistorico).values({
+          tenantId,
+          itemId: id,
+          precoCentavos: dto.precoCentavos,
+          alteradoPor: actorUserId ?? null,
+        });
+      }
       return row;
     });
+  }
+
+  /** Histórico/vigência de preços de um item (mais recente primeiro). */
+  async listPrecoHistorico(tenantId: string, itemId: string): Promise<PrecoHistoricoDto[]> {
+    const rows = await this.database.withTenant(tenantId, (tx) =>
+      tx
+        .select()
+        .from(precoHistorico)
+        .where(eq(precoHistorico.itemId, itemId))
+        .orderBy(desc(precoHistorico.vigenteDesde))
+        .limit(100),
+    );
+    // Nomes dos autores (users é global).
+    const ids = [...new Set(rows.map((r) => r.alteradoPor).filter((x): x is string => !!x))];
+    const nomes = new Map<string, string>();
+    if (ids.length > 0) {
+      const us = await this.database.db.query.users.findMany({ where: inArray(users.id, ids) });
+      for (const u of us) nomes.set(u.id, u.name);
+    }
+    return rows.map((r) => ({
+      id: r.id,
+      precoCentavos: r.precoCentavos,
+      vigenteDesde: (r.vigenteDesde as Date).toISOString(),
+      alteradoPor: r.alteradoPor,
+      alteradoPorNome: r.alteradoPor ? nomes.get(r.alteradoPor) ?? null : null,
+    }));
   }
 
   async remove(tenantId: string, id: string): Promise<{ ok: boolean }> {

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuard
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CatalogoService } from './catalogo.service';
-import { CreateItemDto, ItemCatalogoDto, UpdateItemDto } from './catalogo.dto';
+import { CreateItemDto, ItemCatalogoDto, PrecoHistoricoDto, UpdateItemDto } from './catalogo.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('catalogo')
@@ -29,13 +29,20 @@ export class CatalogoController {
   @Post()
   @ApiCreatedResponse({ type: ItemCatalogoDto })
   create(@Req() req: Request, @Body() dto: CreateItemDto): Promise<ItemCatalogoDto> {
-    return this.catalogo.create(req.auth!.tenantId, dto);
+    return this.catalogo.create(req.auth!.tenantId, dto, req.auth!.userId);
   }
 
   @Patch(':id')
   @ApiOkResponse({ type: ItemCatalogoDto })
   update(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateItemDto): Promise<ItemCatalogoDto> {
-    return this.catalogo.update(req.auth!.tenantId, id, dto);
+    return this.catalogo.update(req.auth!.tenantId, id, dto, req.auth!.userId);
+  }
+
+  // Histórico/vigência de preços do item (doc 13 §2).
+  @Get(':id/precos')
+  @ApiOkResponse({ type: [PrecoHistoricoDto] })
+  precos(@Req() req: Request, @Param('id') id: string): Promise<PrecoHistoricoDto[]> {
+    return this.catalogo.listPrecoHistorico(req.auth!.tenantId, id);
   }
 
   @Delete(':id')

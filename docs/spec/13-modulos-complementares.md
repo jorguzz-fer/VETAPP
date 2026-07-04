@@ -108,6 +108,15 @@ saldo (fase 1 não permite saldo negativo): registra o evento e sinaliza
 `estoqueBaixado:false`. **Ainda fase 2+**: baixa na **venda** direta, lotes/
 validade, múltiplos depósitos, fornecedores/pedidos de compra, curva ABC.
 
+**Fase 2 — histórico/vigência de preços implementado ✅**: tabela `preco_historico`
+(migração 0027, RLS fail-closed por tenant). Cada linha é um preço **vigente a partir
+de** `vigente_desde`, com **quem alterou**. `catalogo.create` grava a vigência inicial;
+`catalogo.update` grava uma nova vigência **quando o preço muda**. `GET
+/api/catalogo/:id/precos` lista o histórico; a tela `/precos` permite **alterar o
+preço** (gera vigência) e ver o **histórico** em modal. **Ainda fase 3+**: preço
+**futuro agendado** (vigência com data de início no futuro) e listas de preço por
+convênio/canal.
+
 ---
 
 ## 3. Fiscal

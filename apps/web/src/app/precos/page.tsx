@@ -4,6 +4,14 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+
+interface PrecoHist {
+  id: string;
+  precoCentavos: number;
+  vigenteDesde: string;
+  alteradoPorNome: string | null;
+}
 
 interface Item {
   id: string;
@@ -81,6 +89,33 @@ export default function PrecosPage() {
     if (!confirm(`Excluir "${item.nome}" (código ${item.codigo})?`)) return;
     await api.DELETE('/api/catalogo/{id}', { params: { path: { id: item.id } } });
     void load();
+  }
+
+  // Editar preço: gera uma nova vigência no histórico (server-side).
+  async function onEditarPreco(item: Item) {
+    const atual = (item.precoCentavos / 100).toFixed(2).replace('.', ',');
+    const entrada = prompt(`Novo preço de "${item.nome}" (R$):`, atual);
+    if (entrada == null) return;
+    const centavos = Math.round(parseFloat(entrada.replace(',', '.')) * 100);
+    if (!Number.isFinite(centavos) || centavos < 0) {
+      alert('Valor inválido.');
+      return;
+    }
+    await api.PATCH('/api/catalogo/{id}', {
+      params: { path: { id: item.id } },
+      body: { precoCentavos: centavos },
+    });
+    void load();
+  }
+
+  // Histórico de preços em modal.
+  const [histItem, setHistItem] = useState<Item | null>(null);
+  const [historico, setHistorico] = useState<PrecoHist[] | null>(null);
+  async function abrirHistorico(item: Item) {
+    setHistItem(item);
+    setHistorico(null);
+    const { data } = await api.GET('/api/catalogo/{id}/precos', { params: { path: { id: item.id } } });
+    setHistorico((data as PrecoHist[]) ?? []);
   }
 
   return (
@@ -164,8 +199,26 @@ export default function PrecosPage() {
                   <td className="py-2.5 text-right whitespace-nowrap">
                     <button
                       type="button"
+                      onClick={() => onEditarPreco(item)}
+                      className="text-gray-400 hover:text-primary-500"
+                      title="Alterar preço"
+                      aria-label="Alterar preço"
+                    >
+                      <i className="ri-price-tag-3-line text-lg"></i>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => abrirHistorico(item)}
+                      className="ml-3 text-gray-400 hover:text-primary-500"
+                      title="Histórico de preços"
+                      aria-label="Histórico de preços"
+                    >
+                      <i className="ri-history-line text-lg"></i>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => onToggleAtivo(item)}
-                      className={`${item.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                      className={`ml-3 ${item.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
                       title={item.ativo ? 'Desativar' : 'Ativar'}
                       aria-label={item.ativo ? 'Desativar' : 'Ativar'}
                     >
@@ -187,6 +240,33 @@ export default function PrecosPage() {
           </table>
         )}
       </Card>
+
+      <Modal
+        open={histItem !== null}
+        onClose={() => setHistItem(null)}
+        title={histItem ? `Histórico de preços — ${histItem.nome}` : 'Histórico de preços'}
+      >
+        {historico === null ? (
+          <p className="text-sm text-gray-500 py-4">Carregando…</p>
+        ) : historico.length === 0 ? (
+          <p className="text-sm text-gray-500 py-4">Sem histórico registrado.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-gray-100 dark:divide-[#172036] text-sm">
+            {historico.map((h, i) => (
+              <li key={h.id} className="flex items-center justify-between py-2.5">
+                <div>
+                  <span className="font-medium text-black dark:text-white">{brl(h.precoCentavos)}</span>
+                  {i === 0 && <span className="ml-2 text-xs text-green-600">(vigente)</span>}
+                  <div className="text-xs text-gray-400">
+                    desde {new Date(h.vigenteDesde).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                    {h.alteradoPorNome ? ` · ${h.alteradoPorNome}` : ''}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
     </div>
   );
 }
