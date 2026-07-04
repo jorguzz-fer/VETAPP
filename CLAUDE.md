@@ -109,8 +109,9 @@ Pendências conhecidas:
   `'tutor'`). Onboarding **por convite** da clínica (link na ficha do cliente →
   tutor cria senha). Tutor vê **meus pets** (vacinas + histórico resumido, sem
   `observacao`), **agendamentos** (só leitura) e **faturas** (2ª via). Pagamento
-  online/fiscal e agendamento online ficam para depois. Refresh do tutor é
-  stateless por ora (follow-up: rotação/revogação como na gestão).
+  online/fiscal e agendamento online ficam para depois. **Refresh do tutor agora é
+  stateful** (rotação por family + detecção de reuso + revogação, `tutor_refresh_tokens`,
+  migração 0026 — mesmo padrão da gestão; `/portal/logout` revoga a family).
 - **Financeiro fase 2 feito**: recebimento parcial (`recebimentos`, status
   derivado), formas de recebimento (taxa em bps, em `/cadastros`), saldo do
   cliente (`/api/financeiro/saldos`, `/saldos`).

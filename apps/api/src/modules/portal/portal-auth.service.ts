@@ -6,11 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq } from 'drizzle-orm';
-import { createHash, randomBytes } from 'node:crypto';
+import { and, eq, isNull } from 'drizzle-orm';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { DatabaseService } from '../../database/database.service';
-import { responsaveis, tenants, tutorCredentials } from '../../database/schema';
+import { responsaveis, tenants, tutorCredentials, tutorRefreshTokens } from '../../database/schema';
 import type { EnvConfig } from '../../config/env';
 import type {
   PortalAcessoDto,
@@ -23,10 +23,13 @@ import type {
 // Convite válido por 7 dias.
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Refresh JWT do tutor: carrega só o jti (= id da linha em tutor_refresh_tokens) e a
+// family. Todo o estado (revogação/expiração/encadeamento) mora no banco — stateful
+// para permitir rotação e detecção de reuso, igual à gestão (doc 02 §2.2).
 interface TutorRefreshPayload {
-  sub: string;
-  tenantId: string;
-  responsavelId: string;
+  sub: string; // credentialId
+  jti: string;
+  family: string;
   scope: 'tutor-refresh';
 }
 
@@ -155,6 +158,12 @@ export class PortalAuthService {
     return this.issueTokens(cred.id, cred.tenantId, cred.responsavelId);
   }
 
+  /**
+   * Rotação do refresh do tutor (stateful, igual à gestão — doc 02 §2.2): valida o
+   * JWT, confere a linha e — se válida/não revogada — emite um novo par na MESMA
+   * family, revogando o jti apresentado. jti já revogado = REUSO (roubo/replay) →
+   * revoga a family inteira e recusa.
+   */
   async refresh(refreshToken: string): Promise<PortalTokensDto> {
     let payload: TutorRefreshPayload;
     try {
@@ -166,13 +175,44 @@ export class PortalAuthService {
     }
     if (payload.scope !== 'tutor-refresh') throw new UnauthorizedException('Token inválido');
 
+    const row = await this.database.db.query.tutorRefreshTokens.findFirst({
+      where: eq(tutorRefreshTokens.id, payload.jti),
+    });
+    // jti desconhecido ou family divergente = token forjado/adulterado.
+    if (!row || row.family !== payload.family || row.credentialId !== payload.sub) {
+      throw new UnauthorizedException('Token inválido');
+    }
+    if (row.revokedAt) {
+      // Reuso de um refresh já rotacionado: mata a family inteira.
+      await this.revokeFamily(row.family);
+      throw new UnauthorizedException('Sessão revogada — faça login novamente');
+    }
+    if (row.expiresAt.getTime() <= Date.now()) {
+      throw new UnauthorizedException('Sessão expirada — faça login novamente');
+    }
+
     const cred = await this.database.db.query.tutorCredentials.findFirst({
-      where: eq(tutorCredentials.id, payload.sub),
+      where: eq(tutorCredentials.id, row.credentialId),
     });
     if (!cred || cred.status !== 'active') {
+      // Acesso revogado pela clínica: mata a family e recusa.
+      await this.revokeFamily(row.family);
       throw new UnauthorizedException('Sessão inválida');
     }
-    return this.issueTokens(cred.id, cred.tenantId, cred.responsavelId);
+    return this.issueInFamily(cred.id, cred.tenantId, cred.responsavelId, row.family, row.id);
+  }
+
+  /** Logout do tutor: revoga a family do refresh apresentado (best-effort). */
+  async logout(refreshToken: string): Promise<{ ok: boolean }> {
+    try {
+      const payload = await this.jwt.verifyAsync<TutorRefreshPayload>(refreshToken, {
+        secret: this.env.JWT_REFRESH_SECRET,
+      });
+      if (payload.scope === 'tutor-refresh') await this.revokeFamily(payload.family);
+    } catch {
+      // Token inválido/expirado: logout é best-effort, não vaza estado.
+    }
+    return { ok: true };
   }
 
   async me(tenantId: string, responsavelId: string): Promise<PortalMeDto> {
@@ -211,19 +251,58 @@ export class PortalAuthService {
     return cred;
   }
 
-  private async issueTokens(
+  /** Abre uma nova family de sessão do tutor (login / aceite de convite). */
+  private issueTokens(credentialId: string, tenantId: string, responsavelId: string): Promise<PortalTokensDto> {
+    return this.issueInFamily(credentialId, tenantId, responsavelId, randomUUID());
+  }
+
+  /**
+   * Emite um par access/refresh do tutor numa family. Grava a linha do refresh
+   * (stateful) e, se `replacesId` vier, revoga o jti anterior (rotação). O access
+   * token segue stateless ({ sub, tenantId, responsavelId, scope:'tutor' }).
+   */
+  private async issueInFamily(
     credentialId: string,
     tenantId: string,
     responsavelId: string,
+    family: string,
+    replacesId?: string,
   ): Promise<PortalTokensDto> {
     const accessToken = await this.jwt.signAsync(
       { sub: credentialId, tenantId, responsavelId, scope: 'tutor' },
       { secret: this.env.JWT_ACCESS_SECRET, expiresIn: this.env.JWT_ACCESS_TTL },
     );
+
+    const jti = randomUUID();
+    const expiresAt = new Date(Date.now() + this.env.JWT_REFRESH_TTL * 1000);
+    await this.database.db.insert(tutorRefreshTokens).values({
+      id: jti,
+      credentialId,
+      tenantId,
+      responsavelId,
+      family,
+      expiresAt,
+    });
+
+    if (replacesId) {
+      await this.database.db
+        .update(tutorRefreshTokens)
+        .set({ revokedAt: new Date(), replacedById: jti })
+        .where(eq(tutorRefreshTokens.id, replacesId));
+    }
+
     const refreshToken = await this.jwt.signAsync(
-      { sub: credentialId, tenantId, responsavelId, scope: 'tutor-refresh' } satisfies TutorRefreshPayload,
+      { sub: credentialId, jti, family, scope: 'tutor-refresh' } satisfies TutorRefreshPayload,
       { secret: this.env.JWT_REFRESH_SECRET, expiresIn: this.env.JWT_REFRESH_TTL },
     );
     return { accessToken, refreshToken, tenantId };
+  }
+
+  /** Revoga todos os refresh tokens ativos de uma family do tutor. */
+  private async revokeFamily(family: string): Promise<void> {
+    await this.database.db
+      .update(tutorRefreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(tutorRefreshTokens.family, family), isNull(tutorRefreshTokens.revokedAt)));
   }
 }
