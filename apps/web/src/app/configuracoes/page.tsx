@@ -245,8 +245,122 @@ export default function ConfiguracoesPage() {
         )}
       </Card>
 
+      <BrandingCard />
       <UsuariosCard />
     </div>
+  );
+}
+
+// Branding do tenant (logo da clínica) — admin. Upload direto ao R2 via URL assinada.
+function BrandingCard() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const load = useCallback(async () => {
+    const res = await api.GET('/api/branding');
+    setLogoUrl((res.data as { logoUrl: string | null } | undefined)?.logoUrl ?? null);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMsg(null);
+    setBusy(true);
+    try {
+      const sign = await api.POST('/api/branding/logo/sign-upload', { body: { contentType: file.type } });
+      if (sign.error || !sign.data) {
+        setMsg({ kind: 'err', text: 'Falha ao preparar o upload (storage configurado?).' });
+        return;
+      }
+      const put = await fetch(sign.data.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      if (!put.ok) {
+        setMsg({ kind: 'err', text: 'Falha ao enviar a imagem.' });
+        return;
+      }
+      const conf = await api.POST('/api/branding/logo', { body: { key: sign.data.key } });
+      if (conf.error) {
+        setMsg({ kind: 'err', text: 'Falha ao confirmar o logo.' });
+        return;
+      }
+      setLogoUrl((conf.data as { logoUrl: string | null }).logoUrl);
+      setMsg({ kind: 'ok', text: 'Logo atualizado.' });
+    } finally {
+      setBusy(false);
+      if (fileInput.current) fileInput.current.value = '';
+    }
+  }
+
+  async function remover() {
+    if (!confirm('Remover o logo da clínica?')) return;
+    setBusy(true);
+    setMsg(null);
+    const res = await api.DELETE('/api/branding/logo');
+    setBusy(false);
+    if (res.error) {
+      setMsg({ kind: 'err', text: 'Falha ao remover o logo.' });
+      return;
+    }
+    setLogoUrl(null);
+    setMsg({ kind: 'ok', text: 'Logo removido.' });
+  }
+
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-black dark:text-white">Logo da clínica</h2>
+          <p className="text-sm text-gray-500">
+            Aparece no cabeçalho do sistema e nos documentos impressos. PNG ou JPG, fundo transparente de
+            preferência.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center gap-4">
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md border border-gray-200 dark:border-[#172036] bg-gray-50 dark:bg-[#15203c]">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo da clínica" className="h-full w-full object-contain" />
+          ) : (
+            <i className="ri-image-line text-2xl text-gray-400" />
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            onChange={onFile}
+            disabled={busy}
+            className="text-sm"
+          />
+          {logoUrl && (
+            <button
+              type="button"
+              onClick={remover}
+              disabled={busy}
+              className="self-start text-sm text-red-500 hover:underline disabled:opacity-50"
+            >
+              Remover logo
+            </button>
+          )}
+        </div>
+      </div>
+
+      {msg && (
+        <p className={`mt-3 text-sm ${msg.kind === 'ok' ? 'text-green-600' : 'text-red-500'}`}>{msg.text}</p>
+      )}
+    </Card>
   );
 }
 

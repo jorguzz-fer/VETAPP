@@ -18,3 +18,4 @@ export * from './fiscal';
 export * from './site';
 export * from './modelos';
 export * from './audit';
+export * from './tenant-branding';

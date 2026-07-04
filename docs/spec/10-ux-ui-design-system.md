@@ -50,6 +50,18 @@ identidade e portabilidade.
    do Trezo, para podermos trocar/evoluir sem reescrever telas.
 3. **Tema por tenant** (white-label leve): logo e, opcionalmente, cor primária por
    clínica (ver doc 03 §5).
+
+   > **Logo da clínica implementado** — tabela de domínio `tenant_branding`
+   > (migração 0024, uma linha por tenant, **RLS fail-closed** padrão `NULLIF`; o
+   > branding **não é público**, então é RLS-scoped, diferente do `site_config`).
+   > O logo mora no **R2** (bucket privado): a app guarda só a `logo_key` e serve
+   > **URL assinada** curta — nunca proxia bytes (doc 02 §4). API `/api/branding`:
+   > `GET` (qualquer membro autenticado, para renderizar) e `POST logo/sign-upload`
+   > · `POST logo` · `DELETE logo` (**admin**). UI em `/configuracoes` (card com
+   > preview + upload + remover) e o logo aparece no **cabeçalho da sidebar**. As
+   > escritas são auditadas (doc 02 §6). **Pendente**: cor primária por tenant;
+   > reuso do logo nos documentos impressos/2ª via quando essas views existirem (o
+   > `GET /api/branding` já as atende).
 4. **Caminho nativo:** tokens reaproveitados no React Native via **NativeWind** na
    fase 3 (doc 01 §2 / doc 08).
 

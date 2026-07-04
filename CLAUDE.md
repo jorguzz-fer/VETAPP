@@ -137,8 +137,14 @@ Pendências conhecidas:
   (login/logout/register), usuários/acessos, fiscal (emitir/cancelar) e financeiro
   (receber). `GET /api/auditoria` (admin, paginado + filtro) e página `/auditoria` (só
   leitura). Append-only coberto por `tenant-isolation.spec.ts` (roda na CI).
-- **Fila (a fazer)**: (1) **Upload do logo da clínica** (branding do tenant em
-  Configurações, reaproveitado nos documentos impressos — hoje só o site tem logo).
+- **Upload do logo da clínica feito** (doc 10 §3, doc 03 §5): tabela de domínio
+  `tenant_branding` (migração 0024, RLS fail-closed — branding NÃO é público, ao
+  contrário do `site_config`). Logo no **R2** (bucket privado, só `logo_key` no banco
+  → URL assinada, nunca proxia bytes). `/api/branding`: `GET` (qualquer membro, p/
+  renderizar) + `POST logo/sign-upload` · `POST logo` · `DELETE logo` (**admin**,
+  auditados). UI em `/configuracoes` (preview + upload + remover) e logo no cabeçalho
+  da sidebar. Pendente: cor primária por tenant; reuso em documentos impressos quando
+  existirem (o `GET /api/branding` já atende).
 
 ## Regra viva
 
