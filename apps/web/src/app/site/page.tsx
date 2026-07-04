@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -30,6 +32,7 @@ interface Solicitacao {
   mensagem?: string | null;
   origem?: string | null;
   status: string;
+  responsavelId?: string | null;
   criadaEm: string;
 }
 
@@ -43,6 +46,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function SiteAdminPage() {
+  const router = useRouter();
   const [cfg, setCfg] = useState<Config | null>(null);
   const [solic, setSolic] = useState<Solicitacao[]>([]);
   const [saving, setSaving] = useState(false);
@@ -117,6 +121,17 @@ export default function SiteAdminPage() {
     const path = acao === 'confirmar' ? '/api/site/solicitacoes/{id}/confirmar' : '/api/site/solicitacoes/{id}/recusar';
     await api.POST(path, { params: { path: { id } }, body: { observacao } });
     void load();
+  }
+
+  // Converte a solicitação em cliente de verdade (+ pet) e abre a ficha.
+  async function converter(id: string) {
+    if (!confirm('Criar um cliente a partir desta solicitação?')) return;
+    const { data, error } = await api.POST('/api/site/solicitacoes/{id}/converter', { params: { path: { id } } });
+    if (error || !data) {
+      setMsg({ kind: 'err', text: 'Não foi possível converter (já convertida?).' });
+      return;
+    }
+    router.push(`/clientes/${data.responsavelId}`);
   }
 
   if (!cfg) return <p className="text-sm text-gray-500">Carregando…</p>;
@@ -226,14 +241,28 @@ export default function SiteAdminPage() {
                     {s.status}
                   </span>
                 </div>
-                {s.status === 'nova' && (
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={() => triagem(s.id, 'confirmar')} className="text-sm text-green-600 hover:underline">
-                      Confirmar
+                {(s.status === 'nova' || (s.status === 'confirmada' && !s.responsavelId)) && (
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <button onClick={() => converter(s.id)} className="text-sm text-primary-600 hover:underline font-medium">
+                      Converter em cliente
                     </button>
-                    <button onClick={() => triagem(s.id, 'recusar')} className="text-sm text-red-500 hover:underline">
-                      Recusar
-                    </button>
+                    {s.status === 'nova' && (
+                      <>
+                        <button onClick={() => triagem(s.id, 'confirmar')} className="text-sm text-green-600 hover:underline">
+                          Confirmar
+                        </button>
+                        <button onClick={() => triagem(s.id, 'recusar')} className="text-sm text-red-500 hover:underline">
+                          Recusar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+                {s.responsavelId && (
+                  <div className="mt-2">
+                    <Link href={`/clientes/${s.responsavelId}`} className="text-sm text-primary-600 hover:underline">
+                      Ver cliente →
+                    </Link>
                   </div>
                 )}
               </div>

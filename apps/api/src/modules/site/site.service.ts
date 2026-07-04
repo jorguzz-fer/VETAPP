@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { agendamentoSolicitacoes, siteConfig } from '../../database/schema';
+import { agendamentoSolicitacoes, animais, responsaveis, siteConfig } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
+  ConverterResultDto,
   CreateSolicitacaoDto,
   PublicSiteDto,
   SiteConfigDto,
@@ -150,6 +151,48 @@ export class SiteService {
     return this.triagem(tenantId, id, 'recusada', observacao);
   }
 
+  /**
+   * Converte uma solicitação em CLIENTE de verdade (doc 13 §4.2): cria o responsável
+   * (nome/telefone/email/origem) e, se houver `petNome`, um animal; liga a solicitação
+   * ao cadastro e marca como confirmada. Idempotente por solicitação (não reconverte).
+   */
+  async converter(tenantId: string, id: string): Promise<ConverterResultDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const sol = await tx.query.agendamentoSolicitacoes.findFirst({
+        where: eq(agendamentoSolicitacoes.id, id),
+      });
+      if (!sol) throw new NotFoundException('Solicitação não encontrada');
+      if (sol.responsavelId) throw new ConflictException('Solicitação já convertida em cliente');
+
+      const [resp] = await tx
+        .insert(responsaveis)
+        .values({
+          tenantId,
+          nome: sol.nome,
+          telefone: sol.telefone,
+          email: sol.email,
+          origem: sol.origem ?? 'site',
+        })
+        .returning();
+
+      if (sol.petNome && sol.petNome.trim()) {
+        await tx.insert(animais).values({
+          tenantId,
+          responsavelId: resp.id,
+          nome: sol.petNome.trim(),
+        });
+      }
+
+      const [row] = await tx
+        .update(agendamentoSolicitacoes)
+        .set({ status: 'confirmada', responsavelId: resp.id })
+        .where(eq(agendamentoSolicitacoes.id, id))
+        .returning();
+
+      return { responsavelId: resp.id, solicitacao: this.toSolicitacaoDto(row) };
+    });
+  }
+
   private async triagem(
     tenantId: string,
     id: string,
@@ -208,6 +251,7 @@ export class SiteService {
       origem: r.origem,
       status: r.status,
       observacaoInterna: r.observacaoInterna,
+      responsavelId: r.responsavelId,
       criadaEm: (r.createdAt as Date).toISOString(),
     };
   }

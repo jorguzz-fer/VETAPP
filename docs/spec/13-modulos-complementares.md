@@ -211,11 +211,16 @@ a clínica confirma; sem escrita anônima direta na agenda). Módulo
   (5/10min, em memória no MVP). Resposta uniforme (não vaza o filtro anti-spam).
 - **Captação**: campo "Como nos conheceu?" na solicitação (alimenta origem — §8.11).
 - Gestão restrita a admin/gestor (`/site`): edição do CMS + triagem das solicitações.
+- **Conversão solicitação → cliente implementada** — `POST /api/site/solicitacoes/:id/converter`
+  (admin/gestor) cria o **responsável** (nome/telefone/email/origem) e, se houver
+  `petNome`, um **animal**; grava `responsavel_id` na solicitação (migração 0028) e a
+  marca confirmada. Idempotente (não reconverte). UI: botão "Converter em cliente" na
+  triagem abre a ficha do novo cliente; solicitações já convertidas mostram "Ver cliente".
 
 **Pendente**: agendamento em tempo real com disponibilidade (exige expor slots com
-cuidado + escrita direta na agenda), conversão da solicitação → cliente+agendamento
-em 1 clique, integração Google Agenda/IA (doc 06), SEO/render server-side por
-domínio próprio, rate limit distribuído (Redis/WAF) para multi-instância.
+cuidado + escrita direta na agenda), **agendamento** automático junto da conversão
+(hoje cria só o cliente/pet), integração Google Agenda/IA (doc 06), SEO/render
+server-side por domínio próprio, rate limit distribuído (Redis/WAF) para multi-instância.
 
 ---
 

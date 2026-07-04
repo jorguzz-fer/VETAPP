@@ -56,6 +56,9 @@ export const agendamentoSolicitacoes = pgTable(
     // nova | confirmada | recusada
     status: text('status').notNull().default('nova'),
     observacaoInterna: text('observacao_interna'),
+    // Cliente criado a partir desta solicitação (conversão → cadastro). FK em SQL
+    // (0028) p/ evitar ciclo de import. Null = ainda não convertida.
+    responsavelId: uuid('responsavel_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({

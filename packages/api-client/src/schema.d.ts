@@ -1572,6 +1572,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/site/solicitacoes/{id}/converter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_converter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/modelos": {
         parameters: {
             query?: never;
@@ -2436,9 +2452,9 @@ export interface components {
             status: "aprovado" | "recusado";
         };
         ConverterResultDto: {
-            ok: boolean;
-            /** @description Total lançado na fatura aberta (centavos) */
-            totalCentavos: number;
+            /** @description ID do cliente/responsável criado */
+            responsavelId: string;
+            solicitacao: components["schemas"]["SolicitacaoDto"];
         };
         ApuracaoColaboradorDto: {
             userId: string;
@@ -2745,6 +2761,8 @@ export interface components {
             origem?: string;
             status: string;
             observacaoInterna?: string;
+            /** @description Cliente criado a partir desta solicitação */
+            responsavelId?: string;
             criadaEm: string;
         };
         TriagemDto: {
@@ -5558,6 +5576,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SolicitacaoDto"];
+                };
+            };
+        };
+    };
+    SiteController_converter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConverterResultDto"];
                 };
             };
         };
