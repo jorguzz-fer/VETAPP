@@ -18,6 +18,11 @@
 
 > Papéis são **por tenant** (via `membership`). Um usuário pode ter papéis
 > diferentes em tenants diferentes (ver doc 03 §4).
+>
+> **Fora deste doc**: o **super-admin da plataforma** (dono do SaaS) **não** é um papel
+> de tenant — é um plano de controle separado, com identidade/auth/rotas próprias. Ver
+> **doc 15 — Admin da Plataforma (SaaS back-office)**. O "admin" abaixo é sempre o dono
+> de **uma** clínica.
 
 ## 2. Matriz de permissões (resumo)
 
