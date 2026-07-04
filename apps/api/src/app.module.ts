@@ -13,6 +13,8 @@ import { EstoqueModule } from './modules/estoque/estoque.module';
 import { InternacaoModule } from './modules/internacao/internacao.module';
 import { VendasModule } from './modules/vendas/vendas.module';
 import { ComissoesModule } from './modules/comissoes/comissoes.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { InteligenciaModule } from './modules/inteligencia/inteligencia.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -32,6 +34,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     InternacaoModule,
     VendasModule,
     ComissoesModule,
+    DashboardModule,
+    InteligenciaModule,
   ],
   providers: [
     // RolesGuard global: rotas anotadas com @Roles são checadas; demais passam.
