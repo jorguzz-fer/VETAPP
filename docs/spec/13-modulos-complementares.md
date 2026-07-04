@@ -171,6 +171,35 @@ Site público por tenant, com **agendamento online** ligado à Agenda (doc 05 §
 - O tutor só vê **os próprios pets/dados**, escopado por responsável **e** tenant
   (RLS + authz por objeto — doc 02/03). Tutor **nunca** é usuário da gestão.
 
+### 5.3 Implementado (fase 3 — MVP)
+
+Área logada do tutor sob `/portal/*` no web, com **auth totalmente separada** da
+gestão. Decisões desta 1ª versão (validadas com o cliente):
+
+- **Onboarding por convite da clínica**: a clínica gera um link na ficha do
+  cliente (`POST /clientes/:id/portal/convite`); o tutor abre o link e **cria a
+  própria senha** (`POST /portal/convite/aceitar`). Sem auto-cadastro anônimo —
+  nenhuma porta aberta (diretriz de segurança). Convite válido por 7 dias, token
+  de alta entropia guardado só como sha256; revogável (`.../portal/revogar`).
+- **Credencial separada** (`tutor_credentials`, tabela **global sem RLS** como
+  `users` — o login roda antes do contexto de tenant). O access token carrega
+  `scope:'tutor'` + `tenantId` + `responsavelId`; o `JwtAuthGuard` da gestão
+  **recusa** qualquer token com `scope`, e o `TutorGuard` só aceita `scope:'tutor'`
+  — isolamento total entre as duas superfícies. Todo acesso a dados passa por
+  `withTenant(tenantId)` **e** filtro por `responsavelId` (RLS + authz por objeto).
+- **Meus pets**: ficha + **vacinas** + **histórico resumido** do prontuário
+  (atendimento/vacina/exame/receita/internação/peso). Notas livres (`observacao`)
+  ficam de FORA por privacidade.
+- **Agendamentos**: **somente visualização** (próximos + anteriores). Marcação
+  online fica para iteração futura.
+- **Financeiro**: faturas do tutor com saldo e 2ª via (itens). **Pagamento online**
+  (Pix/cartão) e **nota fiscal** ficam para quando o módulo Fiscal + provedor de
+  pagamento existirem.
+
+**Pendente (follow-up)**: refresh token do tutor com rotação/revogação stateful
+(hoje é stateless, como a gestão era antes da fase 2); MFA do tutor; agendamento
+online; pagamento online + nota; app nativo do tutor (React Native).
+
 ---
 
 ## 6. Posicionamento no roadmap (proposta)

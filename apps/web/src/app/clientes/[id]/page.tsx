@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PortalAcessoCard } from '@/components/portal/PortalAcessoCard';
 
 interface Animal {
   id: string;
@@ -228,6 +229,8 @@ export default function FichaClientePage() {
           </div>
         )}
       </Card>
+
+      <PortalAcessoCard responsavelId={id} />
     </div>
   );
 }

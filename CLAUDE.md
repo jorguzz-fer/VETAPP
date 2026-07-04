@@ -86,7 +86,15 @@ mapeamento (doc 05) completa** — restam os complementares do doc 13.
 Pendências conhecidas:
 - **Branch protection** em `main` (ação manual no GitHub UI — exigir PR + checks
   `API (lint · types · test · build)` e `Web (typecheck · build)`).
-- Próximos módulos do mapa (`docs/spec/13`): **Fiscal**, **Site**, **Portal do tutor**.
+- Próximos módulos do mapa (`docs/spec/13`): **Fiscal**, **Site**.
+- **Portal do tutor MVP feito** (doc 13 §5.3): área logada do cliente em `/portal/*`
+  com **auth separada da gestão** (`tutor_credentials` global sem RLS; token
+  `scope:'tutor'`; `JwtAuthGuard` recusa tokens com scope, `TutorGuard` só aceita
+  `'tutor'`). Onboarding **por convite** da clínica (link na ficha do cliente →
+  tutor cria senha). Tutor vê **meus pets** (vacinas + histórico resumido, sem
+  `observacao`), **agendamentos** (só leitura) e **faturas** (2ª via). Pagamento
+  online/fiscal e agendamento online ficam para depois. Refresh do tutor é
+  stateless por ora (follow-up: rotação/revogação como na gestão).
 - **Financeiro fase 2 feito**: recebimento parcial (`recebimentos`, status
   derivado), formas de recebimento (taxa em bps, em `/cadastros`), saldo do
   cliente (`/api/financeiro/saldos`, `/saldos`).

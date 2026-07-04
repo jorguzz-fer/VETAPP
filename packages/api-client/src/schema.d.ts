@@ -932,6 +932,230 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portal/convite/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_invitePreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/convite/aceitar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_aceitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/pets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_pets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/pets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_pet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/agendamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_agendamentos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/faturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_faturas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/faturas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_fatura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalAdminController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal/convite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalAdminController_convite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal/revogar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalAdminController_revogar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1574,6 +1798,111 @@ export interface components {
             receitaCentavos: number;
             /** @description Agendamentos concluídos no período */
             agendamentosConcluidos: number;
+        };
+        PortalInvitePreviewDto: {
+            responsavelNome: string;
+            clinicaNome: string;
+            email: string | null;
+        };
+        PortalAcceptInviteDto: {
+            /** @description Token do link de convite */
+            token: string;
+            /** @example senha-forte-aqui */
+            password: string;
+        };
+        PortalTokensDto: {
+            accessToken: string;
+            refreshToken: string;
+            /** @description Tenant do tutor — o front guarda p/ o próximo login */
+            tenantId: string;
+        };
+        PortalLoginDto: {
+            /** @description Tenant (clínica) do portal — o front guarda do convite */
+            tenantId: string;
+            /** @example tutor@email.com */
+            email: string;
+            /** @example senha-forte-aqui */
+            password: string;
+        };
+        PortalRefreshDto: {
+            refreshToken: string;
+        };
+        PortalLogoutDto: {
+            refreshToken: string;
+        };
+        PortalMeDto: {
+            responsavelId: string;
+            nome: string;
+            email: string | null;
+            clinicaNome: string;
+        };
+        PortalPetDto: {
+            id: string;
+            nome: string;
+            especie: string | null;
+            raca: string | null;
+            sexo: string | null;
+            castrado: boolean;
+            nascimento: string | null;
+            status: string;
+            /** @description URL assinada da foto (curta validade) */
+            fotoUrl: string | null;
+        };
+        PortalVacinaDto: {
+            id: string;
+            descricao: string;
+            data: string;
+        };
+        PortalHistoricoDto: {
+            id: string;
+            /** @description atendimento | vacina | exame | receita | internacao | peso */
+            tipo: string;
+            descricao: string;
+            data: string;
+        };
+        PortalPetDetalheDto: {
+            pet: components["schemas"]["PortalPetDto"];
+            vacinas: components["schemas"]["PortalVacinaDto"][];
+            historico: components["schemas"]["PortalHistoricoDto"][];
+        };
+        PortalAgendamentoDto: {
+            id: string;
+            titulo: string;
+            petNome: string | null;
+            tipoNome: string | null;
+            profissionalNome: string | null;
+            inicio: string;
+            fim: string;
+            status: string;
+        };
+        PortalFaturaResumoDto: {
+            id: string;
+            status: string;
+            totalCentavos: number;
+            recebidoCentavos: number;
+            saldoCentavos: number;
+            criadaEm: string;
+        };
+        PortalFaturaItemDto: {
+            descricao: string;
+            valorCentavos: number;
+        };
+        PortalFaturaDetalheDto: {
+            fatura: components["schemas"]["PortalFaturaResumoDto"];
+            itens: components["schemas"]["PortalFaturaItemDto"][];
+        };
+        PortalAcessoDto: {
+            /** @description sem-acesso | invited | active | disabled */
+            status: string;
+            email: string | null;
+            inviteExpiresAt: string | null;
+            lastLoginAt: string | null;
+        };
+        PortalConviteResponseDto: {
+            /** @description Token do convite — a clínica envia o link ao tutor */
+            token: string;
+            tenantId: string;
+            expiresAt: string;
         };
     };
     responses: never;
@@ -3233,6 +3562,300 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProdutividadeDto"][];
+                };
+            };
+        };
+    };
+    PortalController_invitePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalInvitePreviewDto"];
+                };
+            };
+        };
+    };
+    PortalController_aceitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalAcceptInviteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalLogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    PortalController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalMeDto"];
+                };
+            };
+        };
+    };
+    PortalController_pets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalPetDto"][];
+                };
+            };
+        };
+    };
+    PortalController_pet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalPetDetalheDto"];
+                };
+            };
+        };
+    };
+    PortalController_agendamentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalAgendamentoDto"][];
+                };
+            };
+        };
+    };
+    PortalController_faturas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalFaturaResumoDto"][];
+                };
+            };
+        };
+    };
+    PortalController_fatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalFaturaDetalheDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalAcessoDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_convite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalConviteResponseDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_revogar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
                 };
             };
         };
