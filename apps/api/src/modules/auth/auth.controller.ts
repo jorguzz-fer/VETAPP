@@ -27,31 +27,31 @@ export class AuthController {
 
   @Post('register')
   @ApiCreatedResponse({ type: TokensDto })
-  register(@Body() dto: RegisterDto): Promise<TokensDto> {
-    return this.auth.register(dto);
+  register(@Req() req: Request, @Body() dto: RegisterDto): Promise<TokensDto> {
+    return this.auth.register(dto, req.ip);
   }
 
   @Post('login')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
-  login(@Body() dto: LoginDto): Promise<LoginResultDto> {
-    return this.auth.login(dto);
+  login(@Req() req: Request, @Body() dto: LoginDto): Promise<LoginResultDto> {
+    return this.auth.login(dto, req.ip);
   }
 
   // Login com Google (id_token validado no servidor — docs/spec/02 §2.1).
   @Post('google')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
-  google(@Body() dto: GoogleLoginDto): Promise<LoginResultDto> {
-    return this.auth.googleLogin(dto.idToken);
+  google(@Req() req: Request, @Body() dto: GoogleLoginDto): Promise<LoginResultDto> {
+    return this.auth.googleLogin(dto.idToken, undefined, req.ip);
   }
 
   // Conclui o login quando o usuário tem MFA ativo.
   @Post('mfa/verify')
   @HttpCode(200)
   @ApiOkResponse({ type: TokensDto })
-  mfaVerify(@Body() dto: MfaVerifyDto): Promise<TokensDto> {
-    return this.auth.mfaVerify(dto.mfaToken, dto.code);
+  mfaVerify(@Req() req: Request, @Body() dto: MfaVerifyDto): Promise<TokensDto> {
+    return this.auth.mfaVerify(dto.mfaToken, dto.code, req.ip);
   }
 
   // Rotação de refresh token (stateful, com detecção de reuso — docs/spec/02 §2.2).
@@ -66,8 +66,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   @ApiOkResponse({ type: OkResponseDto })
-  logout(@Body() dto: LogoutDto): Promise<OkResponseDto> {
-    return this.auth.logout(dto.refreshToken);
+  logout(@Req() req: Request, @Body() dto: LogoutDto): Promise<OkResponseDto> {
+    return this.auth.logout(dto.refreshToken, req.ip);
   }
 
   // ───────── Gestão do MFA (autenticado) ─────────

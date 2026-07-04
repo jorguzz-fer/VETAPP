@@ -129,8 +129,15 @@ Pendências conhecidas:
 - **Seed de demonstração** (`apps/api/src/database/seed.ts`, `pnpm --filter
   @vetapp/api db:seed` / `node dist/database/seed.js`): clínica-demo completa e
   idempotente para apresentação (tenant separado, login `ana@vetexemplo.demo`).
-- **Fila (a fazer)**: (1) **Log de auditoria LGPD** (`audit_log` append-only por
-  tenant — doc 02 §6); (2) **Upload do logo da clínica** (branding do tenant em
+- **Log de auditoria LGPD feito** (doc 02 §6, doc 07 §3.2): `audit_log` **append-only
+  por tenant** — imutabilidade no banco (policies RLS só de SELECT/INSERT → sem policy
+  de UPDATE/DELETE, RLS default-deny bloqueia para qualquer papel; + `REVOKE
+  UPDATE/DELETE` de `vetapp_app` = erro duro em prod). `AuditService.registrar(tenantId,
+  …)` best-effort (nunca quebra a ação de negócio) grava nas escritas sensíveis: auth
+  (login/logout/register), usuários/acessos, fiscal (emitir/cancelar) e financeiro
+  (receber). `GET /api/auditoria` (admin, paginado + filtro) e página `/auditoria` (só
+  leitura). Append-only coberto por `tenant-isolation.spec.ts` (roda na CI).
+- **Fila (a fazer)**: (1) **Upload do logo da clínica** (branding do tenant em
   Configurações, reaproveitado nos documentos impressos — hoje só o site tem logo).
 
 ## Regra viva

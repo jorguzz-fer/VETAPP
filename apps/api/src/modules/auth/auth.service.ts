@@ -14,6 +14,7 @@ import { authenticator } from 'otplib';
 import { OAuth2Client } from 'google-auth-library';
 import { DatabaseService } from '../../database/database.service';
 import { memberships, mfaRecoveryCodes, refreshTokens, tenants, users } from '../../database/schema';
+import { AuditService } from '../audit/audit.service';
 import type { EnvConfig } from '../../config/env';
 import type {
   LoginDto,
@@ -51,6 +52,7 @@ export class AuthService {
   constructor(
     private readonly database: DatabaseService,
     private readonly jwt: JwtService,
+    private readonly audit: AuditService,
     @Inject('ENV') private readonly env: EnvConfig,
   ) {
     if (env.GOOGLE_CLIENT_ID) {
@@ -61,7 +63,7 @@ export class AuthService {
   /**
    * Bootstrap de um novo tenant: cria a clínica, o usuário admin e o vínculo.
    */
-  async register(dto: RegisterDto): Promise<TokensDto> {
+  async register(dto: RegisterDto, ip?: string): Promise<TokensDto> {
     const existing = await this.database.db.query.users.findFirst({
       where: eq(users.email, dto.email),
     });
@@ -81,10 +83,20 @@ export class AuthService {
       tx.insert(memberships).values({ tenantId: tenant.id, userId: user.id, role: 'admin' }).returning(),
     );
 
-    return this.issueTokens(user.id, tenant.id, membership.role);
+    const tokens = await this.issueTokens(user.id, tenant.id, membership.role);
+    await this.audit.registrar(tenant.id, {
+      userId: user.id,
+      acao: 'auth.register',
+      entidade: 'tenant',
+      entidadeId: tenant.id,
+      resumo: `Cadastro da clínica "${dto.tenantName}"`,
+      detalhe: { email: dto.email },
+      ip: ip ?? null,
+    });
+    return tokens;
   }
 
-  async login(dto: LoginDto): Promise<LoginResultDto> {
+  async login(dto: LoginDto, ip?: string): Promise<LoginResultDto> {
     const user = await this.database.db.query.users.findFirst({ where: eq(users.email, dto.email) });
     if (!user?.passwordHash || user.status !== 'active') {
       throw new UnauthorizedException('Credenciais inválidas');
@@ -93,7 +105,7 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-    return this.resolveLogin(user.id, user.mfaEnabled, dto.tenantId);
+    return this.resolveLogin(user.id, user.mfaEnabled, dto.tenantId, 'senha', ip);
   }
 
   /**
@@ -101,7 +113,7 @@ export class AuthService {
    * autentica um usuário existente (vinculado por google_sub ou pelo e-mail
    * verificado). Cadastro de novo tenant via Google fica para iteração futura.
    */
-  async googleLogin(idToken: string, tenantId?: string): Promise<LoginResultDto> {
+  async googleLogin(idToken: string, tenantId?: string, ip?: string): Promise<LoginResultDto> {
     if (!this.googleClient || !this.env.GOOGLE_CLIENT_ID) {
       throw new ServiceUnavailableException('Login com Google não configurado');
     }
@@ -138,14 +150,14 @@ export class AuthService {
     if (!user || user.status !== 'active') {
       throw new UnauthorizedException('Nenhuma conta encontrada para este Google. Cadastre a clínica primeiro.');
     }
-    return this.resolveLogin(user.id, user.mfaEnabled, tenantId);
+    return this.resolveLogin(user.id, user.mfaEnabled, tenantId, 'google', ip);
   }
 
   /**
    * Conclui o login quando o usuário tem MFA: valida o mfaToken + código.
    * O código pode ser um TOTP do autenticador OU um recovery code de uso único.
    */
-  async mfaVerify(mfaToken: string, code: string): Promise<TokensDto> {
+  async mfaVerify(mfaToken: string, code: string, ip?: string): Promise<TokensDto> {
     let payload: MfaTokenPayload;
     try {
       payload = await this.jwt.verifyAsync<MfaTokenPayload>(mfaToken, {
@@ -164,7 +176,17 @@ export class AuthService {
     if (!totpOk && !recoveryOk) {
       throw new UnauthorizedException('Código inválido');
     }
-    return this.issueTokens(payload.sub, payload.tenantId, payload.role);
+    const tokens = await this.issueTokens(payload.sub, payload.tenantId, payload.role);
+    await this.audit.registrar(payload.tenantId, {
+      userId: payload.sub,
+      acao: 'auth.login',
+      entidade: 'sessao',
+      entidadeId: payload.sub,
+      resumo: `Login efetuado (MFA via ${recoveryOk ? 'recovery code' : 'TOTP'})`,
+      detalhe: { via: 'mfa', metodo: recoveryOk ? 'recovery' : 'totp' },
+      ip: ip ?? null,
+    });
+    return tokens;
   }
 
   // ───────── Sessão: refresh e logout ─────────
@@ -206,13 +228,28 @@ export class AuthService {
   }
 
   /** Logout: revoga a family do refresh apresentado (idempotente). */
-  async logout(refreshToken: string): Promise<{ ok: boolean }> {
+  async logout(refreshToken: string, ip?: string): Promise<{ ok: boolean }> {
     try {
       const payload = await this.jwt.verifyAsync<RefreshPayload>(refreshToken, {
         secret: this.env.JWT_REFRESH_SECRET,
       });
       if (payload.scope === 'refresh') {
+        // Uma linha da family dá o tenant/usuário para a auditoria (o refresh JWT
+        // não carrega tenantId). Best-effort — não bloqueia o logout.
+        const row = await this.database.db.query.refreshTokens.findFirst({
+          where: eq(refreshTokens.family, payload.family),
+        });
         await this.revokeFamily(payload.family);
+        if (row) {
+          await this.audit.registrar(row.tenantId, {
+            userId: row.userId,
+            acao: 'auth.logout',
+            entidade: 'sessao',
+            entidadeId: row.userId,
+            resumo: 'Logout (sessão encerrada)',
+            ip: ip ?? null,
+          });
+        }
       }
     } catch {
       // Token inválido/expirado: logout é best-effort, não vaza estado.
@@ -291,7 +328,13 @@ export class AuthService {
   // ───────── internos ─────────
 
   /** Resolve membership/tenant e decide entre tokens de sessão ou desafio MFA. */
-  private async resolveLogin(userId: string, mfaEnabled: boolean, tenantId?: string): Promise<LoginResultDto> {
+  private async resolveLogin(
+    userId: string,
+    mfaEnabled: boolean,
+    tenantId: string | undefined,
+    via: string,
+    ip?: string,
+  ): Promise<LoginResultDto> {
     // Leitura dos próprios vínculos antes de haver contexto de tenant: fixa
     // app.current_user para a policy memberships_self_read (migração 0018) liberar
     // as linhas deste usuário sob RLS (a app conecta como vetapp_app, sem BYPASSRLS).
@@ -314,7 +357,17 @@ export class AuthService {
       return { mfaRequired: true, mfaToken };
     }
 
-    return this.issueTokens(userId, member.tenantId, member.role);
+    const tokens = await this.issueTokens(userId, member.tenantId, member.role);
+    await this.audit.registrar(member.tenantId, {
+      userId,
+      acao: 'auth.login',
+      entidade: 'sessao',
+      entidadeId: userId,
+      resumo: `Login efetuado (${via})`,
+      detalhe: { via },
+      ip: ip ?? null,
+    });
+    return tokens;
   }
 
   /** Abre uma nova family de sessão (login/registro). */

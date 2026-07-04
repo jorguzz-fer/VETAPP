@@ -11,6 +11,7 @@ import {
 } from './fiscal.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles, RolesGuard } from '../../common/guards/roles.guard';
+import { AuditService } from '../audit/audit.service';
 
 // Fiscal (doc 13 §3). Tenant vem sempre de req.auth. Restrito a admin/gestor/
 // financeiro (alta sensibilidade regulatória). Ordem dos guards importa: o
@@ -21,7 +22,10 @@ import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 @Roles('admin', 'gestor', 'financeiro')
 @Controller()
 export class FiscalController {
-  constructor(private readonly fiscal: FiscalService) {}
+  constructor(
+    private readonly fiscal: FiscalService,
+    private readonly audit: AuditService,
+  ) {}
 
   @Get('fiscal/config')
   @ApiOkResponse({ type: FiscalConfigDto })
@@ -51,14 +55,34 @@ export class FiscalController {
   @Post('fiscal/notas/:id/emitir')
   @HttpCode(200)
   @ApiOkResponse({ type: NotaFiscalDto })
-  emitir(@Req() req: Request, @Param('id') id: string): Promise<NotaFiscalDto> {
-    return this.fiscal.emitir(req.auth!.tenantId, id);
+  async emitir(@Req() req: Request, @Param('id') id: string): Promise<NotaFiscalDto> {
+    const nota = await this.fiscal.emitir(req.auth!.tenantId, id);
+    await this.audit.registrar(req.auth!.tenantId, {
+      userId: req.auth!.userId,
+      acao: 'fiscal.emitir',
+      entidade: 'nota_fiscal',
+      entidadeId: nota.id,
+      resumo: `Emitiu nota ${nota.numero ? `nº ${nota.numero}` : '(sem número)'} — status ${nota.status}`,
+      detalhe: { numero: nota.numero, serie: nota.serie, status: nota.status, valorCentavos: nota.valorCentavos },
+      ip: req.ip ?? null,
+    });
+    return nota;
   }
 
   @Post('fiscal/notas/:id/cancelar')
   @HttpCode(200)
   @ApiOkResponse({ type: NotaFiscalDto })
-  cancelar(@Req() req: Request, @Param('id') id: string, @Body() dto: CancelarNotaDto): Promise<NotaFiscalDto> {
-    return this.fiscal.cancelar(req.auth!.tenantId, id, dto.motivo);
+  async cancelar(@Req() req: Request, @Param('id') id: string, @Body() dto: CancelarNotaDto): Promise<NotaFiscalDto> {
+    const nota = await this.fiscal.cancelar(req.auth!.tenantId, id, dto.motivo);
+    await this.audit.registrar(req.auth!.tenantId, {
+      userId: req.auth!.userId,
+      acao: 'fiscal.cancelar',
+      entidade: 'nota_fiscal',
+      entidadeId: nota.id,
+      resumo: `Cancelou nota ${nota.numero ? `nº ${nota.numero}` : ''}`.trim(),
+      detalhe: { motivo: dto.motivo },
+      ip: req.ip ?? null,
+    });
+    return nota;
   }
 }
