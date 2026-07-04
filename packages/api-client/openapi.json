@@ -4536,6 +4536,41 @@
         ]
       }
     },
+    "/api/site/solicitacoes/{id}/converter": {
+      "post": {
+        "operationId": "SiteController_converter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConverterResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/modelos": {
       "get": {
         "operationId": "ModelosController_list",
@@ -7273,17 +7308,17 @@
       "ConverterResultDto": {
         "type": "object",
         "properties": {
-          "ok": {
-            "type": "boolean"
+          "responsavelId": {
+            "type": "string",
+            "description": "ID do cliente/responsável criado"
           },
-          "totalCentavos": {
-            "type": "number",
-            "description": "Total lançado na fatura aberta (centavos)"
+          "solicitacao": {
+            "$ref": "#/components/schemas/SolicitacaoDto"
           }
         },
         "required": [
-          "ok",
-          "totalCentavos"
+          "responsavelId",
+          "solicitacao"
         ]
       },
       "ApuracaoColaboradorDto": {
@@ -8321,6 +8356,10 @@
           },
           "observacaoInterna": {
             "type": "string"
+          },
+          "responsavelId": {
+            "type": "string",
+            "description": "Cliente criado a partir desta solicitação"
           },
           "criadaEm": {
             "type": "string"

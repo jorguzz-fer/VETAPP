@@ -180,7 +180,14 @@ export class SolicitacaoDto {
   @ApiPropertyOptional({ type: String }) origem?: string | null;
   @ApiProperty() status!: string;
   @ApiPropertyOptional({ type: String }) observacaoInterna?: string | null;
+  @ApiPropertyOptional({ type: String, description: 'Cliente criado a partir desta solicitação' })
+  responsavelId?: string | null;
   @ApiProperty() criadaEm!: string;
+}
+
+export class ConverterResultDto {
+  @ApiProperty({ description: 'ID do cliente/responsável criado' }) responsavelId!: string;
+  @ApiProperty({ type: SolicitacaoDto }) solicitacao!: SolicitacaoDto;
 }
 
 export class TriagemDto {

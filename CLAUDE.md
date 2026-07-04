@@ -93,8 +93,11 @@ Pendências conhecidas:
   de agendamento** (`agendamento_solicitacoes`, RLS) — a clínica confirma, nada
   grava direto na agenda. Público: `/clinica/[slug]` + `GET/POST /api/public/clinica/:slug`
   (única rota anônima de escrita — honeypot + rate limit por IP+slug). Gestão em
-  `/site` (admin/gestor): CMS + triagem. Pendente: agendamento em tempo real,
-  conversão solicitação→cliente, Google Agenda/IA, rate limit distribuído.
+  `/site` (admin/gestor): CMS + triagem. **Conversão solicitação→cliente feita**
+  (migração 0028): `POST /api/site/solicitacoes/:id/converter` cria o responsável
+  (nome/telefone/email/origem) + o pet (se `petNome`), liga `responsavel_id` na
+  solicitação e marca confirmada; UI abre a ficha do novo cliente. Pendente:
+  agendamento em tempo real, Google Agenda/IA, rate limit distribuído.
 - **Fiscal MVP feito** (doc 13 §3.3, provider-agnostic): config do emitente por
   tenant (`fiscal_config`, RLS) e ciclo da nota (`notas_fiscais`, RLS) a partir da
   fatura (`rascunho→emitida→cancelada`). **Provedor pluggável** (`FiscalProvider` +
