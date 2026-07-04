@@ -82,9 +82,17 @@
 > `jti`/`credential_id`). `POST /portal/refresh` rotaciona (revoga o `jti` apresentado,
 > emite novo par na mesma family; jti já revogado → revoga a family). `POST /portal/logout`
 > passa a revogar a family de verdade. Revogar o acesso do tutor pela clínica também
-> derruba a family no próximo refresh. **Pendente**: migrar do Bearer/localStorage para
-> **cookie httpOnly/BFF**; lista de revogação por troca de senha; limpeza periódica de
-> tokens expirados (gestão e tutor).
+> derruba a family no próximo refresh.
+>
+> **Revogação por senha/desativação + limpeza implementadas** — `SessionsService`
+> (global): **reset de senha** (admin) e **desativação** de um usuário revogam todas
+> as suas famílias de refresh da gestão (`revogarUsuarioGestao`) — como o access token
+> é stateless e curto, o efeito é logout no máximo em ~1 TTL (sem denylist de access
+> ainda). **Limpeza periódica** dos refresh **expirados** (gestão e tutor) roda no boot
+> e a cada 24h (`setInterval`, sem dependência de scheduler); preserva os revogados
+> ainda válidos (necessários à detecção de reuso). **Pendente**: migrar do
+> Bearer/localStorage para **cookie httpOnly/BFF**; **denylist de access token** (Redis)
+> para revogação imediata; troca de senha self-service.
 
 ### 2.4 Proteções de fluxo
 - Rate limiting e **lockout progressivo** por usuário/IP em login e MFA.

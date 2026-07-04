@@ -143,7 +143,12 @@ Pendências conhecidas:
   JSON agregado (cadastro + pets/prontuário + faturas/itens/recebimentos + agendamentos)
   sob `withTenant`+RLS, sem chaves internas. UI: botão "Exportar (LGPD)" na ficha do
   cliente. Atende acesso + portabilidade. Pendente: exclusão/anonimização, retenção.
-- Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, WebAuthn.
+- **Revogação + limpeza de sessões feita** (doc 02 §2.3): `SessionsService` (global) —
+  reset de senha e desativação de usuário revogam as famílias de refresh da gestão;
+  limpeza periódica (boot + 24h via `setInterval`, sem scheduler) apaga refresh
+  expirados (gestão e tutor), preservando os revogados ainda válidos (detecção de reuso).
+- Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, denylist
+  de access token (Redis), WebAuthn.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe

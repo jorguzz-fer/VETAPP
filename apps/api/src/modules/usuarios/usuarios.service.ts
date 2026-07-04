@@ -10,11 +10,15 @@ import * as argon2 from 'argon2';
 import { and, eq, inArray } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { memberships, users } from '../../database/schema';
+import { SessionsService } from '../sessions/sessions.service';
 import type { AtualizarUsuarioDto, CriarUsuarioDto, CriarUsuarioResultDto, UsuarioDto } from './usuarios.dto';
 
 @Injectable()
 export class UsuariosService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly sessions: SessionsService,
+  ) {}
 
   /** Lista a equipe do tenant (memberships sob RLS + users global). */
   async list(tenantId: string): Promise<UsuarioDto[]> {
@@ -110,17 +114,21 @@ export class UsuariosService {
         if (membro.role === 'admin') await this.assertNaoEhUltimoAdmin(tenantId, userId);
       }
       await this.database.db.update(users).set({ status: dto.status, updatedAt: new Date() }).where(eq(users.id, userId));
+      // Desativar a conta encerra as sessões ativas (doc 02 §2.3).
+      if (dto.status === 'disabled') await this.sessions.revogarUsuarioGestao(userId);
     }
 
     return (await this.list(tenantId)).find((u) => u.userId === userId)!;
   }
 
-  /** Gera uma nova senha temporária (mostrada uma vez). */
+  /** Gera uma nova senha temporária (mostrada uma vez) e encerra as sessões ativas. */
   async resetSenha(tenantId: string, userId: string): Promise<{ senhaTemporaria: string }> {
     await this.membroDoTenant(tenantId, userId); // garante que é da equipe deste tenant
     const senhaTemporaria = randomBytes(9).toString('base64url');
     const passwordHash = await argon2.hash(senhaTemporaria, { type: argon2.argon2id });
     await this.database.db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
+    // Troca de senha revoga as sessões vigentes (doc 02 §2.3): o usuário reloga.
+    await this.sessions.revogarUsuarioGestao(userId);
     return { senhaTemporaria };
   }
 

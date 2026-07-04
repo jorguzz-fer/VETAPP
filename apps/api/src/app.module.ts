@@ -22,6 +22,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { BrandingModule } from './modules/branding/branding.module';
 import { LgpdModule } from './modules/lgpd/lgpd.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
@@ -29,6 +30,7 @@ import { StorageModule } from './modules/storage/storage.module';
     ConfigModule,
     DatabaseModule,
     AuditModule,
+    SessionsModule,
     StorageModule,
     HealthModule,
     AuthModule,
