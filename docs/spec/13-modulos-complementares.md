@@ -44,6 +44,20 @@ Recebe o que o mapeamento mandou mover de **Vendas → Financeiro** e consolida 
   Financeiro (decisão do dono — doc 05 §4.11).
 - Regras de venda/desconto → área de **Configuração** (doc 05 §4.13).
 
+### 1.4 Fase 2 — implementado ✅
+Sobre o Financeiro fase 1 (faturas + baixa integral):
+- **Recebimento parcial** (`recebimentos`, migração 0013): cada baixa lança um
+  recebimento; o status da fatura é **derivado** da soma (`aberta → parcial →
+  paga`). `POST /api/faturas/:id/recebimentos` + `GET` do histórico; `pagar`
+  virou "quita o saldo restante".
+- **Formas de recebimento** (movido de Vendas 4.10): cadastro de apoio
+  (dinheiro/Pix/cartão/transferência) com **taxa em basis points**; CRUD em
+  `/api/formas-recebimento`, geridas em `/cadastros`.
+- **Saldo do cliente** (movido de Vendas 4.9): devedor por responsável —
+  `GET /api/financeiro/saldos` (lista) e `/saldos/:responsavelId` (na ficha).
+- Fase 3: estorno, conciliação, gateway de pagamento (Pix/cartão), contas a
+  pagar (comissões — integra doc 05 §5), fluxo de caixa.
+
 ---
 
 ## 2. Estoque e serviços

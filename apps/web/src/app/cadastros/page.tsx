@@ -166,6 +166,143 @@ export default function CadastrosPage() {
           </table>
         )}
       </Card>
+
+      <FormasRecebimentoCard />
     </div>
+  );
+}
+
+interface Forma {
+  id: string;
+  nome: string;
+  tipo: string;
+  taxaBps: number;
+  ativo: boolean;
+}
+
+const TIPOS_FORMA = ['dinheiro', 'pix', 'cartao_credito', 'cartao_debito', 'transferencia', 'outro'] as const;
+type TipoForma = (typeof TIPOS_FORMA)[number];
+const LABEL_FORMA: Record<string, string> = {
+  dinheiro: 'Dinheiro',
+  pix: 'Pix',
+  cartao_credito: 'Cartão crédito',
+  cartao_debito: 'Cartão débito',
+  transferencia: 'Transferência',
+  outro: 'Outro',
+};
+
+// Formas de recebimento (doc 13 §1): cadastro de apoio do Financeiro.
+function FormasRecebimentoCard() {
+  const [formas, setFormas] = useState<Forma[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<{ nome: string; tipo: TipoForma; taxa: string }>({ nome: '', tipo: 'pix', taxa: '0' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await api.GET('/api/formas-recebimento', { params: { query: { incluirInativos: true } } });
+    setFormas((data as Forma[]) ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    await api.POST('/api/formas-recebimento', {
+      body: {
+        nome: form.nome,
+        tipo: form.tipo,
+        taxaBps: Math.round(parseFloat(form.taxa.replace(',', '.') || '0') * 100),
+      },
+    });
+    setSaving(false);
+    setForm({ nome: '', tipo: 'pix', taxa: '0' });
+    setShow(false);
+    void load();
+  }
+
+  async function onToggle(f: Forma) {
+    await api.PATCH('/api/formas-recebimento/{id}', { params: { path: { id: f.id } }, body: { ativo: !f.ativo } });
+    void load();
+  }
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-semibold text-black dark:text-white">Formas de recebimento</h2>
+          <p className="text-xs text-gray-500">Dinheiro, Pix, cartão… com taxa opcional da adquirente.</p>
+        </div>
+        <Button onClick={() => setShow((v) => !v)}>
+          <i className="ri-add-line"></i> Nova forma
+        </Button>
+      </div>
+
+      {show && (
+        <form onSubmit={onCreate} className="grid grid-cols-1 md:grid-cols-4 gap-3 md:items-end mb-4">
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="text-gray-600 dark:text-gray-300">Nome</span>
+            <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Pix" />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-gray-600 dark:text-gray-300">Tipo</span>
+            <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as TipoForma })} className={inputCls}>
+              {TIPOS_FORMA.map((t) => (
+                <option key={t} value={t}>{LABEL_FORMA[t]}</option>
+              ))}
+            </select>
+          </label>
+          <div className="flex gap-2 items-end">
+            <label className="flex flex-col gap-1 text-sm flex-1">
+              <span className="text-gray-600 dark:text-gray-300">Taxa (%)</span>
+              <input value={form.taxa} onChange={(e) => setForm({ ...form, taxa: e.target.value })} inputMode="decimal" className={inputCls} placeholder="0" />
+            </label>
+            <Button type="submit" disabled={saving}>{saving ? '…' : 'Salvar'}</Button>
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Carregando…</p>
+      ) : formas.length === 0 ? (
+        <p className="text-sm text-gray-500">Nenhuma forma — crie Dinheiro, Pix, Cartão…</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+              <th className="py-2 font-medium">Nome</th>
+              <th className="py-2 font-medium">Tipo</th>
+              <th className="py-2 font-medium text-right">Taxa</th>
+              <th className="py-2 font-medium text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formas.map((f) => (
+              <tr key={f.id} className={`border-b border-gray-50 dark:border-[#172036]/50 ${f.ativo ? '' : 'opacity-50'}`}>
+                <td className="py-2.5 text-black dark:text-white">{f.nome}</td>
+                <td className="py-2.5 text-gray-500">{LABEL_FORMA[f.tipo] ?? f.tipo}</td>
+                <td className="py-2.5 text-right text-gray-500">{f.taxaBps > 0 ? `${(f.taxaBps / 100).toLocaleString('pt-BR')}%` : '—'}</td>
+                <td className="py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(f)}
+                    className={`${f.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                    title={f.ativo ? 'Desativar' : 'Ativar'}
+                    aria-label={f.ativo ? 'Desativar' : 'Ativar'}
+                  >
+                    <i className={f.ativo ? 'ri-toggle-fill text-xl' : 'ri-toggle-line text-xl'}></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Card>
   );
 }
