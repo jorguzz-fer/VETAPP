@@ -215,6 +215,17 @@ evoluindo para orquestração só quando necessário.
   > escopo é por `jti`/`user_id`. Mesmo padrão serve para **recovery codes de MFA**
   > (uso único, guardar só o hash argon2id, consumo marca `used_at`).
 - **RBAC** com menor privilégio; autorização a nível de objeto quando necessário.
+  > **Lição estrutural — ordem dos guards de autz (RBAC depois de authn):** o guard
+  > de papel (`RolesGuard`) lê o contexto que o guard de autenticação (`JwtAuthGuard`)
+  > injeta no request. Se ele rodar **antes**, lê `req.auth` vazio → **403 em toda
+  > rota protegida por papel**, mesmo com token válido. No NestJS isso é uma
+  > **armadilha**: um guard **global** (`APP_GUARD`) roda ANTES dos guards de
+  > controller/rota — então registrar o `RolesGuard` como global enquanto o
+  > `JwtAuthGuard` é por-controller inverte a ordem e quebra tudo silenciosamente
+  > (bug latente até a 1ª rota com `@Roles` ser exercitada). Regra: authn **sempre**
+  > antes de authz. Ou os dois no mesmo nível e ordem (`@UseGuards(JwtAuthGuard,
+  > RolesGuard)`), ou ambos globais na ordem certa (authn primeiro). **Teste uma rota
+  > com papel** (200 com papel certo, 403 com errado) — não confie na fumaça.
   > **Padrão — múltiplas audiências isoladas** (reusável): quando há uma superfície
   > para usuários internos (gestão) **e** outra para o cliente final (portal), NÃO
   > compartilhe sessão. Credencial separada, e cada token carrega um `scope`
