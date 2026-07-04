@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { InternacaoService } from './internacao.service';
@@ -64,6 +64,30 @@ export class InternacaoController {
   @ApiCreatedResponse({ type: ItemListaDto })
   criarBox(@Req() req: Request, @Body() dto: CriarItemListaDto): Promise<ItemListaDto> {
     return this.internacao.criarBox(req.auth!.tenantId, dto);
+  }
+
+  @Patch('motivos/:id')
+  @ApiOkResponse({ type: ItemListaDto })
+  renomearMotivo(@Req() req: Request, @Param('id') id: string, @Body() dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.internacao.renomearMotivo(req.auth!.tenantId, id, dto.nome);
+  }
+
+  @Delete('motivos/:id')
+  @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
+  removerMotivo(@Req() req: Request, @Param('id') id: string): Promise<{ ok: boolean }> {
+    return this.internacao.removerMotivo(req.auth!.tenantId, id);
+  }
+
+  @Patch('boxes/:id')
+  @ApiOkResponse({ type: ItemListaDto })
+  renomearBox(@Req() req: Request, @Param('id') id: string, @Body() dto: CriarItemListaDto): Promise<ItemListaDto> {
+    return this.internacao.renomearBox(req.auth!.tenantId, id, dto.nome);
+  }
+
+  @Delete('boxes/:id')
+  @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
+  removerBox(@Req() req: Request, @Param('id') id: string): Promise<{ ok: boolean }> {
+    return this.internacao.removerBox(req.auth!.tenantId, id);
   }
 
   // Modelos de prescrição (doc 05 §9.6). DECLARAR ANTES de :id.

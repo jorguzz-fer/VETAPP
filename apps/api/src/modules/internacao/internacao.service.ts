@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { DatabaseService, type Database } from '../../database/database.service';
 import {
   animais,
@@ -60,6 +60,59 @@ export class InternacaoService {
 
   criarBox(tenantId: string, dto: CriarItemListaDto): Promise<ItemListaDto> {
     return this.criarItemLista(tenantId, internacaoBoxes, dto.nome);
+  }
+
+  renomearMotivo(tenantId: string, id: string, nome: string): Promise<ItemListaDto> {
+    return this.renomearItemLista(tenantId, internacaoMotivos, id, nome);
+  }
+
+  removerMotivo(tenantId: string, id: string): Promise<{ ok: boolean }> {
+    return this.removerItemLista(tenantId, internacaoMotivos, id);
+  }
+
+  renomearBox(tenantId: string, id: string, nome: string): Promise<ItemListaDto> {
+    return this.renomearItemLista(tenantId, internacaoBoxes, id, nome);
+  }
+
+  removerBox(tenantId: string, id: string): Promise<{ ok: boolean }> {
+    return this.removerItemLista(tenantId, internacaoBoxes, id);
+  }
+
+  private renomearItemLista(
+    tenantId: string,
+    tabela: typeof internacaoMotivos | typeof internacaoBoxes,
+    id: string,
+    nomeRaw: string,
+  ): Promise<ItemListaDto> {
+    const nome = nomeRaw.trim();
+    if (!nome) throw new BadRequestException('Nome obrigatório');
+    return this.database.withTenant(tenantId, async (tx) => {
+      const dup = await tx
+        .select({ id: tabela.id })
+        .from(tabela)
+        .where(and(sql`lower(${tabela.nome}) = lower(${nome})`, ne(tabela.id, id)))
+        .limit(1);
+      if (dup[0]) throw new ConflictException('Já existe um item com esse nome');
+      const [row] = await tx
+        .update(tabela)
+        .set({ nome })
+        .where(eq(tabela.id, id))
+        .returning({ id: tabela.id, nome: tabela.nome });
+      if (!row) throw new NotFoundException('Item não encontrado');
+      return row;
+    });
+  }
+
+  private removerItemLista(
+    tenantId: string,
+    tabela: typeof internacaoMotivos | typeof internacaoBoxes,
+    id: string,
+  ): Promise<{ ok: boolean }> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx.delete(tabela).where(eq(tabela.id, id)).returning({ id: tabela.id });
+      if (rows.length === 0) throw new NotFoundException('Item não encontrado');
+      return { ok: true };
+    });
   }
 
   private listaSimples(
