@@ -19,12 +19,14 @@ import { FiscalModule } from './modules/fiscal/fiscal.module';
 import { SiteModule } from './modules/site/site.module';
 import { ModelosModule } from './modules/modelos/modelos.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
     ConfigModule,
     DatabaseModule,
+    AuditModule,
     StorageModule,
     HealthModule,
     AuthModule,

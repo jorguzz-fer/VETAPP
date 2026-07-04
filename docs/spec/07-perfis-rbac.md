@@ -65,6 +65,14 @@ Legenda: ✅ total · ➖ parcial/condicional · — sem acesso.
 - Follow-up: onboarding por **convite** (link, como o portal do tutor) no lugar da
   senha temporária; forçar troca no 1º login; MFA obrigatório por papel (doc 02).
 
+## 3.2 Auditoria/Log (implementado)
+A capacidade **Auditoria/Log** da matriz (§2) é **admin-only** e está entregue:
+`GET /api/auditoria` (guard `admin`) + página **`/auditoria`** (só leitura, paginada,
+filtro por entidade). A trilha é **append-only e imutável no banco** (RLS só de
+SELECT/INSERT + `REVOKE UPDATE/DELETE`) — ver doc 02 §6. Registra auth
+(login/logout/cadastro), usuários/acessos, fiscal (emitir/cancelar) e financeiro
+(recebimento), com autor, IP e `detalhe` estruturado. Follow-up em doc 02 §6.
+
 ## 4. Extensibilidade
 - Papéis e permissões são **dados** (tabelas `role`/`permission`), permitindo:
   - papéis customizados por tenant no futuro;

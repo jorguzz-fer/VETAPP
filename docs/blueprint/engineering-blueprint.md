@@ -319,6 +319,17 @@ isolamento de dados.
     login o GUC nunca é setado → policy inerte → isolamento por tenant intacto;
     escrita continua exigindo o contexto de tenant. **Teste o login com o role
     NOBYPASSRLS**, não só em dev.
+- **Lição estrutural — tabela append-only (auditoria) com RLS *default-deny*:**
+  para uma trilha imutável por tenant (LGPD/compliance), não confie só na aplicação
+  "não fazer UPDATE". Crie policies RLS **apenas** de `SELECT` e `INSERT` (com o
+  isolamento por tenant de sempre). Como o RLS é *default-deny*, a **ausência** de
+  policy para `UPDATE`/`DELETE` faz qualquer papel sujeito ao RLS afetar **zero
+  linhas** ao tentar editar/apagar — imutabilidade **role-agnóstica**, sem depender
+  de `GRANT`s. Some, como defesa dura em produção, `REVOKE UPDATE, DELETE ON <tab>
+  FROM <app_role>` (erro explícito em vez de no-op silencioso). Escrever é
+  best-effort: a gravação da auditoria **nunca** deve quebrar a ação de negócio
+  (try/catch + log). **Teste na CI** que o `UPDATE`/`DELETE` afeta 0 linhas sob o
+  role sem BYPASSRLS.
 - **Ciclo de vida**: provisionamento + seed padrão; configuração por tenant;
   suspensão/exportação (portabilidade); exclusão auditada.
 - **Dados globais vs. do tenant**: catálogos comuns (read-only, compartilhados)

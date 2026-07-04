@@ -17,3 +17,4 @@ export * from './portal';
 export * from './fiscal';
 export * from './site';
 export * from './modelos';
+export * from './audit';

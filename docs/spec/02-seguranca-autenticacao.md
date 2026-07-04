@@ -125,10 +125,24 @@ Tradução concreta da diretriz:
   minimização e retenção definidas por política.
 - **Trilha de auditoria** imutável (quem fez o quê, quando, em qual tenant) —
   corresponde ao módulo "Log" mantido (item 7.3 do mapeamento), elevado a
-  requisito de segurança. **[NA FILA]** tabela `audit_log` append-only por tenant
-  (ação, entidade/id, `user_id`, `request_id`, timestamp, diff resumido), gravada
-  nas escritas sensíveis (auth, usuários/acessos, financeiro, fiscal, prontuário)
-  e consultável por admin — insumo direto do LGPD (doc 09 §5).
+  requisito de segurança.
+
+  > **Implementado** — tabela `audit_log` **append-only por tenant** (`tenant_id`,
+  > `user_id` nullable, `acao`, `entidade`, `entidade_id`, `resumo`, `detalhe` jsonb,
+  > `ip`, `created_at`). **Imutabilidade garantida no banco**, não só na aplicação:
+  > a migração 0023 cria policies RLS **apenas** de `SELECT` e `INSERT` (isolamento
+  > por tenant, padrão `NULLIF` fail-closed) — como não há policy de `UPDATE`/`DELETE`
+  > e o RLS é *default-deny*, qualquer papel sujeito ao RLS afeta **zero linhas** ao
+  > tentar editar/apagar (role-agnóstico); em cima disso, `REVOKE UPDATE, DELETE` de
+  > `vetapp_app` dá erro **duro** em produção. `AuditService.registrar(tenantId, …)`
+  > é **best-effort** (falha nunca quebra a ação de negócio) e roda sob `withTenant`.
+  > Gravada hoje nas escritas sensíveis: **auth** (`login`/`logout`/`register`),
+  > **usuários/acessos** (criar/atualizar/reset-senha/remover), **fiscal**
+  > (emitir/cancelar) e **financeiro** (receber). Consulta em `GET /api/auditoria`
+  > (paginada + filtro por entidade), **restrita a admin** (doc 07). O teste de
+  > isolamento (`tenant-isolation.spec.ts`) cobre o append-only na CI. **Pendente**:
+  > `request_id` correlacionável, auditar prontuário/acessos de leitura sensível,
+  > exportação/retenção por política e alerta de anomalia.
 - Direitos do titular (acesso, correção, exclusão) suportados por processo.
 - Preferência por **hospedagem em região no Brasil** **[A DEFINIR]**.
 
