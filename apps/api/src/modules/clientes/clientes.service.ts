@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { animais, responsaveis } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,
+  BuscaAnimalDto,
   CreateAnimalDto,
   CreateResponsavelDto,
   ListResponsaveisDto,
@@ -56,6 +57,41 @@ export class ClientesService {
         .offset((page - 1) * pageSize);
 
       return { items, total, page, pageSize };
+    });
+  }
+
+  /**
+   * Busca de paciente para o Prontuário: por nome do animal OU nome/telefone do
+   * tutor. Retorna o animal + tutor para abrir a ficha (timeline) direto.
+   */
+  async buscarAnimais(tenantId: string, search?: string): Promise<BuscaAnimalDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const base = eq(animais.tenantId, tenantId);
+      const where = search
+        ? and(
+            base,
+            or(
+              ilike(animais.nome, `%${search}%`),
+              ilike(responsaveis.nome, `%${search}%`),
+              ilike(responsaveis.telefone, `%${search}%`),
+            ),
+          )
+        : base;
+      return tx
+        .select({
+          id: animais.id,
+          nome: animais.nome,
+          especie: animais.especie,
+          raca: animais.raca,
+          status: animais.status,
+          responsavelId: animais.responsavelId,
+          responsavelNome: responsaveis.nome,
+        })
+        .from(animais)
+        .innerJoin(responsaveis, eq(responsaveis.id, animais.responsavelId))
+        .where(where)
+        .orderBy(asc(animais.nome))
+        .limit(30);
     });
   }
 

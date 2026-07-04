@@ -102,6 +102,17 @@ export class ResponsavelComAnimaisDto extends ResponsavelDto {
   animais!: AnimalDto[];
 }
 
+// Resultado da busca de paciente (prontuário): animal + tutor, para abrir a ficha.
+export class BuscaAnimalDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() nome!: string;
+  @ApiPropertyOptional({ type: String }) especie?: string | null;
+  @ApiPropertyOptional({ type: String }) raca?: string | null;
+  @ApiProperty() status!: string;
+  @ApiProperty() responsavelId!: string;
+  @ApiProperty() responsavelNome!: string;
+}
+
 export class UpdateResponsavelDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MinLength(2) @MaxLength(160) nome?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() codigo?: string;
