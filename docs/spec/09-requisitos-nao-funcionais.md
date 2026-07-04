@@ -40,6 +40,15 @@
   finalidade, retenção e descarte definidos.
 - Direitos do titular: acesso, correção, portabilidade (exportação por tenant),
   exclusão sob processo auditado.
+
+  > **Exportação do titular implementada** — `GET /api/lgpd/clientes/:responsavelId/export`
+  > (restrito a **admin/gestor**, **auditado** — `lgpd.exportar`, doc 02 §6) devolve um
+  > JSON agregado com tudo que a clínica guarda do responsável: cadastro, pets +
+  > prontuário, faturas (itens + recebimentos) e agendamentos, sob `withTenant` + RLS
+  > (chaves internas como `tenant_id`/keys de storage são removidas). UI: botão
+  > "Exportar (LGPD)" na ficha do cliente (baixa o `.json`). Atende acesso +
+  > portabilidade. **Pendente**: exclusão/anonimização sob processo, retenção/descarte
+  > automatizados, consentimento de comunicações.
 - Registro de consentimento para comunicações (WhatsApp/campanhas) e respeito ao
   **opt-out**.
 - **Residência de dados**: preferência por hospedagem em **região no Brasil**

@@ -5036,6 +5036,41 @@
           }
         ]
       }
+    },
+    "/api/lgpd/clientes/{responsavelId}/export": {
+      "get": {
+        "operationId": "LgpdController_export",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LgpdExportDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "lgpd"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -8566,6 +8601,51 @@
         },
         "required": [
           "logoUrl"
+        ]
+      },
+      "LgpdExportDto": {
+        "type": "object",
+        "properties": {
+          "exportadoEm": {
+            "type": "string",
+            "description": "Instante da exportação (ISO)"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "object",
+            "description": "Cadastro do responsável (titular)"
+          },
+          "animais": {
+            "description": "Animais + prontuário de cada um",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "faturas": {
+            "description": "Faturas + itens + recebimentos",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "agendamentos": {
+            "description": "Agendamentos",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "exportadoEm",
+          "responsavelId",
+          "responsavel",
+          "animais",
+          "faturas",
+          "agendamentos"
         ]
       }
     }

@@ -1716,6 +1716,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/lgpd/clientes/{responsavelId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LgpdController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2807,6 +2823,19 @@ export interface components {
         BrandingDto: {
             /** @description URL assinada (curta) do logo, ou null */
             logoUrl: string | null;
+        };
+        LgpdExportDto: {
+            /** @description Instante da exportação (ISO) */
+            exportadoEm: string;
+            responsavelId: string;
+            /** @description Cadastro do responsável (titular) */
+            responsavel: Record<string, never>;
+            /** @description Animais + prontuário de cada um */
+            animais: Record<string, never>[];
+            /** @description Faturas + itens + recebimentos */
+            faturas: Record<string, never>[];
+            /** @description Agendamentos */
+            agendamentos: Record<string, never>[];
         };
     };
     responses: never;
@@ -5839,6 +5868,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    LgpdController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LgpdExportDto"];
                 };
             };
         };

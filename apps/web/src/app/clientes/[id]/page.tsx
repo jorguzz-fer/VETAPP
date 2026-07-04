@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/providers/AuthProvider';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PortalAcessoCard } from '@/components/portal/PortalAcessoCard';
@@ -31,8 +32,11 @@ const inputCls =
 export default function FichaClientePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const podeExportar = user?.role === 'admin' || user?.role === 'gestor';
   const id = params.id;
   const [ficha, setFicha] = useState<Ficha | null>(null);
+  const [exportando, setExportando] = useState(false);
   const [saldo, setSaldo] = useState<{ devedorCentavos: number; faturasAbertas: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -117,6 +121,29 @@ export default function FichaClientePage() {
   }
 
   if (loading) return <p className="text-sm text-gray-500">Carregando…</p>;
+  async function onExportarLgpd() {
+    if (!ficha) return;
+    setExportando(true);
+    try {
+      const { data, error } = await api.GET('/api/lgpd/clientes/{responsavelId}/export', {
+        params: { path: { responsavelId: id } },
+      });
+      if (error || !data) {
+        alert('Não foi possível exportar (apenas admin/gestor).');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lgpd-${ficha.nome.replace(/\s+/g, '_').toLowerCase()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportando(false);
+    }
+  }
+
   if (!ficha) return <p className="text-sm text-gray-500">Cliente não encontrado.</p>;
 
   return (
@@ -168,6 +195,11 @@ export default function FichaClientePage() {
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={onNovoOrcamento}><i className="ri-file-list-3-line"></i> Orçamento</Button>
+                {podeExportar && (
+                  <Button variant="ghost" onClick={onExportarLgpd} disabled={exportando} title="Exportar dados do titular (LGPD)">
+                    <i className="ri-download-2-line"></i> {exportando ? 'Exportando…' : 'Exportar (LGPD)'}
+                  </Button>
+                )}
                 <Button variant="ghost" onClick={() => setEditing(true)}><i className="ri-edit-line"></i> Editar</Button>
                 <button type="button" onClick={onDeleteCliente} className="text-gray-400 hover:text-red-500 px-2" title="Excluir cliente">
                   <i className="ri-delete-bin-line text-lg"></i>
