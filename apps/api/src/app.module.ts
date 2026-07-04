@@ -20,6 +20,7 @@ import { SiteModule } from './modules/site/site.module';
 import { ModelosModule } from './modules/modelos/modelos.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { BrandingModule } from './modules/branding/branding.module';
 import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
@@ -46,6 +47,7 @@ import { StorageModule } from './modules/storage/storage.module';
     SiteModule,
     ModelosModule,
     UsuariosModule,
+    BrandingModule,
   ],
   // NB: RBAC (RolesGuard) NÃO é global. Um guard global roda ANTES dos guards de
   // controller (JwtAuthGuard), então o RolesGuard leria req.auth antes de ele ser

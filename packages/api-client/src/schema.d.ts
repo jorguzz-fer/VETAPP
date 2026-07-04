@@ -1620,6 +1620,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BrandingController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/branding/logo/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BrandingController_signLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/branding/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BrandingController_confirmLogo"];
+        delete: operations["BrandingController_removeLogo"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2665,6 +2713,10 @@ export interface components {
         SenhaTemporariaDto: {
             /** @description Nova senha temporária (mostrada só uma vez). */
             senhaTemporaria: string;
+        };
+        BrandingDto: {
+            /** @description URL assinada (curta) do logo, ou null */
+            logoUrl: string | null;
         };
     };
     responses: never;
@@ -5546,6 +5598,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SenhaTemporariaDto"];
+                };
+            };
+        };
+    };
+    BrandingController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    BrandingController_signLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignLogoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    BrandingController_confirmLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmLogoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    BrandingController_removeLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
                 };
             };
         };
