@@ -91,6 +91,15 @@ máximo reuso e contratação mais simples). Ajuste por contexto.
 - **Contratos versionados** (OpenAPI) gerando clientes e tipos → menos drift.
 - **Evolução para serviços** só quando um módulo tiver escala/independência que
   justifique extração.
+  > **Padrão — provedor externo atrás de interface (driver pluggável)** (reusável):
+  > para integrações de terceiros com vendor lock-in potencial (fiscal, pagamento,
+  > mensageria, storage), defina uma **interface de domínio** (`XProvider`) + um
+  > **factory** que resolve o driver por configuração do tenant. O caso de uso fala
+  > só com a interface; trocar de fornecedor não toca no serviço. Comece com um
+  > driver **`manual`/no-op** que já entrega o ciclo de vida local (registro,
+  > numeração, status) sem bloquear no fornecedor; drivers reais entram depois.
+  > Fornecedor não plugado deve **falhar explícito** (não silencioso). Segredos do
+  > provedor (certificado, API key) **no cofre**, nunca no banco/repo.
 
 **Checklist**
 - [ ] Domínios mapeados; um diagrama de topologia no repo.
@@ -165,6 +174,15 @@ evoluindo para orquestração só quando necessário.
      **build**, não em runtime → passar como **build args**, não só env de runtime.
 - **Porta**: alinhe a porta que o app faz bind (env) com o `EXPOSE` do Dockerfile
   e a porta configurada no proxy — divergência silenciosa vira 502.
+- **VPS sem swap mata builds**: em servidor compartilhado (vários apps), um pico
+  de RAM durante o build derruba o processo **sem mensagem** (exit 255, log
+  cortado). Provisionar swap (2G) é barato e elimina a classe inteira de falha.
+- **Hostnames internos: copiar, nunca redigitar.** Um `O` (letra) no lugar de `0`
+  (zero) num host gerado vira horas de `EAI_AGAIN`. Colar a connection string da
+  UI do provedor e validar com `getent hosts <host>` de dentro do container.
+- **Smoke e2e antes de declarar deploy pronto**: subir não basta — exercitar o
+  caminho de escrita crítico (ex.: signup→login) contra o ambiente real. Boot
+  limpo não prova que request funciona.
 
 **Checklist**
 - [ ] Build reprodutível em container; imagem escaneada (CVE).
@@ -187,7 +205,25 @@ evoluindo para orquestração só quando necessário.
 - **Sessões/tokens**: web em **cookie httpOnly + Secure + SameSite** (token fora
   do JS); mobile/integração em **OAuth2/OIDC** com access token curto + **refresh
   rotativo** (detecção de replay). Revogação imediata em logout/troca de senha.
+  > **Padrão — refresh stateful com rotação por *family*** (reusável): access token
+  > stateless de TTL curto; refresh carrega só `{ sub, jti, family }` e todo o
+  > estado (expiração/revogação/encadeamento) fica numa tabela `refresh_tokens`. Cada
+  > refresh emite um novo `jti` na **mesma family** e revoga o anterior. Reapresentar
+  > um `jti` já revogado = **reuso** → revoga a *family* inteira (mata a cadeia de
+  > tokens derivados de um roubo). Logout revoga a family. A tabela é **global** (não
+  > tenant-scoped, sem RLS): o fluxo de auth roda antes de haver contexto de tenant, o
+  > escopo é por `jti`/`user_id`. Mesmo padrão serve para **recovery codes de MFA**
+  > (uso único, guardar só o hash argon2id, consumo marca `used_at`).
 - **RBAC** com menor privilégio; autorização a nível de objeto quando necessário.
+  > **Padrão — múltiplas audiências isoladas** (reusável): quando há uma superfície
+  > para usuários internos (gestão) **e** outra para o cliente final (portal), NÃO
+  > compartilhe sessão. Credencial separada, e cada token carrega um `scope`
+  > distinto (`'staff'` implícito × `'tutor'`) + o escopo de dados (`tenantId`,
+  > `ownerId`). O guard interno **recusa** qualquer token com scope de portal e
+  > vice-versa — um cliente jamais alcança rota da gestão nem com um token válido de
+  > outra audiência. Os dados do cliente saem sempre por `withTenant()` + filtro
+  > pelo dono (RLS + authz por objeto). Onboarding do cliente por **convite** (token
+  > de alta entropia, hash no banco, validade curta), nunca auto-cadastro anônimo.
 - **Superfície mínima**: único ingress público; serviços internos privados;
   admin/observabilidade só por rede interna/VPN.
 - **Segredos**: cofre (Vault/KMS/secret manager), rotação automática, nunca no
@@ -196,6 +232,15 @@ evoluindo para orquestração só quando necessário.
   auditoria imutável** (quem/o quê/quando).
 - **Proteções de fluxo**: rate limiting, lockout progressivo, alerta de novo
   device; verificação de e-mail e reset seguro (sem enumeração).
+  > **Padrão — superfície pública de escrita** (reusável): quando um site/landing
+  > público precisa aceitar input anônimo (agendar, contato, lead), prefira
+  > **solicitação que um humano confirma** a autoatendimento que escreve direto no
+  > sistema operacional. Não exponha estado interno (disponibilidade, agenda,
+  > catálogo de dados) para não virar oráculo de enumeração. Endureça a rota:
+  > **honeypot** (campo oculto), **rate limit** por IP+recurso, validação estrita e
+  > **resposta uniforme** (não revele se caiu no filtro anti-spam). Mantenha a
+  > superfície anônima **mínima e enumerável** (idealmente 1–2 rotas); todo o resto
+  > exige sessão. PII recebida é dado do tenant → tabela com RLS.
 - **Supply chain**: lockfile fixo, **SCA** (deps), **SAST**, **secret scanning** e
   scan de imagem na CI; atualização de dependências com SLA por severidade.
 - **SSDLC**: revisão de segurança no PR; testes de autorização automatizados;
@@ -359,10 +404,16 @@ pelo próprio front).
 - **Definition of Done**: código + testes + docs + revisão + CI verde + sem TODO
   crítico + observabilidade do que foi entregue.
 - **Feature flags** para entregar incremental e desligar rápido.
+- **Validação de entrada é contrato, não decoração**: se o pipe de validação usa
+  whitelist (NestJS `ValidationPipe({whitelist:true})` e afins), campo **sem
+  decorator de validação é removido do body** — DTO só com anotação de docs
+  (Swagger) chega vazio no service e explode em produção. Regra: todo DTO de
+  entrada tem validadores, e o typecheck **não** pega isso — só teste e2e pega.
 
 **Checklist**
 - [ ] CI bloqueia merge sem lint/types/test verdes.
-- [ ] Fluxos críticos cobertos por e2e.
+- [ ] Fluxos críticos cobertos por e2e (incluindo signup/login reais).
+- [ ] Todo DTO de entrada tem validadores (nunca só anotação de docs).
 - [ ] DoD acordada pelo time.
 
 ---

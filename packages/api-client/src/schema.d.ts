@@ -84,6 +84,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/mfa/status": {
         parameters: {
             query?: never;
@@ -126,6 +158,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AuthController_mfaEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_regenerateRecoveryCodes"];
         delete?: never;
         options?: never;
         head?: never;
@@ -308,6 +356,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/faturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/faturas/{id}/pagar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinanceiroController_pagar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/faturas/{id}/recebimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_recebimentos"];
+        put?: never;
+        post: operations["FinanceiroController_receber"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/financeiro/saldos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_saldos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/financeiro/saldos/{responsavelId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_saldoDe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/formas-recebimento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceiroController_formas"];
+        put?: never;
+        post: operations["FinanceiroController_createForma"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/formas-recebimento/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["FinanceiroController_updateForma"];
+        trace?: never;
+    };
     "/api/agenda": {
         parameters: {
             query?: never;
@@ -322,6 +482,70 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/profissionais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_profissionais"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/tipos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_tipos"];
+        put?: never;
+        post: operations["AgendaController_createTipo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/tipos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateTipo"];
+        trace?: never;
+    };
+    "/api/agenda/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateStatus"];
         trace?: never;
     };
     "/api/agenda/{id}": {
@@ -370,38 +594,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["CatalogoController_update"];
-        trace?: never;
-    };
-    "/api/faturas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["FinanceiroController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/faturas/{id}/pagar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["FinanceiroController_pagar"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/estoque": {
@@ -468,6 +660,710 @@ export interface paths {
         patch: operations["EstoqueController_minimo"];
         trace?: never;
     };
+    "/api/internacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_list"];
+        put?: never;
+        post: operations["InternacaoController_admitir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_detalhe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/execucoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_prescrever"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/execucoes/{execId}/executar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_executar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/alta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_alta"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["VendasController_list"];
+        put?: never;
+        post: operations["VendasController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["VendasController_detalhe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/itens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["VendasController_addItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/itens/{linhaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["VendasController_removeItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["VendasController_updateStatus"];
+        trace?: never;
+    };
+    "/api/orcamentos/{id}/converter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["VendasController_converter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_apurar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/minhas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_minhas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/regras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComissoesController_regras"];
+        put?: never;
+        post: operations["ComissoesController_upsertRegra"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comissoes/regras/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ComissoesController_removeRegra"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DashboardController_resumo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inteligencia/produtividade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InteligenciaController_produtividade"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/convite/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_invitePreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/convite/aceitar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_aceitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/pets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_pets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/pets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_pet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/agendamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_agendamentos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/faturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_faturas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/faturas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalController_fatura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PortalAdminController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal/convite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalAdminController_convite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{responsavelId}/portal/revogar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PortalAdminController_revogar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalController_getConfig"];
+        put: operations["FiscalController_updateConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalController_listNotas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/faturas/{faturaId}/nota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas/{id}/emitir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_emitir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fiscal/notas/{id}/cancelar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FiscalController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/clinica/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicSiteController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/clinica/{slug}/agendamento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicSiteController_solicitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SiteController_getConfig"];
+        put: operations["SiteController_updateConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config/logo/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_signLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/config/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_confirmLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SiteController_listSolicitacoes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes/{id}/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/site/solicitacoes/{id}/recusar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_recusar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -509,13 +1405,26 @@ export interface components {
             /** @description mfaToken devolvido pelo login */
             mfaToken: string;
             /**
-             * @description Código TOTP do autenticador
+             * @description Código TOTP ou recovery code
              * @example 123456
              */
             code: string;
         };
+        RefreshDto: {
+            /** @description Refresh token da sessão */
+            refreshToken: string;
+        };
+        LogoutDto: {
+            /** @description Refresh token da sessão a encerrar */
+            refreshToken: string;
+        };
+        OkResponseDto: {
+            ok: boolean;
+        };
         MfaStatusDto: {
             enabled: boolean;
+            /** @description Quantos recovery codes de uso único ainda restam */
+            recoveryCodesRemaining: number;
         };
         MfaSetupResponseDto: {
             /** @description Segredo TOTP (base32) — exibir uma única vez */
@@ -527,8 +1436,10 @@ export interface components {
             /** @example 123456 */
             code: string;
         };
-        OkResponseDto: {
+        MfaEnableResponseDto: {
             ok: boolean;
+            /** @description Recovery codes de uso único — exibidos UMA vez, guarde-os */
+            recoveryCodes: string[];
         };
         AuthMeDto: {
             userId: string;
@@ -683,12 +1594,79 @@ export interface components {
             totalCentavos: number;
             itens: components["schemas"]["FaturaItemDto"][];
         };
+        FaturaResumoDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            /** @description Total já recebido (soma dos recebimentos) */
+            recebidoCentavos: number;
+            itens: number;
+            criadaEm: string;
+        };
+        ReceberDto: {
+            /** @description Valor recebido em centavos (≤ saldo em aberto) */
+            valorCentavos: number;
+            /** @description Forma de recebimento */
+            formaId?: string;
+            observacao?: string;
+        };
+        ReceberResultDto: {
+            ok: boolean;
+            status: string;
+            recebidoCentavos: number;
+            saldoCentavos: number;
+        };
+        RecebimentoDto: {
+            id: string;
+            valorCentavos: number;
+            formaId: string | null;
+            formaNome: string | null;
+            observacao: string | null;
+            criadoEm: string;
+        };
+        SaldoClienteDto: {
+            responsavelId: string;
+            responsavelNome: string;
+            /** @description Saldo devedor em aberto (centavos) */
+            devedorCentavos: number;
+            faturasAbertas: number;
+        };
+        FormaRecebimentoDto: {
+            id: string;
+            nome: string;
+            tipo: string;
+            taxaBps: number;
+            ativo: boolean;
+        };
+        CreateFormaDto: {
+            /** @example Pix */
+            nome: string;
+            /** @enum {string} */
+            tipo: "dinheiro" | "pix" | "cartao_credito" | "cartao_debito" | "transferencia" | "outro";
+            /**
+             * @description Taxa em basis points (2,5% = 250)
+             * @example 0
+             */
+            taxaBps?: number;
+        };
+        UpdateFormaDto: {
+            nome?: string;
+            taxaBps?: number;
+            ativo?: boolean;
+        };
         AgendamentoDto: {
             id: string;
             titulo: string;
             inicio: string;
             fim: string;
             status: string;
+            tipoAtendimentoId?: string;
+            tipoNome?: string;
+            cor?: string;
+            profissionalId?: string;
+            profissionalNome?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -702,13 +1680,55 @@ export interface components {
              */
             inicio: string;
             /**
-             * @description ISO 8601
+             * @description ISO 8601. Opcional com tipoAtendimentoId (usa a duração do tipo).
              * @example 2026-07-01T14:30:00Z
              */
-            fim: string;
+            fim?: string;
+            /** @description Tipo de atendimento (define duração/cor) */
+            tipoAtendimentoId?: string;
+            /** @description Profissional responsável (membro do tenant) */
+            profissionalId?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
+        };
+        ProfissionalDto: {
+            userId: string;
+            nome: string;
+            role: string;
+        };
+        TipoAtendimentoDto: {
+            id: string;
+            nome: string;
+            duracaoMinutos: number;
+            cor: string | null;
+            ativo: boolean;
+        };
+        CreateTipoAtendimentoDto: {
+            /** @example Consulta */
+            nome: string;
+            /**
+             * @description Duração padrão em minutos
+             * @example 30
+             */
+            duracaoMinutos?: number;
+            /**
+             * @description Cor do evento na agenda (hex)
+             * @example #7c5cff
+             */
+            cor?: string;
+        };
+        UpdateTipoAtendimentoDto: {
+            /** @example Consulta */
+            nome?: string;
+            duracaoMinutos?: number;
+            /** @example #7c5cff */
+            cor?: string;
+            ativo?: boolean;
+        };
+        UpdateStatusDto: {
+            /** @enum {string} */
+            status: "agendado" | "confirmado" | "concluido" | "faltou" | "cancelado";
         };
         ItemCatalogoDto: {
             id: string;
@@ -741,15 +1761,6 @@ export interface components {
             tipo?: "produto" | "servico" | "exame" | "vacina" | "medicamento" | "cirurgia";
             precoCentavos?: number;
             ativo?: boolean;
-        };
-        FaturaResumoDto: {
-            id: string;
-            responsavelId: string;
-            responsavelNome: string;
-            status: string;
-            totalCentavos: number;
-            itens: number;
-            criadaEm: string;
         };
         SaldoItemDto: {
             itemId: string;
@@ -798,6 +1809,448 @@ export interface components {
         SetMinimoDto: {
             /** @example 5 */
             estoqueMinimo: number;
+        };
+        InternacaoResumoDto: {
+            id: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            motivo: string;
+            box: string | null;
+            status: string;
+            entradaEm: string;
+            altaEm: string | null;
+            /** @description Prescrições ainda não executadas */
+            pendentes: number;
+        };
+        AdmitirDto: {
+            /** @description Animal a internar */
+            animalId: string;
+            /** @example Pós-operatório de castração */
+            motivo: string;
+            /** @example Box 2 */
+            box?: string;
+        };
+        ExecucaoDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number | null;
+            executadaEm: string | null;
+        };
+        InternacaoDetalheDto: {
+            id: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            motivo: string;
+            box: string | null;
+            status: string;
+            entradaEm: string;
+            altaEm: string | null;
+            /** @description Prescrições ainda não executadas */
+            pendentes: number;
+            observacoes: string | null;
+            execucoes: components["schemas"]["ExecucaoDto"][];
+        };
+        PrescreverDto: {
+            /** @description Item do catálogo (medicamento/procedimento) */
+            itemId?: string;
+            /**
+             * @description Descrição livre (obrigatória sem itemId)
+             * @example Dipirona 25mg/kg IV
+             */
+            descricao?: string;
+            /**
+             * @description Quantidade (baixa de estoque por execução)
+             * @example 1
+             */
+            quantidade?: number;
+            /** @description Valor unitário em centavos; default = preço do catálogo */
+            valorCentavos?: number;
+        };
+        ExecutarResultDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number | null;
+            executadaEm: string | null;
+            /** @description false quando não havia saldo em estoque (execução registrada mesmo assim) */
+            estoqueBaixado: boolean;
+            /** @description true quando o valor foi lançado na fatura aberta */
+            faturado: boolean;
+        };
+        AltaDto: {
+            /** @example Alta com retorno em 7 dias */
+            observacoes?: string;
+        };
+        OrcamentoResumoDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            itens: number;
+            observacoes: string | null;
+            criadoEm: string;
+        };
+        CreateOrcamentoDto: {
+            /** @description Responsável (cliente) do orçamento */
+            responsavelId: string;
+            /** @example Pacote pós-cirúrgico */
+            observacoes?: string;
+        };
+        OrcamentoItemDto: {
+            id: string;
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+            valorCentavos: number;
+        };
+        OrcamentoDetalheDto: {
+            id: string;
+            responsavelId: string;
+            responsavelNome: string;
+            status: string;
+            totalCentavos: number;
+            itens: number;
+            observacoes: string | null;
+            criadoEm: string;
+            linhas: components["schemas"]["OrcamentoItemDto"][];
+        };
+        AddOrcamentoItemDto: {
+            /** @description Item do catálogo (herda nome/preço) */
+            itemId?: string;
+            /** @description Descrição livre (obrigatória sem itemId) */
+            descricao?: string;
+            /** @example 1 */
+            quantidade?: number;
+            /** @description Valor unitário em centavos; default = preço do catálogo */
+            valorCentavos?: number;
+        };
+        UpdateOrcamentoStatusDto: {
+            /** @enum {string} */
+            status: "aprovado" | "recusado";
+        };
+        ConverterResultDto: {
+            ok: boolean;
+            /** @description Total lançado na fatura aberta (centavos) */
+            totalCentavos: number;
+        };
+        ApuracaoColaboradorDto: {
+            userId: string;
+            nome: string;
+            /** @description Base comissionável no período (centavos) */
+            baseCentavos: number;
+            /** @description Comissão apurada no período (centavos) */
+            comissaoCentavos: number;
+            lancamentos: number;
+        };
+        ApuracaoLinhaDto: {
+            descricao: string;
+            valorCentavos: number;
+            percentBps: number;
+            comissaoCentavos: number;
+            criadoEm: string;
+        };
+        RegraDto: {
+            id: string;
+            userId: string;
+            userNome: string;
+            itemId: string | null;
+            itemNome: string | null;
+            percentBps: number;
+        };
+        CreateRegraDto: {
+            /** @description Colaborador (membro do tenant) */
+            userId: string;
+            /** @description Item do catálogo; ausente = regra geral do colaborador */
+            itemId?: string;
+            /**
+             * @description Percentual em basis points (10% = 1000)
+             * @example 1000
+             */
+            percentBps: number;
+        };
+        ProximoAgendamentoDto: {
+            id: string;
+            titulo: string;
+            inicio: string;
+            profissionalNome: string | null;
+            cor: string | null;
+        };
+        DashboardDto: {
+            agendamentosHoje: number;
+            minhaAgendaHoje: number;
+            proximos: components["schemas"]["ProximoAgendamentoDto"][];
+            internados: number;
+            execucoesPendentes: number;
+            faturasAbertas: number;
+            faturasAbertasCentavos: number;
+            receitaMesCentavos: number;
+            estoqueAbaixoMinimo: number;
+            orcamentosAbertos: number;
+            clientes: number;
+            minhasComissoesMesCentavos: number;
+        };
+        ProdutividadeDto: {
+            userId: string;
+            nome: string;
+            /** @description Lançamentos faturados atribuídos ao colaborador */
+            lancamentos: number;
+            /** @description Receita gerada (centavos) */
+            receitaCentavos: number;
+            /** @description Agendamentos concluídos no período */
+            agendamentosConcluidos: number;
+        };
+        PortalInvitePreviewDto: {
+            responsavelNome: string;
+            clinicaNome: string;
+            email: string | null;
+        };
+        PortalAcceptInviteDto: {
+            /** @description Token do link de convite */
+            token: string;
+            /** @example senha-forte-aqui */
+            password: string;
+        };
+        PortalTokensDto: {
+            accessToken: string;
+            refreshToken: string;
+            /** @description Tenant do tutor — o front guarda p/ o próximo login */
+            tenantId: string;
+        };
+        PortalLoginDto: {
+            /** @description Tenant (clínica) do portal — o front guarda do convite */
+            tenantId: string;
+            /** @example tutor@email.com */
+            email: string;
+            /** @example senha-forte-aqui */
+            password: string;
+        };
+        PortalRefreshDto: {
+            refreshToken: string;
+        };
+        PortalLogoutDto: {
+            refreshToken: string;
+        };
+        PortalMeDto: {
+            responsavelId: string;
+            nome: string;
+            email: string | null;
+            clinicaNome: string;
+        };
+        PortalPetDto: {
+            id: string;
+            nome: string;
+            especie: string | null;
+            raca: string | null;
+            sexo: string | null;
+            castrado: boolean;
+            nascimento: string | null;
+            status: string;
+            /** @description URL assinada da foto (curta validade) */
+            fotoUrl: string | null;
+        };
+        PortalVacinaDto: {
+            id: string;
+            descricao: string;
+            data: string;
+        };
+        PortalHistoricoDto: {
+            id: string;
+            /** @description atendimento | vacina | exame | receita | internacao | peso */
+            tipo: string;
+            descricao: string;
+            data: string;
+        };
+        PortalPetDetalheDto: {
+            pet: components["schemas"]["PortalPetDto"];
+            vacinas: components["schemas"]["PortalVacinaDto"][];
+            historico: components["schemas"]["PortalHistoricoDto"][];
+        };
+        PortalAgendamentoDto: {
+            id: string;
+            titulo: string;
+            petNome: string | null;
+            tipoNome: string | null;
+            profissionalNome: string | null;
+            inicio: string;
+            fim: string;
+            status: string;
+        };
+        PortalFaturaResumoDto: {
+            id: string;
+            status: string;
+            totalCentavos: number;
+            recebidoCentavos: number;
+            saldoCentavos: number;
+            criadaEm: string;
+            /** @description Número da NFS-e, se emitida */
+            notaNumero: string | null;
+            /** @description Status fiscal da fatura */
+            notaStatus: string | null;
+        };
+        PortalFaturaItemDto: {
+            descricao: string;
+            valorCentavos: number;
+        };
+        PortalFaturaDetalheDto: {
+            fatura: components["schemas"]["PortalFaturaResumoDto"];
+            itens: components["schemas"]["PortalFaturaItemDto"][];
+        };
+        PortalAcessoDto: {
+            /** @description sem-acesso | invited | active | disabled */
+            status: string;
+            email: string | null;
+            inviteExpiresAt: string | null;
+            lastLoginAt: string | null;
+        };
+        PortalConviteResponseDto: {
+            /** @description Token do convite — a clínica envia o link ao tutor */
+            token: string;
+            tenantId: string;
+            expiresAt: string;
+        };
+        FiscalConfigDto: {
+            id: string;
+            cnpj?: string;
+            razaoSocial?: string;
+            inscricaoMunicipal?: string;
+            regimeTributario: string;
+            serieNfse: string;
+            proximoNumero: number;
+            provedor: string;
+            ambiente: string;
+            ativo: boolean;
+        };
+        UpdateFiscalConfigDto: {
+            cnpj?: string;
+            razaoSocial?: string;
+            inscricaoMunicipal?: string;
+            /** @enum {string} */
+            regimeTributario?: "simples" | "presumido" | "real";
+            serieNfse?: string;
+            proximoNumero?: number;
+            /** @enum {string} */
+            provedor?: "manual" | "focus" | "nfe_io" | "plugnotas";
+            /** @enum {string} */
+            ambiente?: "homologacao" | "producao";
+            ativo?: boolean;
+        };
+        NotaFiscalDto: {
+            id: string;
+            faturaId: string;
+            responsavelId: string;
+            responsavelNome?: string;
+            tipo: string;
+            status: string;
+            numero?: string;
+            serie?: string;
+            valorCentavos: number;
+            mensagem?: string;
+            emitidaEm?: string;
+            criadaEm: string;
+        };
+        CriarNotaDto: {
+            /**
+             * @default nfse
+             * @enum {string}
+             */
+            tipo: "nfse" | "nfe";
+        };
+        CancelarNotaDto: {
+            /** @example Emitida em duplicidade */
+            motivo: string;
+        };
+        PublicSiteDto: {
+            slug: string;
+            nomeExibicao?: string;
+            sobre?: string;
+            servicos: string[];
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            corPrimaria?: string;
+            logoUrl?: string;
+        };
+        CreateSolicitacaoDto: {
+            /** @example Maria Silva */
+            nome: string;
+            /** @example +55 11 99999-0000 */
+            telefone: string;
+            email?: string;
+            petNome?: string;
+            servicoDesejado?: string;
+            /** @description Preferência de dia/horário (texto livre) */
+            preferencia?: string;
+            mensagem?: string;
+            /** @description Como nos conheceu? */
+            origem?: string;
+            /** @description Deixe em branco (anti-spam) */
+            website?: string;
+        };
+        SiteConfigDto: {
+            id: string;
+            slug?: string;
+            publicado: boolean;
+            nomeExibicao?: string;
+            sobre?: string;
+            servicos?: string;
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            corPrimaria?: string;
+            logoUrl?: string;
+        };
+        UpdateSiteConfigDto: {
+            /** @description Slug da URL pública (a-z, 0-9, hífen) */
+            slug?: string;
+            publicado?: boolean;
+            nomeExibicao?: string;
+            sobre?: string;
+            /** @description Serviços em destaque, um por linha */
+            servicos?: string;
+            endereco?: string;
+            telefone?: string;
+            whatsapp?: string;
+            email?: string;
+            horario?: string;
+            /** @description Cor primária em hex (#RRGGBB) */
+            corPrimaria?: string;
+        };
+        SignLogoDto: {
+            /** @example image/png */
+            contentType: string;
+        };
+        ConfirmLogoDto: {
+            key: string;
+        };
+        SolicitacaoDto: {
+            id: string;
+            nome: string;
+            telefone: string;
+            email?: string;
+            petNome?: string;
+            servicoDesejado?: string;
+            preferencia?: string;
+            mensagem?: string;
+            origem?: string;
+            status: string;
+            observacaoInterna?: string;
+            criadaEm: string;
+        };
+        TriagemDto: {
+            /** @description Observação interna (opcional) */
+            observacao?: string;
         };
     };
     responses: never;
@@ -917,6 +2370,52 @@ export interface operations {
             };
         };
     };
+    AuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokensDto"];
+                };
+            };
+        };
+    };
+    AuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponseDto"];
+                };
+            };
+        };
+    };
     AuthController_mfaStatus: {
         parameters: {
             query?: never;
@@ -973,7 +2472,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OkResponseDto"];
+                    "application/json": components["schemas"]["MfaEnableResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_regenerateRecoveryCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaEnableResponseDto"];
                 };
             };
         };
@@ -1368,6 +2890,203 @@ export interface operations {
             };
         };
     };
+    FinanceiroController_list: {
+        parameters: {
+            query?: {
+                status?: "aberta" | "parcial" | "paga" | "cancelada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FaturaResumoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_pagar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_recebimentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecebimentoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_receber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceberDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceberResultDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_saldos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoClienteDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_saldoDe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaldoClienteDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_formas: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"][];
+                };
+            };
+        };
+    };
+    FinanceiroController_createForma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFormaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"];
+                };
+            };
+        };
+    };
+    FinanceiroController_updateForma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFormaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormaRecebimentoDto"];
+                };
+            };
+        };
+    };
     AgendaController_list: {
         parameters: {
             query?: {
@@ -1375,6 +3094,8 @@ export interface operations {
                 from?: string;
                 /** @description ISO 8601 */
                 to?: string;
+                /** @description Filtra por profissional ("minha agenda") */
+                profissionalId?: string;
             };
             header?: never;
             path?: never;
@@ -1411,6 +3132,121 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgendamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_profissionais: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfissionalDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_tipos: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_createTipo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTipoAtendimentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateTipo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTipoAtendimentoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
                 };
             };
         };
@@ -1533,48 +3369,6 @@ export interface operations {
             };
         };
     };
-    FinanceiroController_list: {
-        parameters: {
-            query?: {
-                status?: "aberta" | "paga" | "cancelada";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FaturaResumoDto"][];
-                };
-            };
-        };
-    };
-    FinanceiroController_pagar: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OkDto"];
-                };
-            };
-        };
-    };
     EstoqueController_saldos: {
         parameters: {
             query?: {
@@ -1664,6 +3458,1091 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaldoItemDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_list: {
+        parameters: {
+            query?: {
+                status?: "internado" | "alta";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_admitir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdmitirDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_detalhe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoDetalheDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_prescrever: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrescreverDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_executar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                execId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutarResultDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_alta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AltaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternacaoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_list: {
+        parameters: {
+            query?: {
+                status?: "aberto" | "aprovado" | "recusado" | "convertido";
+                responsavelId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"][];
+                };
+            };
+        };
+    };
+    VendasController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrcamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_detalhe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoDetalheDto"];
+                };
+            };
+        };
+    };
+    VendasController_addItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddOrcamentoItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoItemDto"];
+                };
+            };
+        };
+    };
+    VendasController_removeItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                linhaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    VendasController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrcamentoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrcamentoResumoDto"];
+                };
+            };
+        };
+    };
+    VendasController_converter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConverterResultDto"];
+                };
+            };
+        };
+    };
+    ComissoesController_apurar: {
+        parameters: {
+            query?: {
+                /** @description ISO 8601 */
+                from?: string;
+                /** @description ISO 8601 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApuracaoColaboradorDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_minhas: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApuracaoLinhaDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_regras: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegraDto"][];
+                };
+            };
+        };
+    };
+    ComissoesController_upsertRegra: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegraDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegraDto"];
+                };
+            };
+        };
+    };
+    ComissoesController_removeRegra: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    DashboardController_resumo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardDto"];
+                };
+            };
+        };
+    };
+    InteligenciaController_produtividade: {
+        parameters: {
+            query?: {
+                /** @description ISO 8601 */
+                from?: string;
+                /** @description ISO 8601 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutividadeDto"][];
+                };
+            };
+        };
+    };
+    PortalController_invitePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalInvitePreviewDto"];
+                };
+            };
+        };
+    };
+    PortalController_aceitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalAcceptInviteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalTokensDto"];
+                };
+            };
+        };
+    };
+    PortalController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalLogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    PortalController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalMeDto"];
+                };
+            };
+        };
+    };
+    PortalController_pets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalPetDto"][];
+                };
+            };
+        };
+    };
+    PortalController_pet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalPetDetalheDto"];
+                };
+            };
+        };
+    };
+    PortalController_agendamentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalAgendamentoDto"][];
+                };
+            };
+        };
+    };
+    PortalController_faturas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalFaturaResumoDto"][];
+                };
+            };
+        };
+    };
+    PortalController_fatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalFaturaDetalheDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalAcessoDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_convite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalConviteResponseDto"];
+                };
+            };
+        };
+    };
+    PortalAdminController_revogar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    FiscalController_getConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalConfigDto"];
+                };
+            };
+        };
+    };
+    FiscalController_updateConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFiscalConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalConfigDto"];
+                };
+            };
+        };
+    };
+    FiscalController_listNotas: {
+        parameters: {
+            query?: {
+                status?: "rascunho" | "processando" | "emitida" | "rejeitada" | "cancelada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"][];
+                };
+            };
+        };
+    };
+    FiscalController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                faturaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarNotaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    FiscalController_emitir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    FiscalController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelarNotaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaFiscalDto"];
+                };
+            };
+        };
+    };
+    PublicSiteController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSiteDto"];
+                };
+            };
+        };
+    };
+    PublicSiteController_solicitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSolicitacaoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    SiteController_getConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_updateConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSiteConfigDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_signLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignLogoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    SiteController_confirmLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmLogoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigDto"];
+                };
+            };
+        };
+    };
+    SiteController_listSolicitacoes: {
+        parameters: {
+            query?: {
+                status?: "nova" | "confirmada" | "recusada";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"][];
+                };
+            };
+        };
+    };
+    SiteController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriagemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"];
+                };
+            };
+        };
+    };
+    SiteController_recusar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriagemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoDto"];
                 };
             };
         };

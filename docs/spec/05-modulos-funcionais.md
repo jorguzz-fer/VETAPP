@@ -14,6 +14,12 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
   única: gestão vê gerencial; recepção vê agenda/fila; médico vê sua agenda +
   pendências do dia. Painel configurável por papel. Definir o layout final
   **depois** que os módulos estiverem fechados.
+- **Fase 1 — implementado ✅**: `GET /api/dashboard` devolve o superset de KPIs
+  reais (agenda de hoje + próximos, internados, execuções pendentes, receita do
+  mês, faturas em aberto, estoque abaixo do mínimo, orçamentos, clientes,
+  "minhas comissões"); a home recorta por papel — gestão vê o gerencial,
+  veterinário vê "minha agenda"/comissões, demais veem o operacional.
+  Layout configurável e gráficos → fase 2 (timezone por tenant idem).
 
 ## 2. Atendimento Clínico (núcleo)
 ### 2.1 Lista de clientes/pacientes — 🟢 MANTER
@@ -44,6 +50,16 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 3.2 Escala | `/escala/escala.php` | 🟡 MANTER com ressalva (útil quando cresce) |
 | 3.3 Config. da Agenda | `/config/agenda/agenda.php` | 🟡 MELHORAR — corrigir navegabilidade (fluxo "trava"); criar usuário já cria agenda |
 
+### 3.4 Fase 1 avançada — implementado ✅
+- **Tipos de atendimento** (§8.5): cadastro (nome, duração padrão, cor) em
+  `/cadastros`; agendar com tipo deriva o fim automaticamente e colore o evento.
+- **Profissional por agendamento** (validado como membro do tenant) + filtro por
+  profissional na agenda, incluindo **"Minha agenda"** (3.1, agenda por login).
+- **Status**: `agendado | confirmado | concluido | faltou | cancelado`
+  (`PATCH /api/agenda/:id/status`).
+- Fase 2: Google Agenda + IA (doc 06), escala (3.2), "criar usuário cria
+  agenda" (3.3), agendamento online (Site, doc 13 §4).
+
 ## 4. Vendas
 > Tema: **muita redundância**. Objetivo: **um dashboard único de vendas**.
 
@@ -63,6 +79,19 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 4.12 Modelo de demonstrativo | `/config/modelodemonstrativo/...` | ⚪ DEFINIR — config de impressão |
 | 4.13 Configuração (regras de venda) | `/venda/configuracao/...` | 🟢 MANTER → mover p/ área de **Configuração** |
 
+### 4.14 Fase 1 — implementado ✅ (Orçamentos)
+Fatia mínima (`apps/api/src/modules/vendas` + `/orcamentos` no web):
+- **Orçamento acoplado à ficha do cliente** (§2.2): botão "Orçamento" na ficha;
+  itens **por código do catálogo** (preço herdado, congelado na inclusão) ou
+  lançamento livre; quantidade e valor unitário em centavos.
+- **Ciclo**: `aberto → aprovado/recusado → convertido`. **Converter** lança cada
+  linha na fatura aberta do responsável (`FaturamentoService`), fechando
+  orçamento → venda → cobrança.
+- API: `GET/POST /api/orcamentos`, `GET /api/orcamentos/:id`,
+  `POST/DELETE .../itens`, `PATCH .../status`, `POST .../converter`.
+- Fase 2: modelos de orçamento/pacotes (4.11), dashboard único de vendas (4.2),
+  regras de venda/descontos (4.13), demonstrativo de impressão (4.12).
+
 ## 5. Comissionamento
 > Cada item/serviço tem regra de comissão por colaborador.
 
@@ -72,11 +101,31 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 5.2 Extratos | `/v2/comercial/comissao/extratos` | 🟡 MELHORAR — **não mostrar histórico antigo por padrão** |
 | 5.3 Minhas comissões | `/v2/comercial/comissao/minhascomissoes` | 🟢 MANTER — "cada um vê o seu" por login |
 
+### 5.4 Fase 1 — implementado ✅
+Fatia mínima (`apps/api/src/modules/comissoes` + `/comissoes` no web):
+- **Regras** por colaborador em **basis points** (10% = 1000; inteiro, nunca
+  float): regra geral e regra **por item do catálogo** (sobrepõe a geral).
+- **Atribuição automática do profissional** no faturamento acoplado
+  (`fatura_itens.profissional_id`/`item_id`): quem registra o atendimento,
+  executa a medicação da internação ou converte o orçamento é o comissionado.
+- **Fechamento** (5.1): apuração consolidada por colaborador no período.
+  **Minhas comissões** (5.3): extrato do próprio login, sem histórico antigo
+  por padrão (5.2 — período default = mês corrente).
+- API: `GET /api/comissoes`, `GET /api/comissoes/minhas`,
+  `GET/POST /api/comissoes/regras`, `DELETE /api/comissoes/regras/:id`.
+- Fase 2: status de fechamento/pago (integra Contas a pagar — doc 13 §1),
+  extratos históricos, override de profissional no lançamento.
+
 ## 6. Inteligência
 | Tela | Legado | Decisão |
 |------|--------|---------|
 | 6.1 Produtividade | `/v2/inteligencia/produtividade` | 🟢 MANTER (a mais elogiada). Agrupar por colaborador **e por setor**; não misturar entidades estranhas |
 | 6.2 Vendas (analytics) | `/v2/inteligencia/vendas` | 🟡 **Unificar com o dashboard de vendas (4.2)** |
+
+**Fase 1 — implementado ✅ (6.1)**: `GET /api/inteligencia/produtividade?from&to`
+— produção por colaborador (lançamentos faturados atribuídos, receita gerada,
+agendamentos concluídos, % do total) na página `/produtividade` (admin/gestor).
+Agrupamento por setor e analytics de vendas unificado (6.2) → fase 2.
 
 ## 7. Consultas
 | Tela | Legado | Decisão |
@@ -120,6 +169,21 @@ consolidar, cadastro único, simplicidade clínica, visão por login.
 | 9.5 Parâmetros clínicos | `/v3/internacao/parametros-clinicos` | 🟢 MANTER (opções prontas, só selecionar) |
 | 9.6 Modelos de prescrição | `/internamento/prescricaomodelo/...` | 🟢 MANTER (acelera prescrição) |
 | 9.7 Boxes | `/v3/internacao/boxes` | 🟢 **ATIVAR** — cadastrar boxes físicos (base do tablet por box) |
+
+### 9.8 Fase 1 — implementado ✅
+Fatia mínima entregue (`apps/api/src/modules/internacao` + `/internacao` no web):
+- **Admissão explícita** (9.4): animal + motivo + box (texto livre; cadastro de
+  boxes 9.7 fica p/ fase 2). Vira evento na linha do tempo do animal.
+- **Mapa de execução** (9.2): prescrever item do catálogo (preço herdado) ou
+  lançamento livre; **executar = baixa de estoque automática** (itens estocáveis;
+  a execução clínica nunca é bloqueada por falta de saldo — sinaliza no retorno)
+  **+ faturamento automático** na fatura aberta do responsável (helper
+  compartilhado `FaturamentoService`, usado também pelo prontuário).
+- **Alta** (9.4): encerra e registra na linha do tempo. Painel lista internados
+  com pendências (9.1). TV/tablet por box, parâmetros clínicos (9.5) e modelos
+  de prescrição (9.6) → fase 2.
+- API: `GET/POST /api/internacoes`, `GET /api/internacoes/:id`,
+  `POST .../execucoes`, `POST .../execucoes/:execId/executar`, `POST .../alta`.
 
 ---
 

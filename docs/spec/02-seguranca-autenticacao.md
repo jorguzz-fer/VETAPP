@@ -36,6 +36,15 @@
 - "Lembrar este dispositivo" por tempo limitado, vinculado a device fingerprint +
   reautenticação MFA periódica.
 
+> **Implementado (fase 2)** — recovery codes de uso único. Ao ativar o MFA
+> (`POST /auth/mfa/enable`) a API gera 10 códigos no formato `xxxx-xxxx`, exibidos
+> **uma única vez**; no banco fica só o **hash argon2id** (`mfa_recovery_codes`,
+> tabela global sem RLS, escopo por `user_id`). `POST /auth/mfa/verify` aceita um
+> TOTP **ou** um recovery code (consumido → `used_at`). `POST /auth/mfa/recovery-codes`
+> regera o conjunto (exige TOTP; invalida os anteriores). Desativar o MFA apaga os
+> códigos. **Pendente**: MFA obrigatório por papel (exige fluxo de setup forçado),
+> WebAuthn, "lembrar dispositivo".
+
 ### 2.3 Sessões e tokens
 - **Web**: sessão em **cookie httpOnly + Secure + SameSite=strict/lax**. Tokens
   **não** acessíveis a JavaScript (mitiga XSS-roubo de token). CSRF mitigado por
@@ -45,6 +54,19 @@
   (Keychain/Keystore). Rotação detecta replay (refresh token reuse).
 - Revogação imediata: logout, troca de senha, suspeita de comprometimento e
   remoção de usuário invalidam sessões ativas (lista de revogação em Redis).
+
+> **Implementado (fase 2)** — refresh token **stateful com rotação e detecção de
+> reuso**. Cada sessão tem uma *family* (UUID). O refresh JWT carrega apenas
+> `{ sub, jti, family, scope:'refresh' }` (assinado com `JWT_REFRESH_SECRET`); todo
+> o estado — expiração, revogação, encadeamento — mora em `refresh_tokens` (tabela
+> global sem RLS, escopo por `jti`/`user_id`). `POST /auth/refresh` valida a linha,
+> emite um novo par na **mesma family** e revoga o `jti` apresentado (rotação).
+> Apresentar um `jti` **já revogado** = reuso (replay/roubo) → **revoga a family
+> inteira** e recusa. `POST /auth/logout` revoga a family (best-effort, idempotente).
+> O access token segue stateless (`{ sub, tenantId, role }`, TTL curto). Frontend:
+> renovação **proativa** ~60s antes do `exp` (não intercepta 401). **Pendente**:
+> migrar do Bearer/localStorage para **cookie httpOnly/BFF**; lista de revogação por
+> troca de senha; limpeza periódica de tokens expirados.
 
 ### 2.4 Proteções de fluxo
 - Rate limiting e **lockout progressivo** por usuário/IP em login e MFA.

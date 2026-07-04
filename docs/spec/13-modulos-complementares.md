@@ -44,6 +44,20 @@ Recebe o que o mapeamento mandou mover de **Vendas → Financeiro** e consolida 
   Financeiro (decisão do dono — doc 05 §4.11).
 - Regras de venda/desconto → área de **Configuração** (doc 05 §4.13).
 
+### 1.4 Fase 2 — implementado ✅
+Sobre o Financeiro fase 1 (faturas + baixa integral):
+- **Recebimento parcial** (`recebimentos`, migração 0013): cada baixa lança um
+  recebimento; o status da fatura é **derivado** da soma (`aberta → parcial →
+  paga`). `POST /api/faturas/:id/recebimentos` + `GET` do histórico; `pagar`
+  virou "quita o saldo restante".
+- **Formas de recebimento** (movido de Vendas 4.10): cadastro de apoio
+  (dinheiro/Pix/cartão/transferência) com **taxa em basis points**; CRUD em
+  `/api/formas-recebimento`, geridas em `/cadastros`.
+- **Saldo do cliente** (movido de Vendas 4.9): devedor por responsável —
+  `GET /api/financeiro/saldos` (lista) e `/saldos/:responsavelId` (na ficha).
+- Fase 3: estorno, conciliação, gateway de pagamento (Pix/cartão), contas a
+  pagar (comissões — integra doc 05 §5), fluxo de caixa.
+
 ---
 
 ## 2. Estoque e serviços
@@ -114,6 +128,35 @@ sensibilidade regulatória — validar com contador.**
 - Manter **modelo de demonstrativo** de venda impresso (doc 05 §4.12) como
   configuração de impressão, separado do fiscal.
 
+### 3.3 Implementado (fase 3 — MVP, provider-agnostic)
+
+Fatia **não-bloqueada** entregue (o resto depende de decisão de provedor +
+certificado + contador). Módulo `apps/api/src/modules/fiscal` + web `/fiscal`
+(restrito a admin/gestor/financeiro):
+
+- **Config do emitente por tenant** (`fiscal_config`, tenant-scoped com RLS): CNPJ,
+  razão social, inscrição municipal, regime tributário, série + próximo número da
+  NFS-e, provedor, ambiente (homolog/produção), ativo. **SEM segredos no banco** —
+  certificado A1 e credenciais do provedor vão para cofre (doc 02).
+- **Ciclo de vida da nota** (`notas_fiscais`, tenant-scoped com RLS): a partir de
+  uma fatura → `rascunho → emitida → cancelada` (e `processando`/`rejeitada` para
+  provedores assíncronos). Uma nota ativa por fatura. Número/série atribuídos na
+  emissão.
+- **Provedor pluggável** (`FiscalProvider` + `FiscalProviderFactory`): driver
+  **`manual`** implementado (numeração própria pela série do config; a clínica
+  controla a emissão). Drivers externos (Focus NFe / NFe.io / PlugNotas / SEFAZ /
+  prefeitura) são recusados de forma **explícita** até serem plugados — sem falha
+  silenciosa. Trocar de provedor não toca no serviço.
+- **Integração**: nota criada a partir da fatura (Financeiro); número da NFS-e
+  emitida aparece na 2ª via do **Portal do tutor**.
+- API: `GET/PUT /api/fiscal/config`, `GET /api/fiscal/notas`,
+  `POST /api/faturas/:faturaId/nota`, `POST /api/fiscal/notas/:id/emitir|cancelar`.
+
+**Pendente (o grosso do valor fiscal, requer decisão externa)**: integração real
+com **provedor fiscal** (emissão NFS-e junto à prefeitura / NF-e SEFAZ), certificado
+digital A1 no cofre, regras tributárias por item (CFOP/NCM/ISS/alíquotas),
+contingência, carta de correção, PDF/XML no storage, webhook de status assíncrono.
+
 ---
 
 ## 4. Site (presença pública da clínica)
@@ -132,6 +175,33 @@ Site público por tenant, com **agendamento online** ligado à Agenda (doc 05 §
 - **SEO** básico e desempenho (Core Web Vitals).
 - **Segurança**: o site é público, mas qualquer ação (agendar) passa pela API
   autenticada/rate-limited; nada de acesso direto a dados de clínica (doc 02/11).
+
+### 4.2 Implementado (fase 3 — MVP)
+
+Site institucional por tenant + **solicitação** de agendamento (decisão validada:
+a clínica confirma; sem escrita anônima direta na agenda). Módulo
+`apps/api/src/modules/site` + web (público `/clinica/[slug]`, gestão `/site`).
+
+- **CMS-lite por tenant** (`site_config`, tabela **global sem RLS** — leitura
+  pública por `slug` antes do contexto de tenant, como `users`; edição filtrada por
+  `tenant_id`; conteúdo público por design): slug, publicado, nome, sobre, serviços
+  (texto), endereço/telefone/WhatsApp/e-mail/horário, cor primária, logo (upload R2).
+- **Agendamento = solicitação** (`agendamento_solicitacoes`, **tenant-scoped com
+  RLS** — PII do visitante é dado da clínica): o visitante envia um pedido; a
+  recepção **confirma/recusa**. **Nada grava direto na agenda operacional** e a
+  disponibilidade **não** é exposta. A criação do agendamento real segue o fluxo
+  interno (o visitante ainda não é cliente).
+- **Superfície pública mínima e endurecida**: só `GET /api/public/clinica/:slug`
+  (conteúdo publicado) e `POST .../agendamento`. Esta é a **única rota anônima de
+  escrita** do sistema — protegida por **honeypot** + **rate limit** por IP+slug
+  (5/10min, em memória no MVP). Resposta uniforme (não vaza o filtro anti-spam).
+- **Captação**: campo "Como nos conheceu?" na solicitação (alimenta origem — §8.11).
+- Gestão restrita a admin/gestor (`/site`): edição do CMS + triagem das solicitações.
+
+**Pendente**: agendamento em tempo real com disponibilidade (exige expor slots com
+cuidado + escrita direta na agenda), conversão da solicitação → cliente+agendamento
+em 1 clique, integração Google Agenda/IA (doc 06), SEO/render server-side por
+domínio próprio, rate limit distribuído (Redis/WAF) para multi-instância.
 
 ---
 
@@ -156,6 +226,35 @@ Site público por tenant, com **agendamento online** ligado à Agenda (doc 05 §
 ### 5.2 Princípio de segurança
 - O tutor só vê **os próprios pets/dados**, escopado por responsável **e** tenant
   (RLS + authz por objeto — doc 02/03). Tutor **nunca** é usuário da gestão.
+
+### 5.3 Implementado (fase 3 — MVP)
+
+Área logada do tutor sob `/portal/*` no web, com **auth totalmente separada** da
+gestão. Decisões desta 1ª versão (validadas com o cliente):
+
+- **Onboarding por convite da clínica**: a clínica gera um link na ficha do
+  cliente (`POST /clientes/:id/portal/convite`); o tutor abre o link e **cria a
+  própria senha** (`POST /portal/convite/aceitar`). Sem auto-cadastro anônimo —
+  nenhuma porta aberta (diretriz de segurança). Convite válido por 7 dias, token
+  de alta entropia guardado só como sha256; revogável (`.../portal/revogar`).
+- **Credencial separada** (`tutor_credentials`, tabela **global sem RLS** como
+  `users` — o login roda antes do contexto de tenant). O access token carrega
+  `scope:'tutor'` + `tenantId` + `responsavelId`; o `JwtAuthGuard` da gestão
+  **recusa** qualquer token com `scope`, e o `TutorGuard` só aceita `scope:'tutor'`
+  — isolamento total entre as duas superfícies. Todo acesso a dados passa por
+  `withTenant(tenantId)` **e** filtro por `responsavelId` (RLS + authz por objeto).
+- **Meus pets**: ficha + **vacinas** + **histórico resumido** do prontuário
+  (atendimento/vacina/exame/receita/internação/peso). Notas livres (`observacao`)
+  ficam de FORA por privacidade.
+- **Agendamentos**: **somente visualização** (próximos + anteriores). Marcação
+  online fica para iteração futura.
+- **Financeiro**: faturas do tutor com saldo e 2ª via (itens). **Pagamento online**
+  (Pix/cartão) e **nota fiscal** ficam para quando o módulo Fiscal + provedor de
+  pagamento existirem.
+
+**Pendente (follow-up)**: refresh token do tutor com rotação/revogação stateful
+(hoje é stateless, como a gestão era antes da fase 2); MFA do tutor; agendamento
+online; pagamento online + nota; app nativo do tutor (React Native).
 
 ---
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -49,6 +49,7 @@ const brl = (c: number) => (c / 100).toLocaleString('pt-BR', { style: 'currency'
 
 export default function ProntuarioPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params.id;
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -186,6 +187,20 @@ export default function ProntuarioPage() {
     }
   }
 
+  async function onInternar() {
+    const motivo = prompt(`Internar ${animal?.nome ?? 'o animal'} — motivo:`);
+    if (!motivo?.trim()) return;
+    const box = prompt('Box (opcional):') ?? undefined;
+    const { error } = await api.POST('/api/internacoes', {
+      body: { animalId: id, motivo: motivo.trim(), box: box?.trim() || undefined },
+    });
+    if (error) {
+      alert('Não foi possível internar (animal já internado?).');
+      return;
+    }
+    router.push('/internacao');
+  }
+
   async function onSaveAnimal(e: FormEvent) {
     e.preventDefault();
     await api.PATCH('/api/animais/{id}', {
@@ -248,6 +263,9 @@ export default function ProntuarioPage() {
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setEditAnimal((v) => !v)}>
               <i className="ri-edit-line"></i> Editar
+            </Button>
+            <Button variant="ghost" onClick={onInternar}>
+              <i className="ri-hospital-line"></i> Internar
             </Button>
             <Button onClick={() => setShowForm((v) => !v)}>
               <i className="ri-add-line"></i> Registrar evento

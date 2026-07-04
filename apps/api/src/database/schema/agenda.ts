@@ -3,6 +3,7 @@ import { tenants } from './tenants';
 import { animais } from './animais';
 import { responsaveis } from './responsaveis';
 import { users } from './users';
+import { tiposAtendimento } from './tipos-atendimento';
 
 // Agendamento da agenda operacional (docs/spec/05 §3). Tenant-scoped → RLS.
 export const agendamentos = pgTable(
@@ -11,6 +12,8 @@ export const agendamentos = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
     profissionalId: uuid('profissional_id').references(() => users.id, { onDelete: 'set null' }),
+    // Tipo de atendimento (doc 05 §8.5): duração padrão e cor na agenda.
+    tipoAtendimentoId: uuid('tipo_atendimento_id').references(() => tiposAtendimento.id, { onDelete: 'set null' }),
     animalId: uuid('animal_id').references(() => animais.id, { onDelete: 'set null' }),
     responsavelId: uuid('responsavel_id').references(() => responsaveis.id, { onDelete: 'set null' }),
     titulo: text('titulo').notNull(),

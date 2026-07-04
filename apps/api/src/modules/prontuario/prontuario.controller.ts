@@ -27,7 +27,7 @@ export class ProntuarioController {
   @Post('animais/:id/eventos')
   @ApiCreatedResponse({ type: EventoDto })
   addEvento(@Req() req: Request, @Param('id') id: string, @Body() dto: CreateEventoDto): Promise<EventoDto> {
-    return this.prontuario.createEvento(req.auth!.tenantId, id, dto);
+    return this.prontuario.createEvento(req.auth!.tenantId, id, dto, req.auth!.userId);
   }
 
   // URL pré-assinada para anexar arquivo (documento/exame/vídeo) a um evento.

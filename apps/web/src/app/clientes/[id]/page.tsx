@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PortalAcessoCard } from '@/components/portal/PortalAcessoCard';
 
 interface Animal {
   id: string;
@@ -32,6 +33,7 @@ export default function FichaClientePage() {
   const router = useRouter();
   const id = params.id;
   const [ficha, setFicha] = useState<Ficha | null>(null);
+  const [saldo, setSaldo] = useState<{ devedorCentavos: number; faturasAbertas: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [editing, setEditing] = useState(false);
@@ -55,6 +57,12 @@ export default function FichaClientePage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    void api.GET('/api/financeiro/saldos/{responsavelId}', { params: { path: { responsavelId: id } } }).then(({ data }) => {
+      setSaldo((data as { devedorCentavos: number; faturasAbertas: number }) ?? null);
+    });
+  }, [id]);
+
   async function onSaveEdit(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -64,6 +72,19 @@ export default function FichaClientePage() {
       setEditing(false);
       void load();
     }
+  }
+
+  async function onNovoOrcamento() {
+    const obs = prompt('Novo orçamento — observações (opcional):');
+    if (obs === null) return;
+    const { error } = await api.POST('/api/orcamentos', {
+      body: { responsavelId: id, observacoes: obs || undefined },
+    });
+    if (error) {
+      alert('Não foi possível criar o orçamento.');
+      return;
+    }
+    router.push('/orcamentos');
   }
 
   async function onDeleteCliente() {
@@ -137,8 +158,16 @@ export default function FichaClientePage() {
         ) : (
           <>
             <div className="flex items-start justify-between">
-              <h1 className="text-lg font-semibold text-black dark:text-white">{ficha.nome}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg font-semibold text-black dark:text-white">{ficha.nome}</h1>
+                {saldo && saldo.devedorCentavos > 0 && (
+                  <span className="text-xs rounded-full px-2.5 py-0.5 bg-red-50 text-red-500" title={`${saldo.faturasAbertas} fatura(s) em aberto`}>
+                    Devendo {(saldo.devedorCentavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                )}
+              </div>
               <div className="flex gap-2">
+                <Button variant="ghost" onClick={onNovoOrcamento}><i className="ri-file-list-3-line"></i> Orçamento</Button>
                 <Button variant="ghost" onClick={() => setEditing(true)}><i className="ri-edit-line"></i> Editar</Button>
                 <button type="button" onClick={onDeleteCliente} className="text-gray-400 hover:text-red-500 px-2" title="Excluir cliente">
                   <i className="ri-delete-bin-line text-lg"></i>
@@ -200,6 +229,8 @@ export default function FichaClientePage() {
           </div>
         )}
       </Card>
+
+      <PortalAcessoCard responsavelId={id} />
     </div>
   );
 }

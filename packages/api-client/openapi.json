@@ -139,6 +139,68 @@
         ]
       }
     },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/mfa/status": {
       "get": {
         "operationId": "AuthController_mfaStatus",
@@ -211,7 +273,43 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OkResponseDto"
+                  "$ref": "#/components/schemas/MfaEnableResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_regenerateRecoveryCodes",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaEnableResponseDto"
                 }
               }
             }
@@ -893,6 +991,347 @@
         ]
       }
     },
+    "/api/faturas": {
+      "get": {
+        "operationId": "FinanceiroController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "aberta",
+                "parcial",
+                "paga",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FaturaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{id}/pagar": {
+      "post": {
+        "operationId": "FinanceiroController_pagar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{id}/recebimentos": {
+      "post": {
+        "operationId": "FinanceiroController_receber",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceberResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "FinanceiroController_recebimentos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecebimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/financeiro/saldos": {
+      "get": {
+        "operationId": "FinanceiroController_saldos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SaldoClienteDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/financeiro/saldos/{responsavelId}": {
+      "get": {
+        "operationId": "FinanceiroController_saldoDe",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaldoClienteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/formas-recebimento": {
+      "get": {
+        "operationId": "FinanceiroController_formas",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormaRecebimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "FinanceiroController_createForma",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFormaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormaRecebimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/formas-recebimento/{id}": {
+      "patch": {
+        "operationId": "FinanceiroController_updateForma",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormaRecebimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "financeiro"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/agenda": {
       "get": {
         "operationId": "AgendaController_list",
@@ -911,6 +1350,15 @@
             "required": false,
             "in": "query",
             "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "profissionalId",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por profissional (\"minha agenda\")",
             "schema": {
               "type": "string"
             }
@@ -960,6 +1408,201 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgendamentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/profissionais": {
+      "get": {
+        "operationId": "AgendaController_profissionais",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProfissionalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/tipos": {
+      "get": {
+        "operationId": "AgendaController_tipos",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TipoAtendimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AgendaController_createTipo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTipoAtendimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/tipos/{id}": {
+      "patch": {
+        "operationId": "AgendaController_updateTipo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTipoAtendimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/{id}/status": {
+      "patch": {
+        "operationId": "AgendaController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -1185,84 +1828,6 @@
         ]
       }
     },
-    "/api/faturas": {
-      "get": {
-        "operationId": "FinanceiroController_list",
-        "parameters": [
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "aberta",
-                "paga",
-                "cancelada"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FaturaResumoDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "financeiro"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/faturas/{id}/pagar": {
-      "post": {
-        "operationId": "FinanceiroController_pagar",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OkDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "financeiro"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/api/estoque": {
       "get": {
         "operationId": "EstoqueController_saldos",
@@ -1429,6 +1994,1820 @@
           }
         ]
       }
+    },
+    "/api/internacoes": {
+      "get": {
+        "operationId": "InternacaoController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "internado",
+                "alta"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InternacaoResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_admitir",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdmitirDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}": {
+      "get": {
+        "operationId": "InternacaoController_detalhe",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/execucoes": {
+      "post": {
+        "operationId": "InternacaoController_prescrever",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrescreverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecucaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/execucoes/{execId}/executar": {
+      "post": {
+        "operationId": "InternacaoController_executar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "execId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutarResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/alta": {
+      "post": {
+        "operationId": "InternacaoController_alta",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AltaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternacaoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos": {
+      "get": {
+        "operationId": "VendasController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "aberto",
+                "aprovado",
+                "recusado",
+                "convertido"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "responsavelId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrcamentoResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "VendasController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrcamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}": {
+      "get": {
+        "operationId": "VendasController_detalhe",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/itens": {
+      "post": {
+        "operationId": "VendasController_addItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddOrcamentoItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoItemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/itens/{linhaId}": {
+      "delete": {
+        "operationId": "VendasController_removeItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "linhaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/status": {
+      "patch": {
+        "operationId": "VendasController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrcamentoStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrcamentoResumoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/orcamentos/{id}/converter": {
+      "post": {
+        "operationId": "VendasController_converter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConverterResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vendas"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes": {
+      "get": {
+        "operationId": "ComissoesController_apurar",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApuracaoColaboradorDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/minhas": {
+      "get": {
+        "operationId": "ComissoesController_minhas",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApuracaoLinhaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/regras": {
+      "get": {
+        "operationId": "ComissoesController_regras",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RegraDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ComissoesController_upsertRegra",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegraDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegraDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/comissoes/regras/{id}": {
+      "delete": {
+        "operationId": "ComissoesController_removeRegra",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "comissoes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "operationId": "DashboardController_resumo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dashboard"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/inteligencia/produtividade": {
+      "get": {
+        "operationId": "InteligenciaController_produtividade",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProdutividadeDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inteligencia"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/convite/{token}": {
+      "get": {
+        "operationId": "PortalController_invitePreview",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalInvitePreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/convite/aceitar": {
+      "post": {
+        "operationId": "PortalController_aceitar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalAcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/login": {
+      "post": {
+        "operationId": "PortalController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/refresh": {
+      "post": {
+        "operationId": "PortalController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalRefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/logout": {
+      "post": {
+        "operationId": "PortalController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalLogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ]
+      }
+    },
+    "/api/portal/me": {
+      "get": {
+        "operationId": "PortalController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalMeDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/pets": {
+      "get": {
+        "operationId": "PortalController_pets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalPetDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/pets/{id}": {
+      "get": {
+        "operationId": "PortalController_pet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPetDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/agendamentos": {
+      "get": {
+        "operationId": "PortalController_agendamentos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalAgendamentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/faturas": {
+      "get": {
+        "operationId": "PortalController_faturas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalFaturaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/portal/faturas/{id}": {
+      "get": {
+        "operationId": "PortalController_fatura",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalFaturaDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal": {
+      "get": {
+        "operationId": "PortalAdminController_status",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalAcessoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal/convite": {
+      "post": {
+        "operationId": "PortalAdminController_convite",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalConviteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{responsavelId}/portal/revogar": {
+      "post": {
+        "operationId": "PortalAdminController_revogar",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "portal-admin"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/config": {
+      "get": {
+        "operationId": "FiscalController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "FiscalController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFiscalConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas": {
+      "get": {
+        "operationId": "FiscalController_listNotas",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "rascunho",
+                "processando",
+                "emitida",
+                "rejeitada",
+                "cancelada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotaFiscalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/faturas/{faturaId}/nota": {
+      "post": {
+        "operationId": "FiscalController_criar",
+        "parameters": [
+          {
+            "name": "faturaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/emitir": {
+      "post": {
+        "operationId": "FiscalController_emitir",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/fiscal/notas/{id}/cancelar": {
+      "post": {
+        "operationId": "FiscalController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarNotaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotaFiscalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "fiscal"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/public/clinica/{slug}": {
+      "get": {
+        "operationId": "PublicSiteController_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSiteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/public/clinica/{slug}/agendamento": {
+      "post": {
+        "operationId": "PublicSiteController_solicitar",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSolicitacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public-site"
+        ]
+      }
+    },
+    "/api/site/config": {
+      "get": {
+        "operationId": "SiteController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "SiteController_updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiteConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo/sign-upload": {
+      "post": {
+        "operationId": "SiteController_signLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/config/logo": {
+      "post": {
+        "operationId": "SiteController_confirmLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes": {
+      "get": {
+        "operationId": "SiteController_listSolicitacoes",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "nova",
+                "confirmada",
+                "recusada"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SolicitacaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/confirmar": {
+      "post": {
+        "operationId": "SiteController_confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/site/solicitacoes/{id}/recusar": {
+      "post": {
+        "operationId": "SiteController_recusar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -1552,7 +3931,7 @@
           "code": {
             "type": "string",
             "example": "123456",
-            "description": "Código TOTP do autenticador"
+            "description": "Código TOTP ou recovery code"
           }
         },
         "required": [
@@ -1560,15 +3939,55 @@
           "code"
         ]
       },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token da sessão"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token da sessão a encerrar"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "OkResponseDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
       "MfaStatusDto": {
         "type": "object",
         "properties": {
           "enabled": {
             "type": "boolean"
+          },
+          "recoveryCodesRemaining": {
+            "type": "number",
+            "description": "Quantos recovery codes de uso único ainda restam"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "recoveryCodesRemaining"
         ]
       },
       "MfaSetupResponseDto": {
@@ -1600,15 +4019,23 @@
           "code"
         ]
       },
-      "OkResponseDto": {
+      "MfaEnableResponseDto": {
         "type": "object",
         "properties": {
           "ok": {
             "type": "boolean"
+          },
+          "recoveryCodes": {
+            "description": "Recovery codes de uso único — exibidos UMA vez, guarde-os",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
-          "ok"
+          "ok",
+          "recoveryCodes"
         ]
       },
       "AuthMeDto": {
@@ -2094,6 +4521,216 @@
           "itens"
         ]
       },
+      "FaturaResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "recebidoCentavos": {
+            "type": "number",
+            "description": "Total já recebido (soma dos recebimentos)"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "recebidoCentavos",
+          "itens",
+          "criadaEm"
+        ]
+      },
+      "ReceberDto": {
+        "type": "object",
+        "properties": {
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor recebido em centavos (≤ saldo em aberto)"
+          },
+          "formaId": {
+            "type": "string",
+            "description": "Forma de recebimento"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "valorCentavos"
+        ]
+      },
+      "ReceberResultDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "recebidoCentavos": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ok",
+          "status",
+          "recebidoCentavos",
+          "saldoCentavos"
+        ]
+      },
+      "RecebimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "formaId": {
+            "type": "string",
+            "nullable": true
+          },
+          "formaNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "valorCentavos",
+          "formaId",
+          "formaNome",
+          "observacao",
+          "criadoEm"
+        ]
+      },
+      "SaldoClienteDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "devedorCentavos": {
+            "type": "number",
+            "description": "Saldo devedor em aberto (centavos)"
+          },
+          "faturasAbertas": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "responsavelId",
+          "responsavelNome",
+          "devedorCentavos",
+          "faturasAbertas"
+        ]
+      },
+      "FormaRecebimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "taxaBps": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo",
+          "taxaBps",
+          "ativo"
+        ]
+      },
+      "CreateFormaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Pix"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "dinheiro",
+              "pix",
+              "cartao_credito",
+              "cartao_debito",
+              "transferencia",
+              "outro"
+            ]
+          },
+          "taxaBps": {
+            "type": "number",
+            "description": "Taxa em basis points (2,5% = 250)",
+            "example": 0
+          }
+        },
+        "required": [
+          "nome",
+          "tipo"
+        ]
+      },
+      "UpdateFormaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "taxaBps": {
+            "type": "number"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
       "AgendamentoDto": {
         "type": "object",
         "properties": {
@@ -2110,6 +4747,21 @@
             "type": "string"
           },
           "status": {
+            "type": "string"
+          },
+          "tipoAtendimentoId": {
+            "type": "string"
+          },
+          "tipoNome": {
+            "type": "string"
+          },
+          "cor": {
+            "type": "string"
+          },
+          "profissionalId": {
+            "type": "string"
+          },
+          "profissionalNome": {
             "type": "string"
           },
           "animalId": {
@@ -2145,7 +4797,15 @@
           "fim": {
             "type": "string",
             "example": "2026-07-01T14:30:00Z",
-            "description": "ISO 8601"
+            "description": "ISO 8601. Opcional com tipoAtendimentoId (usa a duração do tipo)."
+          },
+          "tipoAtendimentoId": {
+            "type": "string",
+            "description": "Tipo de atendimento (define duração/cor)"
+          },
+          "profissionalId": {
+            "type": "string",
+            "description": "Profissional responsável (membro do tenant)"
           },
           "animalId": {
             "type": "string"
@@ -2159,8 +4819,113 @@
         },
         "required": [
           "titulo",
-          "inicio",
-          "fim"
+          "inicio"
+        ]
+      },
+      "ProfissionalDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "role"
+        ]
+      },
+      "TipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "duracaoMinutos": {
+            "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "duracaoMinutos",
+          "cor",
+          "ativo"
+        ]
+      },
+      "CreateTipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Consulta"
+          },
+          "duracaoMinutos": {
+            "type": "number",
+            "example": 30,
+            "description": "Duração padrão em minutos"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff",
+            "description": "Cor do evento na agenda (hex)"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "UpdateTipoAtendimentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Consulta"
+          },
+          "duracaoMinutos": {
+            "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "agendado",
+              "confirmado",
+              "concluido",
+              "faltou",
+              "cancelado"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "ItemCatalogoDto": {
@@ -2257,41 +5022,6 @@
             "type": "boolean"
           }
         }
-      },
-      "FaturaResumoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "responsavelId": {
-            "type": "string"
-          },
-          "responsavelNome": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "totalCentavos": {
-            "type": "number"
-          },
-          "itens": {
-            "type": "number"
-          },
-          "criadaEm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "responsavelId",
-          "responsavelNome",
-          "status",
-          "totalCentavos",
-          "itens",
-          "criadaEm"
-        ]
       },
       "SaldoItemDto": {
         "type": "object",
@@ -2453,6 +5183,1497 @@
         "required": [
           "estoqueMinimo"
         ]
+      },
+      "InternacaoResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "box": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "entradaEm": {
+            "type": "string"
+          },
+          "altaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendentes": {
+            "type": "number",
+            "description": "Prescrições ainda não executadas"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "motivo",
+          "box",
+          "status",
+          "entradaEm",
+          "altaEm",
+          "pendentes"
+        ]
+      },
+      "AdmitirDto": {
+        "type": "object",
+        "properties": {
+          "animalId": {
+            "type": "string",
+            "description": "Animal a internar"
+          },
+          "motivo": {
+            "type": "string",
+            "example": "Pós-operatório de castração"
+          },
+          "box": {
+            "type": "string",
+            "example": "Box 2"
+          }
+        },
+        "required": [
+          "animalId",
+          "motivo"
+        ]
+      },
+      "ExecucaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "executadaEm": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos",
+          "executadaEm"
+        ]
+      },
+      "InternacaoDetalheDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "box": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "entradaEm": {
+            "type": "string"
+          },
+          "altaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendentes": {
+            "type": "number",
+            "description": "Prescrições ainda não executadas"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "execucoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExecucaoDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "motivo",
+          "box",
+          "status",
+          "entradaEm",
+          "altaEm",
+          "pendentes",
+          "observacoes",
+          "execucoes"
+        ]
+      },
+      "PrescreverDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (medicamento/procedimento)"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)",
+            "example": "Dipirona 25mg/kg IV"
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Quantidade (baixa de estoque por execução)",
+            "example": 1
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor unitário em centavos; default = preço do catálogo"
+          }
+        }
+      },
+      "ExecutarResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "executadaEm": {
+            "type": "string",
+            "nullable": true
+          },
+          "estoqueBaixado": {
+            "type": "boolean",
+            "description": "false quando não havia saldo em estoque (execução registrada mesmo assim)"
+          },
+          "faturado": {
+            "type": "boolean",
+            "description": "true quando o valor foi lançado na fatura aberta"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos",
+          "executadaEm",
+          "estoqueBaixado",
+          "faturado"
+        ]
+      },
+      "AltaDto": {
+        "type": "object",
+        "properties": {
+          "observacoes": {
+            "type": "string",
+            "example": "Alta com retorno em 7 dias"
+          }
+        }
+      },
+      "OrcamentoResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "observacoes",
+          "criadoEm"
+        ]
+      },
+      "CreateOrcamentoDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string",
+            "description": "Responsável (cliente) do orçamento"
+          },
+          "observacoes": {
+            "type": "string",
+            "example": "Pacote pós-cirúrgico"
+          }
+        },
+        "required": [
+          "responsavelId"
+        ]
+      },
+      "OrcamentoItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "itemId",
+          "descricao",
+          "quantidade",
+          "valorCentavos"
+        ]
+      },
+      "OrcamentoDetalheDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "type": "number"
+          },
+          "observacoes": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          },
+          "linhas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrcamentoItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "responsavelId",
+          "responsavelNome",
+          "status",
+          "totalCentavos",
+          "itens",
+          "observacoes",
+          "criadoEm",
+          "linhas"
+        ]
+      },
+      "AddOrcamentoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (herda nome/preço)"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 1
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor unitário em centavos; default = preço do catálogo"
+          }
+        }
+      },
+      "UpdateOrcamentoStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "aprovado",
+              "recusado"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ConverterResultDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "totalCentavos": {
+            "type": "number",
+            "description": "Total lançado na fatura aberta (centavos)"
+          }
+        },
+        "required": [
+          "ok",
+          "totalCentavos"
+        ]
+      },
+      "ApuracaoColaboradorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "baseCentavos": {
+            "type": "number",
+            "description": "Base comissionável no período (centavos)"
+          },
+          "comissaoCentavos": {
+            "type": "number",
+            "description": "Comissão apurada no período (centavos)"
+          },
+          "lancamentos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "baseCentavos",
+          "comissaoCentavos",
+          "lancamentos"
+        ]
+      },
+      "ApuracaoLinhaDto": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "percentBps": {
+            "type": "number"
+          },
+          "comissaoCentavos": {
+            "type": "number"
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "descricao",
+          "valorCentavos",
+          "percentBps",
+          "comissaoCentavos",
+          "criadoEm"
+        ]
+      },
+      "RegraDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "userNome": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentBps": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "userNome",
+          "itemId",
+          "itemNome",
+          "percentBps"
+        ]
+      },
+      "CreateRegraDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Colaborador (membro do tenant)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo; ausente = regra geral do colaborador"
+          },
+          "percentBps": {
+            "type": "number",
+            "description": "Percentual em basis points (10% = 1000)",
+            "example": 1000
+          }
+        },
+        "required": [
+          "userId",
+          "percentBps"
+        ]
+      },
+      "ProximoAgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "inicio": {
+            "type": "string"
+          },
+          "profissionalNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "inicio",
+          "profissionalNome",
+          "cor"
+        ]
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "agendamentosHoje": {
+            "type": "number"
+          },
+          "minhaAgendaHoje": {
+            "type": "number"
+          },
+          "proximos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProximoAgendamentoDto"
+            }
+          },
+          "internados": {
+            "type": "number"
+          },
+          "execucoesPendentes": {
+            "type": "number"
+          },
+          "faturasAbertas": {
+            "type": "number"
+          },
+          "faturasAbertasCentavos": {
+            "type": "number"
+          },
+          "receitaMesCentavos": {
+            "type": "number"
+          },
+          "estoqueAbaixoMinimo": {
+            "type": "number"
+          },
+          "orcamentosAbertos": {
+            "type": "number"
+          },
+          "clientes": {
+            "type": "number"
+          },
+          "minhasComissoesMesCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "agendamentosHoje",
+          "minhaAgendaHoje",
+          "proximos",
+          "internados",
+          "execucoesPendentes",
+          "faturasAbertas",
+          "faturasAbertasCentavos",
+          "receitaMesCentavos",
+          "estoqueAbaixoMinimo",
+          "orcamentosAbertos",
+          "clientes",
+          "minhasComissoesMesCentavos"
+        ]
+      },
+      "ProdutividadeDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "lancamentos": {
+            "type": "number",
+            "description": "Lançamentos faturados atribuídos ao colaborador"
+          },
+          "receitaCentavos": {
+            "type": "number",
+            "description": "Receita gerada (centavos)"
+          },
+          "agendamentosConcluidos": {
+            "type": "number",
+            "description": "Agendamentos concluídos no período"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "lancamentos",
+          "receitaCentavos",
+          "agendamentosConcluidos"
+        ]
+      },
+      "PortalInvitePreviewDto": {
+        "type": "object",
+        "properties": {
+          "responsavelNome": {
+            "type": "string"
+          },
+          "clinicaNome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "responsavelNome",
+          "clinicaNome",
+          "email"
+        ]
+      },
+      "PortalAcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token do link de convite"
+          },
+          "password": {
+            "type": "string",
+            "example": "senha-forte-aqui",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "PortalTokensDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant do tutor — o front guarda p/ o próximo login"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tenantId"
+        ]
+      },
+      "PortalLoginDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant (clínica) do portal — o front guarda do convite"
+          },
+          "email": {
+            "type": "string",
+            "example": "tutor@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "senha-forte-aqui"
+          }
+        },
+        "required": [
+          "tenantId",
+          "email",
+          "password"
+        ]
+      },
+      "PortalRefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PortalLogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PortalMeDto": {
+        "type": "object",
+        "properties": {
+          "responsavelId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "clinicaNome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "responsavelId",
+          "nome",
+          "email",
+          "clinicaNome"
+        ]
+      },
+      "PortalPetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string",
+            "nullable": true
+          },
+          "raca": {
+            "type": "string",
+            "nullable": true
+          },
+          "sexo": {
+            "type": "string",
+            "nullable": true
+          },
+          "castrado": {
+            "type": "boolean"
+          },
+          "nascimento": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto (curta validade)"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "especie",
+          "raca",
+          "sexo",
+          "castrado",
+          "nascimento",
+          "status",
+          "fotoUrl"
+        ]
+      },
+      "PortalVacinaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "data"
+        ]
+      },
+      "PortalHistoricoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "description": "atendimento | vacina | exame | receita | internacao | peso"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "descricao",
+          "data"
+        ]
+      },
+      "PortalPetDetalheDto": {
+        "type": "object",
+        "properties": {
+          "pet": {
+            "$ref": "#/components/schemas/PortalPetDto"
+          },
+          "vacinas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalVacinaDto"
+            }
+          },
+          "historico": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalHistoricoDto"
+            }
+          }
+        },
+        "required": [
+          "pet",
+          "vacinas",
+          "historico"
+        ]
+      },
+      "PortalAgendamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "profissionalNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "inicio": {
+            "type": "string"
+          },
+          "fim": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "petNome",
+          "tipoNome",
+          "profissionalNome",
+          "inicio",
+          "fim",
+          "status"
+        ]
+      },
+      "PortalFaturaResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalCentavos": {
+            "type": "number"
+          },
+          "recebidoCentavos": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number"
+          },
+          "criadaEm": {
+            "type": "string"
+          },
+          "notaNumero": {
+            "type": "string",
+            "nullable": true,
+            "description": "Número da NFS-e, se emitida"
+          },
+          "notaStatus": {
+            "type": "string",
+            "nullable": true,
+            "description": "Status fiscal da fatura"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "totalCentavos",
+          "recebidoCentavos",
+          "saldoCentavos",
+          "criadaEm",
+          "notaNumero",
+          "notaStatus"
+        ]
+      },
+      "PortalFaturaItemDto": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "descricao",
+          "valorCentavos"
+        ]
+      },
+      "PortalFaturaDetalheDto": {
+        "type": "object",
+        "properties": {
+          "fatura": {
+            "$ref": "#/components/schemas/PortalFaturaResumoDto"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalFaturaItemDto"
+            }
+          }
+        },
+        "required": [
+          "fatura",
+          "itens"
+        ]
+      },
+      "PortalAcessoDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "sem-acesso | invited | active | disabled"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "inviteExpiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "email",
+          "inviteExpiresAt",
+          "lastLoginAt"
+        ]
+      },
+      "PortalConviteResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token do convite — a clínica envia o link ao tutor"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "tenantId",
+          "expiresAt"
+        ]
+      },
+      "FiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string"
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string"
+          },
+          "ambiente": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "regimeTributario",
+          "serieNfse",
+          "proximoNumero",
+          "provedor",
+          "ambiente",
+          "ativo"
+        ]
+      },
+      "UpdateFiscalConfigDto": {
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          },
+          "razaoSocial": {
+            "type": "string"
+          },
+          "inscricaoMunicipal": {
+            "type": "string"
+          },
+          "regimeTributario": {
+            "type": "string",
+            "enum": [
+              "simples",
+              "presumido",
+              "real"
+            ]
+          },
+          "serieNfse": {
+            "type": "string"
+          },
+          "proximoNumero": {
+            "type": "number"
+          },
+          "provedor": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "focus",
+              "nfe_io",
+              "plugnotas"
+            ]
+          },
+          "ambiente": {
+            "type": "string",
+            "enum": [
+              "homologacao",
+              "producao"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NotaFiscalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "faturaId": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "serie": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "emitidaEm": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "faturaId",
+          "responsavelId",
+          "tipo",
+          "status",
+          "valorCentavos",
+          "criadaEm"
+        ]
+      },
+      "CriarNotaDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "nfse",
+              "nfe"
+            ],
+            "default": "nfse"
+          }
+        }
+      },
+      "CancelarNotaDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Emitida em duplicidade"
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "PublicSiteDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "servicos"
+        ]
+      },
+      "CreateSolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria Silva"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "+55 11 99999-0000"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string",
+            "description": "Preferência de dia/horário (texto livre)"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string",
+            "description": "Como nos conheceu?"
+          },
+          "website": {
+            "type": "string",
+            "description": "Deixe em branco (anti-spam)"
+          }
+        },
+        "required": [
+          "nome",
+          "telefone"
+        ]
+      },
+      "SiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "publicado"
+        ]
+      },
+      "UpdateSiteConfigDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Slug da URL pública (a-z, 0-9, hífen)"
+          },
+          "publicado": {
+            "type": "boolean"
+          },
+          "nomeExibicao": {
+            "type": "string"
+          },
+          "sobre": {
+            "type": "string"
+          },
+          "servicos": {
+            "type": "string",
+            "description": "Serviços em destaque, um por linha"
+          },
+          "endereco": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "horario": {
+            "type": "string"
+          },
+          "corPrimaria": {
+            "type": "string",
+            "description": "Cor primária em hex (#RRGGBB)"
+          }
+        }
+      },
+      "SignLogoDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/png"
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "ConfirmLogoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "SolicitacaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "petNome": {
+            "type": "string"
+          },
+          "servicoDesejado": {
+            "type": "string"
+          },
+          "preferencia": {
+            "type": "string"
+          },
+          "mensagem": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "observacaoInterna": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "telefone",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "TriagemDto": {
+        "type": "object",
+        "properties": {
+          "observacao": {
+            "type": "string",
+            "description": "Observação interna (opcional)"
+          }
+        }
       }
     }
   }

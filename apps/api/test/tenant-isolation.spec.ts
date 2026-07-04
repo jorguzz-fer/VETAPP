@@ -57,6 +57,18 @@ beforeAll(async () => {
     (${TENANT_A}, ${ITEM_A}, 'saida', -3),
     (${TENANT_B}, ${ITEM_B}, 'entrada', 5)`;
 
+  // Financeiro fase 2: fatura + recebimento parcial só no tenant A.
+  await adminSql`INSERT INTO faturas (tenant_id, responsavel_id, total_centavos)
+    SELECT ${TENANT_A}, id, 10000 FROM responsaveis WHERE tenant_id = ${TENANT_A}`;
+  await adminSql`INSERT INTO recebimentos (tenant_id, fatura_id, valor_centavos)
+    SELECT ${TENANT_A}, id, 4000 FROM faturas WHERE tenant_id = ${TENANT_A}`;
+
+  // Internação: animal + internação ativa só no tenant A.
+  await adminSql`INSERT INTO animais (tenant_id, responsavel_id, nome)
+    SELECT ${TENANT_A}, id, 'Rex' FROM responsaveis WHERE tenant_id = ${TENANT_A}`;
+  await adminSql`INSERT INTO internacoes (tenant_id, animal_id, motivo)
+    SELECT ${TENANT_A}, id, 'Observação pós-cirúrgica' FROM animais WHERE tenant_id = ${TENANT_A}`;
+
   // Conexão como app_role (sujeita ao RLS).
   appSql = postgres({
     host: container.getHost(),
@@ -101,6 +113,35 @@ describe('Isolamento de tenant (RLS)', () => {
         await tx`INSERT INTO responsaveis (tenant_id, nome) VALUES (${TENANT_B}, 'Invasor')`;
       }),
     ).rejects.toThrow();
+  });
+
+  it('internações do tenant A são invisíveis para o tenant B', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const doB = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_B}, true)`;
+      return tx`SELECT 1 FROM internacoes`;
+    });
+    expect(doB).toHaveLength(0);
+    const doA = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT status FROM internacoes`;
+    });
+    expect(doA).toHaveLength(1);
+    expect(doA[0].status).toBe('internado');
+  });
+
+  it('recebimentos do tenant A são invisíveis para o tenant B', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    const doB = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_B}, true)`;
+      return tx`SELECT coalesce(sum(valor_centavos), 0)::int AS total FROM recebimentos`;
+    });
+    expect(doB[0].total).toBe(0);
+    const doA = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT coalesce(sum(valor_centavos), 0)::int AS total FROM recebimentos`;
+    });
+    expect(doA[0].total).toBe(4000);
   });
 
   it('saldo de estoque só soma movimentos do próprio tenant', async (ctx) => {

@@ -64,6 +64,69 @@
       "when": 1719591200000,
       "tag": "0008_estoque",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1719591300000,
+      "tag": "0009_internacao",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1719591400000,
+      "tag": "0010_tipos_atendimento",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1719591500000,
+      "tag": "0011_orcamentos",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1719591600000,
+      "tag": "0012_comissoes",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1719591700000,
+      "tag": "0013_recebimentos",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1719591800000,
+      "tag": "0014_auth_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1719591900000,
+      "tag": "0015_portal_tutor",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1719592000000,
+      "tag": "0016_fiscal",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1719592100000,
+      "tag": "0017_site",
+      "breakpoints": true
     }
   ]
 }

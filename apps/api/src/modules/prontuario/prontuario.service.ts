@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, sql } from 'drizzle-orm';
-import { DatabaseService, type Database } from '../../database/database.service';
+import { and, desc, eq } from 'drizzle-orm';
+import { DatabaseService } from '../../database/database.service';
 import { animais, faturaItens, faturas, prontuarioEventos } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
+import { FaturamentoService } from '../financeiro/faturamento.service';
 import type {
   CreateEventoDto,
   EventoDto,
@@ -17,6 +18,7 @@ export class ProntuarioService {
   constructor(
     private readonly database: DatabaseService,
     private readonly storage: StorageService,
+    private readonly faturamento: FaturamentoService,
   ) {}
 
   async listEventos(tenantId: string, animalId: string): Promise<EventoDto[]> {
@@ -45,7 +47,12 @@ export class ProntuarioService {
    * Registra um evento clínico e, se tiver valor e `faturar`, lança automaticamente
    * na fatura ABERTA do responsável (doc 04 §3). Anexo opcional (key já enviada).
    */
-  async createEvento(tenantId: string, animalId: string, dto: CreateEventoDto): Promise<EventoDto> {
+  async createEvento(
+    tenantId: string,
+    animalId: string,
+    dto: CreateEventoDto,
+    autorUserId?: string,
+  ): Promise<EventoDto> {
     if (dto.anexoKey && !dto.anexoKey.startsWith(`${tenantId}/animais/${animalId}/`)) {
       throw new BadRequestException('Chave de anexo inválida para este animal');
     }
@@ -67,18 +74,13 @@ export class ProntuarioService {
 
       const deveFaturar = (dto.valorCentavos ?? 0) > 0 && dto.faturar !== false;
       if (deveFaturar) {
-        const fatura = await this.faturaAbertaOuNova(tx, tenantId, animal.responsavelId);
-        await tx.insert(faturaItens).values({
-          tenantId,
-          faturaId: fatura.id,
-          eventoId: ev.id,
+        await this.faturamento.lancar(tx, tenantId, animal.responsavelId, {
           descricao: `${dto.tipo}: ${dto.descricao}`,
           valorCentavos: dto.valorCentavos!,
+          eventoId: ev.id,
+          // Quem registra o atendimento é comissionado (doc 05 §5).
+          profissionalId: autorUserId ?? null,
         });
-        await tx
-          .update(faturas)
-          .set({ totalCentavos: sql`${faturas.totalCentavos} + ${dto.valorCentavos!}`, updatedAt: new Date() })
-          .where(eq(faturas.id, fatura.id));
       }
       return ev;
     });
@@ -124,12 +126,4 @@ export class ProntuarioService {
     };
   }
 
-  private async faturaAbertaOuNova(tx: Database, tenantId: string, responsavelId: string) {
-    const existente = await tx.query.faturas.findFirst({
-      where: and(eq(faturas.responsavelId, responsavelId), eq(faturas.status, 'aberta')),
-    });
-    if (existente) return existente;
-    const [nova] = await tx.insert(faturas).values({ tenantId, responsavelId }).returning();
-    return nova;
-  }
 }

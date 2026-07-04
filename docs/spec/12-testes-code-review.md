@@ -48,6 +48,13 @@ Estes **não são opcionais** — refletem riscos do domínio:
    (doc 11 §6).
 6. **Migrations** — sobem e descem (reversíveis) numa base limpa; seed padrão de
    tenant funciona.
+7. **Contrato dos DTOs de entrada** — lição do primeiro deploy: o `ValidationPipe`
+   global usa `whitelist: true`, que **remove** do body toda propriedade sem
+   decorator do **class-validator**. DTO de `@Body` só com `@ApiProperty` (swagger)
+   chega **vazio** no service → 500 em produção (register/login foi o caso real).
+   Regra: **todo DTO de entrada tem validadores**; e um **smoke e2e de
+   register→login** contra a API real teria pego isso antes do deploy — está
+   promovido a teste obrigatório (cobre também o item 4).
 
 ## 4. Dados de teste
 - **Fixtures/factories** por domínio; **seed por tenant** reutilizando o seed de

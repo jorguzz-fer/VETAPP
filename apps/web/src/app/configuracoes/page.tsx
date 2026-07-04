@@ -11,8 +11,12 @@ const inputCls =
 
 export default function ConfiguracoesPage() {
   const [mfaEnabled, setMfaEnabled] = useState<boolean | null>(null);
+  const [recoveryRemaining, setRecoveryRemaining] = useState<number>(0);
   const [setupData, setSetupData] = useState<{ secret: string; otpauthUrl: string } | null>(null);
   const [code, setCode] = useState('');
+  const [regenCode, setRegenCode] = useState('');
+  // Códigos exibidos UMA vez após ativar/regerar — o servidor só guarda o hash.
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const qrRef = useRef<HTMLCanvasElement>(null);
@@ -20,6 +24,7 @@ export default function ConfiguracoesPage() {
   const loadStatus = useCallback(async () => {
     const { data } = await api.GET('/api/auth/mfa/status');
     setMfaEnabled(data?.enabled ?? false);
+    setRecoveryRemaining(data?.recoveryCodesRemaining ?? 0);
   }, []);
 
   useEffect(() => {
@@ -49,15 +54,16 @@ export default function ConfiguracoesPage() {
     e.preventDefault();
     setMsg(null);
     setBusy(true);
-    const { error } = await api.POST('/api/auth/mfa/enable', { body: { code } });
+    const { data, error } = await api.POST('/api/auth/mfa/enable', { body: { code } });
     setBusy(false);
-    if (error) {
+    if (error || !data) {
       setMsg({ kind: 'err', text: 'Código inválido — confira o app autenticador.' });
       return;
     }
     setSetupData(null);
     setCode('');
-    setMsg({ kind: 'ok', text: 'MFA ativado! No próximo login será pedido o código.' });
+    setRecoveryCodes(data.recoveryCodes);
+    setMsg({ kind: 'ok', text: 'MFA ativado! Guarde os recovery codes abaixo.' });
     void loadStatus();
   }
 
@@ -72,7 +78,24 @@ export default function ConfiguracoesPage() {
       return;
     }
     setCode('');
+    setRecoveryCodes(null);
     setMsg({ kind: 'ok', text: 'MFA desativado.' });
+    void loadStatus();
+  }
+
+  async function onRegenerate(e: FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    setBusy(true);
+    const { data, error } = await api.POST('/api/auth/mfa/recovery-codes', { body: { code: regenCode } });
+    setBusy(false);
+    if (error || !data) {
+      setMsg({ kind: 'err', text: 'Código inválido — use o app autenticador.' });
+      return;
+    }
+    setRegenCode('');
+    setRecoveryCodes(data.recoveryCodes);
+    setMsg({ kind: 'ok', text: 'Novos recovery codes gerados. Os anteriores foram invalidados.' });
     void loadStatus();
   }
 
@@ -103,6 +126,36 @@ export default function ConfiguracoesPage() {
 
         {msg && (
           <p className={`mt-3 text-sm ${msg.kind === 'ok' ? 'text-green-600' : 'text-red-500'}`}>{msg.text}</p>
+        )}
+
+        {recoveryCodes && (
+          <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 p-4">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Recovery codes — guarde-os agora, não serão exibidos de novo.
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mb-3">
+              Cada código funciona uma única vez, no lugar do app autenticador.
+            </p>
+            <div className="grid grid-cols-2 gap-2 font-mono text-sm text-black dark:text-white">
+              {recoveryCodes.map((c) => (
+                <code key={c} className="bg-white dark:bg-[#0c1427] rounded px-2 py-1 text-center">
+                  {c}
+                </code>
+              ))}
+            </div>
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => void navigator.clipboard?.writeText(recoveryCodes.join('\n'))}
+              >
+                <i className="ri-file-copy-line"></i> Copiar todos
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setRecoveryCodes(null)}>
+                Já guardei
+              </Button>
+            </div>
+          </div>
         )}
 
         {mfaEnabled === false && !setupData && (
@@ -145,23 +198,50 @@ export default function ConfiguracoesPage() {
         )}
 
         {mfaEnabled === true && (
-          <form onSubmit={onDisable} className="mt-4 flex items-end gap-3">
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-gray-600 dark:text-gray-300">Código atual para desativar</span>
-              <input
-                required
-                inputMode="numeric"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className={`${inputCls} max-w-[200px] text-center tracking-[0.4em]`}
-                placeholder="••••••"
-              />
-            </label>
-            <Button type="submit" variant="ghost" disabled={busy}>
-              Desativar MFA
-            </Button>
-          </form>
+          <div className="mt-5 flex flex-col gap-5">
+            <p className="text-sm text-gray-500">
+              Recovery codes disponíveis:{' '}
+              <span className={recoveryRemaining <= 2 ? 'text-amber-600 font-medium' : 'text-black dark:text-white'}>
+                {recoveryRemaining}
+              </span>
+            </p>
+
+            <form onSubmit={onRegenerate} className="flex items-end gap-3">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Regerar recovery codes (código atual)</span>
+                <input
+                  required
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={regenCode}
+                  onChange={(e) => setRegenCode(e.target.value)}
+                  className={`${inputCls} max-w-[200px] text-center tracking-[0.4em]`}
+                  placeholder="••••••"
+                />
+              </label>
+              <Button type="submit" variant="ghost" disabled={busy}>
+                Gerar novos códigos
+              </Button>
+            </form>
+
+            <form onSubmit={onDisable} className="flex items-end gap-3">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Código atual para desativar</span>
+                <input
+                  required
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className={`${inputCls} max-w-[200px] text-center tracking-[0.4em]`}
+                  placeholder="••••••"
+                />
+              </label>
+              <Button type="submit" variant="ghost" disabled={busy}>
+                Desativar MFA
+              </Button>
+            </form>
+          </div>
         )}
       </Card>
     </div>
