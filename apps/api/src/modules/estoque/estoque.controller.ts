@@ -8,6 +8,7 @@ import {
   MovimentoResultDto,
   SaldoItemDto,
   SetMinimoDto,
+  VencimentoDto,
 } from './estoque.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
@@ -28,6 +29,14 @@ export class EstoqueController {
     @Query('apenasBaixo') apenasBaixo?: string,
   ): Promise<SaldoItemDto[]> {
     return this.estoque.listSaldos(req.auth!.tenantId, search, apenasBaixo === 'true');
+  }
+
+  // Vencimentos próximos (lotes a vencer). Rota estática ANTES da param `:itemId`.
+  @Get('vencimentos')
+  @ApiQuery({ name: 'dias', required: false, type: Number, description: 'Janela em dias (default 90)' })
+  @ApiOkResponse({ type: [VencimentoDto] })
+  vencimentos(@Req() req: Request, @Query('dias') dias?: string): Promise<VencimentoDto[]> {
+    return this.estoque.listVencimentos(req.auth!.tenantId, dias ? Number(dias) : undefined);
   }
 
   @Get(':itemId/movimentos')

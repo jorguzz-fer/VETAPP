@@ -130,6 +130,10 @@ Pendências conhecidas:
   registro clínico se faltar saldo — sinaliza `estoqueBaixado:false`). `item_id`
   também vai ao `fatura_itens` (comissão). UI: picker de catálogo + quantidade na
   ficha do animal.
+- **Estoque lote/validade feito** (doc 13 §2): a entrada registra `lote` e `validade`
+  (migração 0029, colunas em `estoque_movimentos`). `GET /api/estoque/vencimentos?dias=90`
+  lista lotes a vencer (dias restantes; vencidos sinalizados). UI `/estoque`: campos na
+  entrada, histórico e card "Vencimentos próximos". Fase 3: saldo por lote (FIFO).
 - **MFA obrigatório por papel feito** (doc 02 §2.2): papéis sensíveis (admin/gestor/
   financeiro) não recebem sessão sem 2º fator. Login devolve `mfaSetupRequired` +
   `mfaSetupToken` (escopo `mfa_setup`, 15 min) → `POST /auth/mfa/forced-setup` +

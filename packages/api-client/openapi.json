@@ -2082,6 +2082,45 @@
         ]
       }
     },
+    "/api/estoque/vencimentos": {
+      "get": {
+        "operationId": "EstoqueController_vencimentos",
+        "parameters": [
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "description": "Janela em dias (default 90)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VencimentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/estoque/{itemId}/movimentos": {
       "get": {
         "operationId": "EstoqueController_movimentos",
@@ -6578,6 +6617,44 @@
           "abaixoDoMinimo"
         ]
       },
+      "VencimentoDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Quantidade da entrada com este lote"
+          },
+          "diasParaVencer": {
+            "type": "number",
+            "description": "Dias até vencer (negativo = já vencido)"
+          }
+        },
+        "required": [
+          "itemId",
+          "codigo",
+          "nome",
+          "lote",
+          "validade",
+          "quantidade",
+          "diasParaVencer"
+        ]
+      },
       "MovimentoDto": {
         "type": "object",
         "properties": {
@@ -6597,6 +6674,14 @@
             "type": "number",
             "nullable": true
           },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string",
+            "nullable": true
+          },
           "motivo": {
             "type": "string",
             "nullable": true
@@ -6611,6 +6696,8 @@
           "tipo",
           "quantidade",
           "custoCentavos",
+          "lote",
+          "validade",
           "motivo",
           "criadoEm"
         ]
@@ -6638,6 +6725,15 @@
           "custoCentavos": {
             "type": "number",
             "description": "Custo unitário em centavos (entrada)"
+          },
+          "lote": {
+            "type": "string",
+            "description": "Lote (informado na entrada)"
+          },
+          "validade": {
+            "type": "string",
+            "description": "Validade do lote (YYYY-MM-DD, entrada)",
+            "example": "2027-01-31"
           },
           "motivo": {
             "type": "string",
@@ -6669,6 +6765,14 @@
             "type": "number",
             "nullable": true
           },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string",
+            "nullable": true
+          },
           "motivo": {
             "type": "string",
             "nullable": true
@@ -6687,6 +6791,8 @@
           "tipo",
           "quantidade",
           "custoCentavos",
+          "lote",
+          "validade",
           "motivo",
           "criadoEm",
           "saldoAtual"

@@ -692,6 +692,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/estoque/vencimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EstoqueController_vencimentos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/estoque/{itemId}/movimentos": {
         parameters: {
             query?: never;
@@ -2225,12 +2241,25 @@ export interface components {
             estoqueMinimo: number;
             abaixoDoMinimo: boolean;
         };
+        VencimentoDto: {
+            itemId: string;
+            codigo: string;
+            nome: string;
+            lote: string | null;
+            validade: string;
+            /** @description Quantidade da entrada com este lote */
+            quantidade: number;
+            /** @description Dias até vencer (negativo = já vencido) */
+            diasParaVencer: number;
+        };
         MovimentoDto: {
             id: string;
             itemId: string;
             tipo: string;
             quantidade: number;
             custoCentavos: number | null;
+            lote: string | null;
+            validade: string | null;
             motivo: string | null;
             criadoEm: string;
         };
@@ -2246,6 +2275,13 @@ export interface components {
             quantidade: number;
             /** @description Custo unitário em centavos (entrada) */
             custoCentavos?: number;
+            /** @description Lote (informado na entrada) */
+            lote?: string;
+            /**
+             * @description Validade do lote (YYYY-MM-DD, entrada)
+             * @example 2027-01-31
+             */
+            validade?: string;
             /** @description Observação (NF, fornecedor, motivo do ajuste) */
             motivo?: string;
         };
@@ -2255,6 +2291,8 @@ export interface components {
             tipo: string;
             quantidade: number;
             custoCentavos: number | null;
+            lote: string | null;
+            validade: string | null;
             motivo: string | null;
             criadoEm: string;
             /** @description Saldo do item após a movimentação */
@@ -4106,6 +4144,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaldoItemDto"][];
+                };
+            };
+        };
+    };
+    EstoqueController_vencimentos: {
+        parameters: {
+            query?: {
+                /** @description Janela em dias (default 90) */
+                dias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VencimentoDto"][];
                 };
             };
         };

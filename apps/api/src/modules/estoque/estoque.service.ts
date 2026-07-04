@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, isNotNull, lte, or, sql } from 'drizzle-orm';
 import { DatabaseService, type Database } from '../../database/database.service';
 import { estoqueMovimentos, itensCatalogo } from '../../database/schema';
 import type {
@@ -7,6 +7,7 @@ import type {
   MovimentoDto,
   MovimentoResultDto,
   SaldoItemDto,
+  VencimentoDto,
 } from './estoque.dto';
 
 // Estoque fase 1: saldo derivado das movimentações; serviços não têm saldo físico
@@ -83,6 +84,9 @@ export class EstoqueService {
           tipo: dto.tipo,
           quantidade: delta,
           custoCentavos: dto.tipo === 'entrada' ? dto.custoCentavos ?? null : null,
+          // Lote/validade só fazem sentido na entrada.
+          lote: dto.tipo === 'entrada' ? dto.lote ?? null : null,
+          validade: dto.tipo === 'entrada' ? dto.validade ?? null : null,
           motivo: dto.motivo ?? null,
         })
         .returning();
@@ -131,6 +135,55 @@ export class EstoqueService {
     return row?.saldo ?? 0;
   }
 
+  /**
+   * Lotes com validade dentro da janela (`dias`, default 90) — alerta de vencimento.
+   * MVP: lista as ENTRADAS com validade no período (não desconta consumo por lote —
+   * rastreio FIFO por lote é fase 3). Mais próximas de vencer primeiro.
+   */
+  async listVencimentos(tenantId: string, dias = 90): Promise<VencimentoDto[]> {
+    const janela = Math.min(Math.max(dias, 1), 365);
+    const hoje = new Date();
+    const limite = new Date(hoje.getTime() + janela * 24 * 60 * 60 * 1000);
+    const limiteStr = limite.toISOString().slice(0, 10);
+    const hojeStr = hoje.toISOString().slice(0, 10);
+
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          itemId: estoqueMovimentos.itemId,
+          codigo: itensCatalogo.codigo,
+          nome: itensCatalogo.nome,
+          lote: estoqueMovimentos.lote,
+          validade: estoqueMovimentos.validade,
+          quantidade: estoqueMovimentos.quantidade,
+        })
+        .from(estoqueMovimentos)
+        .innerJoin(itensCatalogo, eq(itensCatalogo.id, estoqueMovimentos.itemId))
+        .where(
+          and(
+            eq(estoqueMovimentos.tipo, 'entrada'),
+            isNotNull(estoqueMovimentos.validade),
+            lte(estoqueMovimentos.validade, limiteStr),
+          ),
+        )
+        .orderBy(asc(estoqueMovimentos.validade))
+        .limit(300);
+
+      const umDia = 24 * 60 * 60 * 1000;
+      return rows.map((r) => ({
+        itemId: r.itemId,
+        codigo: r.codigo,
+        nome: r.nome,
+        lote: r.lote,
+        validade: r.validade as string,
+        quantidade: r.quantidade,
+        diasParaVencer: Math.round(
+          (new Date(r.validade as string).getTime() - new Date(hojeStr).getTime()) / umDia,
+        ),
+      }));
+    });
+  }
+
   private toDto(r: typeof estoqueMovimentos.$inferSelect): MovimentoDto {
     return {
       id: r.id,
@@ -138,6 +191,8 @@ export class EstoqueService {
       tipo: r.tipo,
       quantidade: r.quantidade,
       custoCentavos: r.custoCentavos,
+      lote: r.lote,
+      validade: r.validade,
       motivo: r.motivo,
       criadoEm: r.createdAt as unknown as string,
     };
