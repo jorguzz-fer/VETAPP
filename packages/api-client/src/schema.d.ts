@@ -1876,6 +1876,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/platform/clinicas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_clinicas"];
+        put?: never;
+        post: operations["PlatformAdminController_provisionar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/clinicas/{tenantId}/assinatura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_assinatura"];
+        put: operations["PlatformAdminController_atualizarAssinatura"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/clinicas/{tenantId}/assinatura/pagar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformAdminController_marcarPago"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/planos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_listPlanos"];
+        put?: never;
+        post: operations["PlatformAdminController_criarPlano"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/planos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PlatformAdminController_atualizarPlano"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3057,6 +3153,75 @@ export interface components {
             adminId: string;
             email: string;
             nome: string;
+        };
+        ClinicaResumoDto: {
+            tenantId: string;
+            nome: string;
+            usuarios: number;
+            status: string;
+            planoNome: string | null;
+            precoCentavos: number;
+            vigenteAte: string | null;
+        };
+        AssinaturaDto: {
+            tenantId: string;
+            planoId: string | null;
+            status: string;
+            precoCentavos: number;
+            ciclo: string;
+            vigenteAte: string | null;
+            trialAte: string | null;
+            observacao: string | null;
+        };
+        AtualizarAssinaturaDto: {
+            planoId?: string | null;
+            /** @enum {string} */
+            status?: "trial" | "ativa" | "inadimplente" | "suspensa" | "cancelada";
+            /** @description Vigente até (YYYY-MM-DD) */
+            vigenteAte?: string;
+            observacao?: string;
+        };
+        ProvisionarClinicaDto: {
+            /** @example Clínica Bicho Feliz */
+            nome: string;
+            /** @example dono@clinica.com */
+            adminEmail: string;
+            /** @example Dr. Fulano */
+            adminNome: string;
+        };
+        ProvisionarClinicaResultDto: {
+            tenantId: string;
+            adminUserId: string;
+            /** @description Senha temporária do admin (exibida uma vez) */
+            senhaTemporaria: string;
+        };
+        PlanoDto: {
+            id: string;
+            nome: string;
+            slug: string;
+            precoCentavos: number;
+            ciclo: string;
+            ativo: string;
+        };
+        CriarPlanoDto: {
+            nome: string;
+            slug: string;
+            precoCentavos: number;
+            /** @enum {string} */
+            ciclo: "mensal" | "anual";
+        };
+        AtualizarPlanoDto: {
+            nome?: string;
+            precoCentavos?: number;
+            /** @enum {string} */
+            ciclo?: "mensal" | "anual";
+            /** @enum {string} */
+            ativo?: "true" | "false";
+        };
+        KpisDto: {
+            totalClinicas: number;
+            porStatus: Record<string, never>;
+            mrrCentavos: number;
         };
     };
     responses: never;
@@ -6310,6 +6475,201 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlatformMeDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_clinicas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicaResumoDto"][];
+                };
+            };
+        };
+    };
+    PlatformAdminController_provisionar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProvisionarClinicaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProvisionarClinicaResultDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_assinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_atualizarAssinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarAssinaturaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_marcarPago: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_listPlanos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"][];
+                };
+            };
+        };
+    };
+    PlatformAdminController_criarPlano: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarPlanoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_atualizarPlano: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarPlanoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_kpis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KpisDto"];
                 };
             };
         };

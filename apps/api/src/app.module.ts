@@ -23,6 +23,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { BrandingModule } from './modules/branding/branding.module';
 import { LgpdModule } from './modules/lgpd/lgpd.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
+import { AssinaturasModule } from './modules/assinaturas/assinaturas.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { StorageModule } from './modules/storage/storage.module';
 
@@ -32,6 +33,7 @@ import { StorageModule } from './modules/storage/storage.module';
     DatabaseModule,
     AuditModule,
     SessionsModule,
+    AssinaturasModule,
     StorageModule,
     HealthModule,
     AuthModule,

@@ -21,3 +21,4 @@ export * from './audit';
 export * from './tenant-branding';
 export * from './preco-historico';
 export * from './platform';
+export * from './assinaturas';

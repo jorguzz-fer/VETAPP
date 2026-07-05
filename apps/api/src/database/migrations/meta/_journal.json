@@ -218,6 +218,13 @@
       "when": 1719593400000,
       "tag": "0030_platform_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1719593500000,
+      "tag": "0031_assinaturas",
+      "breakpoints": true
     }
   ]
 }

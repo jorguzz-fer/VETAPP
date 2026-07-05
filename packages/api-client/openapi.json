@@ -5357,6 +5357,316 @@
           }
         ]
       }
+    },
+    "/api/platform/clinicas": {
+      "get": {
+        "operationId": "PlatformAdminController_clinicas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClinicaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "PlatformAdminController_provisionar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvisionarClinicaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvisionarClinicaResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/clinicas/{tenantId}/assinatura": {
+      "get": {
+        "operationId": "PlatformAdminController_assinatura",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "PlatformAdminController_atualizarAssinatura",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarAssinaturaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/clinicas/{tenantId}/assinatura/pagar": {
+      "post": {
+        "operationId": "PlatformAdminController_marcarPago",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/planos": {
+      "get": {
+        "operationId": "PlatformAdminController_listPlanos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "PlatformAdminController_criarPlano",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarPlanoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/planos/{id}": {
+      "put": {
+        "operationId": "PlatformAdminController_atualizarPlano",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarPlanoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/kpis": {
+      "get": {
+        "operationId": "PlatformAdminController_kpis",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KpisDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -9189,6 +9499,256 @@
           "adminId",
           "email",
           "nome"
+        ]
+      },
+      "ClinicaResumoDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "usuarios": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "planoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "vigenteAte": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenantId",
+          "nome",
+          "usuarios",
+          "status",
+          "planoNome",
+          "precoCentavos",
+          "vigenteAte"
+        ]
+      },
+      "AssinaturaDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "planoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string"
+          },
+          "vigenteAte": {
+            "type": "string",
+            "nullable": true
+          },
+          "trialAte": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenantId",
+          "planoId",
+          "status",
+          "precoCentavos",
+          "ciclo",
+          "vigenteAte",
+          "trialAte",
+          "observacao"
+        ]
+      },
+      "AtualizarAssinaturaDto": {
+        "type": "object",
+        "properties": {
+          "planoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "ativa",
+              "inadimplente",
+              "suspensa",
+              "cancelada"
+            ]
+          },
+          "vigenteAte": {
+            "type": "string",
+            "description": "Vigente até (YYYY-MM-DD)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      },
+      "ProvisionarClinicaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Clínica Bicho Feliz"
+          },
+          "adminEmail": {
+            "type": "string",
+            "example": "dono@clinica.com"
+          },
+          "adminNome": {
+            "type": "string",
+            "example": "Dr. Fulano"
+          }
+        },
+        "required": [
+          "nome",
+          "adminEmail",
+          "adminNome"
+        ]
+      },
+      "ProvisionarClinicaResultDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "adminUserId": {
+            "type": "string"
+          },
+          "senhaTemporaria": {
+            "type": "string",
+            "description": "Senha temporária do admin (exibida uma vez)"
+          }
+        },
+        "required": [
+          "tenantId",
+          "adminUserId",
+          "senhaTemporaria"
+        ]
+      },
+      "PlanoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "slug",
+          "precoCentavos",
+          "ciclo",
+          "ativo"
+        ]
+      },
+      "CriarPlanoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string",
+            "enum": [
+              "mensal",
+              "anual"
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "slug",
+          "precoCentavos",
+          "ciclo"
+        ]
+      },
+      "AtualizarPlanoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string",
+            "enum": [
+              "mensal",
+              "anual"
+            ]
+          },
+          "ativo": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ]
+          }
+        }
+      },
+      "KpisDto": {
+        "type": "object",
+        "properties": {
+          "totalClinicas": {
+            "type": "number"
+          },
+          "porStatus": {
+            "type": "object"
+          },
+          "mrrCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalClinicas",
+          "porStatus",
+          "mrrCentavos"
         ]
       }
     }
