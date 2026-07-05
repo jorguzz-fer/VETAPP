@@ -1,6 +1,6 @@
 # 15 — Admin da Plataforma (SaaS back-office)
 
-> **Status: em construção (Stage 1 — auth — implementado).** Módulo do **dono do
+> **Status: MVP implementado (Stages 1–3).** Módulo do **dono do
 > SaaS** (Fernando Jorge) — assinaturas, adesões, gestão de clínicas e visão
 > consolidada. É o único ator que legitimamente **cruza tenants**; por isso o modelo
 > de segurança é o ponto mais sensível deste doc. Diretriz do stakeholder (doc 02)
@@ -23,7 +23,15 @@
 > padrão semeados no boot; self-signup entra em **trial**. Back-office em
 > `/api/platform/*` (sob `PlatformGuard`, auditado): `clinicas`, `clinicas/:id/assinatura`
 > (GET/PUT), `.../pagar`, `POST clinicas` (provisionar tenant+admin+trial), `planos`
-> (CRUD), `kpis`. **Próximo**: Stage 3 (front `/plataforma/*`).
+> (CRUD), `kpis`.
+>
+> **Stage 3 entregue (front `/plataforma/*`)**: área **separada** do app da clínica e do
+> portal — `PlatformAuthProvider` (login + MFA obrigatório com QR/recovery codes +
+> refresh proativo, tokens em storage próprio) e `platformApi`. Telas: **`/plataforma/login`**,
+> **`/plataforma`** (KPIs: nº de clínicas, ativas/trial/inadimplentes, MRR + tabela de
+> clínicas com marcar pago / suspender-reativar / definir plano / provisionar) e
+> **`/plataforma/planos`** (CRUD). **MVP fase 1 completo.** Pendente (externo/fase 2):
+> gateway de pagamento (checkout + webhooks + dunning), impersonação assistida, quotas.
 
 ## 1. Por que existe (e o que NÃO é)
 
