@@ -18,10 +18,29 @@ export class PlatformBootstrapService implements OnModuleInit {
     @Inject('ENV') private readonly env: EnvConfig,
   ) {}
 
+  // E-mail "bom o suficiente": algo@algo.tld, sem espaços. Frouxo de propósito —
+  // só evita bootstrap com valor obviamente inválido (a validação dura ficaria na
+  // ENV, mas ali ela derrubaria a API inteira, o que não queremos — ver env.ts).
+  private static readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   async onModuleInit(): Promise<void> {
     const email = this.env.PLATFORM_BOOTSTRAP_EMAIL?.trim().toLowerCase();
     const password = this.env.PLATFORM_BOOTSTRAP_PASSWORD;
-    if (!email || !password) return;
+    // Nenhum dos dois setado: recurso desligado, silencioso.
+    if (!email && !password) return;
+    // Setado mas malformado: NÃO derruba a API — só avisa e pula (idempotente).
+    if (!email || !password) {
+      this.logger.warn('Bootstrap do super-admin ignorado: defina PLATFORM_BOOTSTRAP_EMAIL e _PASSWORD juntos.');
+      return;
+    }
+    if (!PlatformBootstrapService.EMAIL_RE.test(email)) {
+      this.logger.warn(`Bootstrap do super-admin ignorado: PLATFORM_BOOTSTRAP_EMAIL inválido ("${email}").`);
+      return;
+    }
+    if (password.length < 12) {
+      this.logger.warn('Bootstrap do super-admin ignorado: PLATFORM_BOOTSTRAP_PASSWORD deve ter ≥ 12 caracteres.');
+      return;
+    }
 
     try {
       const existing = await this.database.db.query.platformAdmins.findFirst({
