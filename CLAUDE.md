@@ -167,8 +167,14 @@ Pendências conhecidas:
     (append-only via RLS SELECT/INSERT + REVOKE); `PlatformAuthService` (login + **MFA
     obrigatório** setup forçado + refresh stateful), `PlatformGuard`, `/api/platform/auth/*`,
     bootstrap do 1º admin por ENV (`PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD`, idempotente no boot).
-  - **Próximo**: Stage 2 (planos/assinaturas + gestão de tenants + enforcement de
-    suspensão no login), Stage 3 (front `/plataforma/*`). Gateway de pagamento = fase 2 (externo).
+  - **Stage 2 (assinaturas + gestão de clínicas) FEITO** (migração 0031): tabelas globais
+    `planos`/`assinaturas`; `AssinaturasService` (@Global) com `avaliarAcesso` (grace 7d →
+    bloqueio), CRUD (definir plano/marcar pago/suspender/cancelar), KPIs (MRR/status) e
+    listagem de clínicas. **Login da gestão faz enforcement** (`resolveLogin` bloqueia
+    antes do MFA); self-signup entra em trial; planos padrão semeados no boot. Back-office
+    `/api/platform/*` (PlatformGuard, auditado): clinicas, assinatura (GET/PUT), pagar,
+    provisionar, planos (CRUD), kpis.
+  - **Próximo**: Stage 3 (front `/plataforma/*`). Gateway de pagamento = fase 2 (externo).
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe

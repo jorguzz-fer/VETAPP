@@ -13,8 +13,17 @@
 > **`platform`** isolado (`PlatformGuard`); rotas `/api/platform/auth/*`. Bootstrap do 1º
 > super-admin por ENV (`PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD`) no boot, idempotente.
 > **Decisão de produto tomada**: inadimplência = **grace period → bloqueio** (§4.3).
-> **Próximo**: Stage 2 (planos/assinaturas + gestão de tenants + enforcement no login) e
-> Stage 3 (front `/plataforma/*`).
+>
+> **Stage 2 entregue (assinaturas + gestão de clínicas)**: tabelas globais `planos` e
+> `assinaturas` (migração 0031). `AssinaturasService` (`@Global`) com `avaliarAcesso`
+> (grace period → bloqueio: suspensa/cancelada bloqueia; vencido dentro do grace de 7
+> dias avisa; além do grace bloqueia), CRUD (definir plano, marcar pago, suspender,
+> cancelar), KPIs (nº de clínicas, por status, MRR) e listagem de clínicas. **Login da
+> gestão faz o enforcement** (`AuthService.resolveLogin` bloqueia antes do MFA). Planos
+> padrão semeados no boot; self-signup entra em **trial**. Back-office em
+> `/api/platform/*` (sob `PlatformGuard`, auditado): `clinicas`, `clinicas/:id/assinatura`
+> (GET/PUT), `.../pagar`, `POST clinicas` (provisionar tenant+admin+trial), `planos`
+> (CRUD), `kpis`. **Próximo**: Stage 3 (front `/plataforma/*`).
 
 ## 1. Por que existe (e o que NÃO é)
 

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   ServiceUnavailableException,
@@ -15,6 +16,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { DatabaseService } from '../../database/database.service';
 import { memberships, mfaRecoveryCodes, refreshTokens, tenants, users } from '../../database/schema';
 import { AuditService } from '../audit/audit.service';
+import { AssinaturasService } from '../assinaturas/assinaturas.service';
 import type { EnvConfig } from '../../config/env';
 import type {
   LoginDto,
@@ -65,6 +67,7 @@ export class AuthService {
     private readonly database: DatabaseService,
     private readonly jwt: JwtService,
     private readonly audit: AuditService,
+    private readonly assinaturas: AssinaturasService,
     @Inject('ENV') private readonly env: EnvConfig,
   ) {
     if (env.GOOGLE_CLIENT_ID) {
@@ -98,6 +101,9 @@ export class AuthService {
     const [membership] = await this.database.withTenant(tenant.id, (tx) =>
       tx.insert(memberships).values({ tenantId: tenant.id, userId: user.id, role: 'admin' }).returning(),
     );
+
+    // Self-signup entra em período de teste (doc 15 §4.2).
+    await this.assinaturas.garantirTrial(tenant.id);
 
     const tokens = await this.issueTokens(user.id, tenant.id, membership.role);
     await this.audit.registrar(tenant.id, {
@@ -409,6 +415,13 @@ export class AuthService {
     const member = tenantId ? memberList.find((m) => m.tenantId === tenantId) : memberList[0];
     if (!member) {
       throw new UnauthorizedException('Sem acesso ao tenant informado');
+    }
+
+    // Enforcement da assinatura do SaaS (doc 15 §4.3): suspensa/vencida além do grace
+    // bloqueia o login de TODOS os usuários do tenant (antes até do desafio de MFA).
+    const acesso = await this.assinaturas.avaliarAcesso(member.tenantId);
+    if (!acesso.permitido) {
+      throw new ForbiddenException(acesso.aviso ?? 'Assinatura da clínica suspensa.');
     }
 
     if (mfaEnabled) {
