@@ -273,4 +273,20 @@ describe('Isolamento de tenant (RLS)', () => {
     // Número diferente na mesma série: ok.
     await nota('101');
   });
+
+  // ── Plataforma (SaaS): platform_audit_log é append-only — migração 0030 ──
+  it('platform_audit_log: INSERT/SELECT ok, mas UPDATE/DELETE afetam 0 linhas (append-only)', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    // Insere e lê pelo papel da app (RLS: policies só SELECT/INSERT).
+    await appSql`INSERT INTO platform_audit_log (acao, entidade, resumo)
+      VALUES ('platform.login', 'sessao', 'login super-admin')`;
+    const vis = await appSql`SELECT resumo FROM platform_audit_log WHERE acao = 'platform.login'`;
+    expect(vis.length).toBeGreaterThanOrEqual(1);
+
+    // Append-only: sem policy de UPDATE/DELETE → default-deny → 0 linhas afetadas.
+    const upd = await appSql`UPDATE platform_audit_log SET resumo = 'adulterado' WHERE acao = 'platform.login'`;
+    expect(upd.count).toBe(0);
+    const del = await appSql`DELETE FROM platform_audit_log WHERE acao = 'platform.login'`;
+    expect(del.count).toBe(0);
+  });
 });

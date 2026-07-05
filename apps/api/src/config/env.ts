@@ -22,6 +22,12 @@ export const envSchema = z.object({
   // desabilitado (a app sobe normalmente).
   GOOGLE_CLIENT_ID: z.string().optional(),
 
+  // Bootstrap do 1º super-admin da plataforma (doc 15 §2). Opcional: se ambos
+  // presentes, o boot cria/garante esse admin (idempotente) — nunca por rota
+  // pública. Segredo só na ENV do Coolify, nunca no repo.
+  PLATFORM_BOOTSTRAP_EMAIL: z.string().email().optional(),
+  PLATFORM_BOOTSTRAP_PASSWORD: z.string().min(12).optional(),
+
   // Object storage (Cloudflare R2 / S3-compatível). Opcional: sem isto, uploads
   // ficam desabilitados (a app sobe normalmente em dev/CI). Credenciais só aqui,
   // nunca no cliente (docs/spec/02).

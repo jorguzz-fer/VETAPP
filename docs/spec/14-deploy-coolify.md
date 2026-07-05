@@ -75,11 +75,18 @@ S3_SECRET_ACCESS_KEY=<R2_SECRET>
 S3_FORCE_PATH_STYLE=true
 # Google OIDC — opcional
 GOOGLE_CLIENT_ID=<client-id>.apps.googleusercontent.com
+# Super-admin da plataforma (doc 15) — opcional. Se ambos setados, o boot cria/garante
+# esse admin (idempotente). SEGREDO só aqui, NUNCA no repo. Senha ≥ 12 chars.
+PLATFORM_BOOTSTRAP_EMAIL=<email-do-dono>
+PLATFORM_BOOTSTRAP_PASSWORD=<senha-forte>
 # Redis — opcional
 # REDIS_URL=redis://<REDIS_HOST>:6379
 ```
 
 Segredos JWT: `openssl rand -hex 32`. Healthcheck do Coolify: `GET /api/health`.
+**Bootstrap do super-admin**: setar `PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD` cria o dono
+da plataforma no próximo boot (o login exige MFA no 1º acesso — doc 15). Trocar a
+senha na ENV propaga no boot seguinte.
 Docs OpenAPI (`/api/docs`) ficam **desabilitados** quando `NODE_ENV=production`
 (nenhuma rota a mais exposta — doc 02); o contrato segue gerado offline por
 `openapi:gen`. Para expor a parceiros, publicar atrás de proxy/authz.
