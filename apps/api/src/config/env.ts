@@ -23,10 +23,15 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
 
   // Bootstrap do 1º super-admin da plataforma (doc 15 §2). Opcional: se ambos
-  // presentes, o boot cria/garante esse admin (idempotente) — nunca por rota
-  // pública. Segredo só na ENV do Coolify, nunca no repo.
-  PLATFORM_BOOTSTRAP_EMAIL: z.string().email().optional(),
-  PLATFORM_BOOTSTRAP_PASSWORD: z.string().min(12).optional(),
+  // presentes e válidos, o boot cria/garante esse admin (idempotente) — nunca por
+  // rota pública. Segredo só na ENV do Coolify, nunca no repo.
+  //
+  // Validação intencionalmente FROUXA aqui (só string): um valor malformado numa var
+  // OPCIONAL de conveniência jamais pode derrubar a API inteira em loop. O formato
+  // (e-mail válido, senha ≥ 12) é checado no PlatformBootstrapService, que é
+  // best-effort e apenas PULA o bootstrap com um aviso se algo estiver errado.
+  PLATFORM_BOOTSTRAP_EMAIL: z.string().optional(),
+  PLATFORM_BOOTSTRAP_PASSWORD: z.string().optional(),
 
   // Object storage (Cloudflare R2 / S3-compatível). Opcional: sem isto, uploads
   // ficam desabilitados (a app sobe normalmente em dev/CI). Credenciais só aqui,
