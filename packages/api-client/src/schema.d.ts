@@ -1764,6 +1764,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/platform/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/forced-setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaForcedSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/forced-enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaForcedEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2892,6 +3004,59 @@ export interface components {
             faturas: Record<string, never>[];
             /** @description Agendamentos */
             agendamentos: Record<string, never>[];
+        };
+        PlatformLoginDto: {
+            /** @example dono@vetapp.com */
+            email: string;
+            password: string;
+        };
+        PlatformLoginResultDto: {
+            accessToken?: string;
+            refreshToken?: string;
+            mfaRequired?: boolean;
+            mfaToken?: string;
+            mfaSetupRequired?: boolean;
+            mfaSetupToken?: string;
+        };
+        PlatformMfaVerifyDto: {
+            mfaToken: string;
+            /** @example 123456 */
+            code: string;
+        };
+        PlatformTokensDto: {
+            accessToken: string;
+            refreshToken: string;
+        };
+        PlatformMfaForcedSetupDto: {
+            setupToken: string;
+        };
+        PlatformMfaSetupResponseDto: {
+            secret: string;
+            otpauthUrl: string;
+        };
+        PlatformMfaForcedEnableDto: {
+            setupToken: string;
+            /** @example 123456 */
+            code: string;
+        };
+        PlatformMfaForcedEnableResponseDto: {
+            accessToken: string;
+            refreshToken: string;
+            recoveryCodes: string[];
+        };
+        PlatformRefreshDto: {
+            refreshToken: string;
+        };
+        PlatformLogoutDto: {
+            refreshToken: string;
+        };
+        PlatformOkDto: {
+            ok: boolean;
+        };
+        PlatformMeDto: {
+            adminId: string;
+            email: string;
+            nome: string;
         };
     };
     responses: never;
@@ -5988,6 +6153,163 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LgpdExportDto"];
+                };
+            };
+        };
+    };
+    PlatformController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformLoginResultDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaVerifyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformTokensDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaForcedSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaForcedSetupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMfaSetupResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaForcedEnable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaForcedEnableDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMfaForcedEnableResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformTokensDto"];
+                };
+            };
+        };
+    };
+    PlatformController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformLogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformOkDto"];
+                };
+            };
+        };
+    };
+    PlatformController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMeDto"];
                 };
             };
         };

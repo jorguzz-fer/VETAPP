@@ -1,10 +1,20 @@
 # 15 — Admin da Plataforma (SaaS back-office)
 
-> **Status: especificado, não implementado.** Módulo do **dono do SaaS** (Fernando
-> Jorge) — assinaturas, adesões, gestão de clínicas e visão consolidada. É o único
-> ator que legitimamente **cruza tenants**; por isso o modelo de segurança é o ponto
-> mais sensível deste doc. Diretriz do stakeholder (doc 02) continua valendo em
-> dobro aqui: **auth sempre server-side, nenhuma rota exposta à toa**.
+> **Status: em construção (Stage 1 — auth — implementado).** Módulo do **dono do
+> SaaS** (Fernando Jorge) — assinaturas, adesões, gestão de clínicas e visão
+> consolidada. É o único ator que legitimamente **cruza tenants**; por isso o modelo
+> de segurança é o ponto mais sensível deste doc. Diretriz do stakeholder (doc 02)
+> continua valendo em dobro aqui: **auth sempre server-side, nenhuma rota exposta à toa**.
+>
+> **Stage 1 entregue (auth da plataforma)**: tabelas globais `platform_admins`,
+> `platform_refresh_tokens`, `platform_mfa_recovery_codes` e `platform_audit_log`
+> (append-only, migração 0030). `PlatformAuthService` com **login + MFA obrigatório**
+> (setup forçado), **refresh stateful** (rotação + reuso + revogação) e escopo de token
+> **`platform`** isolado (`PlatformGuard`); rotas `/api/platform/auth/*`. Bootstrap do 1º
+> super-admin por ENV (`PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD`) no boot, idempotente.
+> **Decisão de produto tomada**: inadimplência = **grace period → bloqueio** (§4.3).
+> **Próximo**: Stage 2 (planos/assinaturas + gestão de tenants + enforcement no login) e
+> Stage 3 (front `/plataforma/*`).
 
 ## 1. Por que existe (e o que NÃO é)
 

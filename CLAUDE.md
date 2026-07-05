@@ -156,14 +156,19 @@ Pendências conhecidas:
   expirados (gestão e tutor), preservando os revogados ainda válidos (detecção de reuso).
 - Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, denylist
   de access token (Redis), WebAuthn.
-- **Admin da Plataforma (SaaS back-office) — especificado, NÃO implementado** (doc 15):
-  back-office do dono do SaaS (assinaturas, adesões, gestão de clínicas, KPIs cruzando
-  tenants). Auth **separada** (`scope:'platform'`, `platform_admins`, guard próprio,
-  MFA obrigatório, refresh stateful), rotas `/api/platform/*` e front `/plataforma/*`,
-  opera **fora** do RLS de tenant (é o único que cruza tenants), auditoria própria
-  append-only. Fase 1 MVP = assinatura **manual** (autônomo); gateway de pagamento =
-  fase 2 (externo). Decisões em aberto: catálogo de planos, efeito da inadimplência,
-  provedor de pagamento. **Na fila** para construir quando priorizado.
+- **Admin da Plataforma (SaaS back-office) — EM CONSTRUÇÃO** (doc 15): back-office do
+  dono do SaaS (assinaturas, adesões, gestão de clínicas, KPIs cruzando tenants). Auth
+  **separada** (`scope:'platform'`, `platform_admins`, guard próprio, MFA obrigatório,
+  refresh stateful), rotas `/api/platform/*` e front `/plataforma/*`, opera **fora** do
+  RLS de tenant, auditoria própria append-only. **Decisão**: inadimplência = grace
+  period → bloqueio.
+  - **Stage 1 (auth) FEITO** (migração 0030): tabelas globais `platform_admins`/
+    `platform_refresh_tokens`/`platform_mfa_recovery_codes`/`platform_audit_log`
+    (append-only via RLS SELECT/INSERT + REVOKE); `PlatformAuthService` (login + **MFA
+    obrigatório** setup forçado + refresh stateful), `PlatformGuard`, `/api/platform/auth/*`,
+    bootstrap do 1º admin por ENV (`PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD`, idempotente no boot).
+  - **Próximo**: Stage 2 (planos/assinaturas + gestão de tenants + enforcement de
+    suspensão no login), Stage 3 (front `/plataforma/*`). Gateway de pagamento = fase 2 (externo).
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe
