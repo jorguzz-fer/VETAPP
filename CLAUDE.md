@@ -156,7 +156,7 @@ Pendências conhecidas:
   expirados (gestão e tutor), preservando os revogados ainda válidos (detecção de reuso).
 - Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, denylist
   de access token (Redis), WebAuthn.
-- **Admin da Plataforma (SaaS back-office) — EM CONSTRUÇÃO** (doc 15): back-office do
+- **Admin da Plataforma (SaaS back-office) — MVP FEITO (Stages 1–3)** (doc 15): back-office do
   dono do SaaS (assinaturas, adesões, gestão de clínicas, KPIs cruzando tenants). Auth
   **separada** (`scope:'platform'`, `platform_admins`, guard próprio, MFA obrigatório,
   refresh stateful), rotas `/api/platform/*` e front `/plataforma/*`, opera **fora** do
@@ -174,7 +174,13 @@ Pendências conhecidas:
     antes do MFA); self-signup entra em trial; planos padrão semeados no boot. Back-office
     `/api/platform/*` (PlatformGuard, auditado): clinicas, assinatura (GET/PUT), pagar,
     provisionar, planos (CRUD), kpis.
-  - **Próximo**: Stage 3 (front `/plataforma/*`). Gateway de pagamento = fase 2 (externo).
+  - **Stage 3 (front `/plataforma/*`) FEITO**: área separada (não mistura com o app da
+    clínica/portal) — `PlatformAuthProvider` (login + MFA obrigatório QR/recovery + refresh
+    proativo, storage próprio) + `platformApi`. Telas: `/plataforma/login`, `/plataforma`
+    (KPIs + tabela de clínicas com pagar/suspender/reativar/definir-plano/provisionar) e
+    `/plataforma/planos` (CRUD). **MVP fase 1 completo.**
+  - **Próximo (externo/fase 2)**: gateway de pagamento (checkout/webhooks/dunning),
+    impersonação assistida, quotas por plano.
 - **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
   UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
   ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe
