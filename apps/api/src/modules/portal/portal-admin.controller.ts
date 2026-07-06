@@ -3,13 +3,15 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { PortalAuthService } from './portal-auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 import { OkDto, PortalAcessoDto, PortalConviteResponseDto } from './portal.dto';
 
 // Gestão do acesso ao portal PELA CLÍNICA (usuário interno). Protegido pelo
 // JwtAuthGuard da gestão — tenant vem sempre de req.auth, nunca do cliente.
 @ApiTags('portal-admin')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'recepcao')
 @Controller('clientes/:responsavelId/portal')
 export class PortalAdminController {
   constructor(private readonly auth: PortalAuthService) {}

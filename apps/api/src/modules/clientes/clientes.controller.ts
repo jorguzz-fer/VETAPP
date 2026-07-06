@@ -17,11 +17,12 @@ import {
   UpdateResponsavelDto,
 } from './clientes.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 // Tenant vem do contexto autenticado (req.auth), nunca do cliente.
 @ApiTags('clientes')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 export class ClientesController {
   constructor(private readonly clientes: ClientesService) {}
@@ -44,6 +45,7 @@ export class ClientesController {
     });
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Post('clientes')
   @ApiCreatedResponse({ type: ResponsavelDto })
   create(@Req() req: Request, @Body() dto: CreateResponsavelDto): Promise<ResponsavelDto> {
@@ -56,18 +58,21 @@ export class ClientesController {
     return this.clientes.getFicha(req.auth!.tenantId, id);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Patch('clientes/:id')
   @ApiOkResponse({ type: ResponsavelDto })
   updateCliente(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateResponsavelDto): Promise<ResponsavelDto> {
     return this.clientes.updateResponsavel(req.auth!.tenantId, id, dto);
   }
 
+  @Roles('admin', 'gestor')
   @Delete('clientes/:id')
   @ApiOkResponse({ type: OkDto })
   removeCliente(@Req() req: Request, @Param('id') id: string): Promise<OkDto> {
     return this.clientes.deleteResponsavel(req.auth!.tenantId, id);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Post('clientes/:id/animais')
   @ApiCreatedResponse({ type: AnimalDto })
   addAnimal(@Req() req: Request, @Param('id') id: string, @Body() dto: CreateAnimalDto): Promise<AnimalDto> {
@@ -80,12 +85,14 @@ export class ClientesController {
     return this.clientes.getAnimal(req.auth!.tenantId, id);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Patch('animais/:id')
   @ApiOkResponse({ type: AnimalDto })
   updateAnimal(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateAnimalDto): Promise<AnimalDto> {
     return this.clientes.updateAnimal(req.auth!.tenantId, id, dto);
   }
 
+  @Roles('admin', 'gestor')
   @Delete('animais/:id')
   @ApiOkResponse({ type: OkDto })
   removeAnimal(@Req() req: Request, @Param('id') id: string): Promise<OkDto> {
@@ -93,12 +100,14 @@ export class ClientesController {
   }
 
   // Foto do animal: 1) pede URL assinada, 2) sobe direto no storage, 3) confirma a key.
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Post('animais/:id/foto/sign-upload')
   @ApiCreatedResponse({ type: SignUploadResponseDto })
   signFoto(@Req() req: Request, @Param('id') id: string, @Body() dto: SignUploadDto): Promise<SignUploadResponseDto> {
     return this.clientes.signAnimalFotoUpload(req.auth!.tenantId, id, dto.contentType);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Post('animais/:id/foto')
   @ApiCreatedResponse({ type: AnimalDto })
   confirmFoto(@Req() req: Request, @Param('id') id: string, @Body() dto: ConfirmFotoDto): Promise<AnimalDto> {

@@ -4,10 +4,12 @@ import type { Request } from 'express';
 import { InteligenciaService } from './inteligencia.service';
 import { ProdutividadeDto } from './inteligencia.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('inteligencia')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor')
 @Controller('inteligencia')
 export class InteligenciaController {
   constructor(private readonly inteligencia: InteligenciaService) {}

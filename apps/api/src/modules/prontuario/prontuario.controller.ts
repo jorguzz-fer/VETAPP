@@ -10,10 +10,12 @@ import {
   SignUploadResponseDto,
 } from './prontuario.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('prontuario')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'veterinario', 'internacao')
 @Controller()
 export class ProntuarioController {
   constructor(private readonly prontuario: ProntuarioService) {}
@@ -38,6 +40,7 @@ export class ProntuarioController {
   }
 
   // Fatura aberta (consolidada) do responsável.
+  @Roles('admin', 'gestor', 'recepcao', 'financeiro')
   @Get('clientes/:id/fatura')
   @ApiOkResponse({ type: FaturaDto })
   fatura(@Req() req: Request, @Param('id') id: string): Promise<FaturaDto | null> {
