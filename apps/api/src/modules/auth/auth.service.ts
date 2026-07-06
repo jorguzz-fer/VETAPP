@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -61,6 +62,7 @@ const RECOVERY_CODE_COUNT = 10;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly googleClient?: OAuth2Client;
 
   constructor(
@@ -77,6 +79,11 @@ export class AuthService {
     // autenticador — sem isso, qualquer skew rejeita códigos TOTP válidos
     // (recomendado pelo otplib). Vale para todo authenticator.check().
     authenticator.options = { window: 1 };
+    if (env.MFA_ENFORCEMENT === 'off') {
+      this.logger.warn(
+        'MFA_ENFORCEMENT=off — 2º fator em STANDBY (login sem MFA). NÃO use assim em produção.',
+      );
+    }
   }
 
   /**
@@ -424,22 +431,26 @@ export class AuthService {
       throw new ForbiddenException(acesso.aviso ?? 'Assinatura da clínica suspensa.');
     }
 
-    if (mfaEnabled) {
-      const mfaToken = await this.jwt.signAsync(
-        { sub: userId, tenantId: member.tenantId, role: member.role, scope: 'mfa' } satisfies MfaTokenPayload,
-        { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 300 },
-      );
-      return { mfaRequired: true, mfaToken };
-    }
+    // MFA_ENFORCEMENT='off' (standby p/ testes): pula desafio e setup forçado, emite
+    // sessão direto. Seguro por padrão — só o valor explícito 'off' desliga.
+    if (this.env.MFA_ENFORCEMENT === 'on') {
+      if (mfaEnabled) {
+        const mfaToken = await this.jwt.signAsync(
+          { sub: userId, tenantId: member.tenantId, role: member.role, scope: 'mfa' } satisfies MfaTokenPayload,
+          { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 300 },
+        );
+        return { mfaRequired: true, mfaToken };
+      }
 
-    // MFA obrigatório por papel: sem 2º fator configurado, o login não emite sessão
-    // — devolve um token curto que só autoriza o setup forçado (doc 02 §2.2).
-    if (ROLES_MFA_OBRIGATORIO.has(member.role)) {
-      const mfaSetupToken = await this.jwt.signAsync(
-        { sub: userId, tenantId: member.tenantId, role: member.role, scope: 'mfa_setup' } satisfies MfaSetupTokenPayload,
-        { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 900 },
-      );
-      return { mfaSetupRequired: true, mfaSetupToken };
+      // MFA obrigatório por papel: sem 2º fator configurado, o login não emite sessão
+      // — devolve um token curto que só autoriza o setup forçado (doc 02 §2.2).
+      if (ROLES_MFA_OBRIGATORIO.has(member.role)) {
+        const mfaSetupToken = await this.jwt.signAsync(
+          { sub: userId, tenantId: member.tenantId, role: member.role, scope: 'mfa_setup' } satisfies MfaSetupTokenPayload,
+          { secret: this.env.JWT_ACCESS_SECRET, expiresIn: 900 },
+        );
+        return { mfaSetupRequired: true, mfaSetupToken };
+      }
     }
 
     const tokens = await this.issueTokens(userId, member.tenantId, member.role);
