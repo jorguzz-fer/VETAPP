@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { and, eq, isNull } from 'drizzle-orm';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -38,6 +38,8 @@ const RECOVERY_CODE_COUNT = 10;
 // token 'platform' — isolado da gestão e do tutor.
 @Injectable()
 export class PlatformAuthService {
+  private readonly logger = new Logger(PlatformAuthService.name);
+
   constructor(
     private readonly database: DatabaseService,
     private readonly jwt: JwtService,
@@ -45,6 +47,9 @@ export class PlatformAuthService {
     @Inject('ENV') private readonly env: EnvConfig,
   ) {
     authenticator.options = { window: 1 }; // tolera ±30s de skew (mesma razão da gestão)
+    if (env.MFA_ENFORCEMENT === 'off') {
+      this.logger.warn('MFA_ENFORCEMENT=off — super-admin da plataforma logando SEM 2º fator. Só para testes.');
+    }
   }
 
   async login(email: string, password: string): Promise<PlatformLoginResultDto> {
@@ -54,6 +59,20 @@ export class PlatformAuthService {
     if (!admin || admin.status !== 'active') throw new UnauthorizedException('Credenciais inválidas');
     if (!(await argon2.verify(admin.passwordHash, password))) {
       throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    // MFA_ENFORCEMENT='off' (standby p/ testes): emite sessão direto, sem desafio nem
+    // setup forçado. Seguro por padrão — só o valor explícito 'off' desliga.
+    if (this.env.MFA_ENFORCEMENT === 'off') {
+      const tokens = await this.issueTokens(admin.id);
+      await this.audit.registrar({
+        adminId: admin.id,
+        acao: 'platform.login',
+        entidade: 'sessao',
+        entidadeId: admin.id,
+        resumo: 'Login do super-admin (MFA em standby)',
+      });
+      return tokens;
     }
 
     if (admin.mfaEnabled) {

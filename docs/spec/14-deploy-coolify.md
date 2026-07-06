@@ -79,6 +79,9 @@ GOOGLE_CLIENT_ID=<client-id>.apps.googleusercontent.com
 # esse admin (idempotente). SEGREDO só aqui, NUNCA no repo. Senha ≥ 12 chars.
 PLATFORM_BOOTSTRAP_EMAIL=<email-do-dono>
 PLATFORM_BOOTSTRAP_PASSWORD=<senha-forte>
+# MFA — opcional. Default 'on' (ausência = obrigatório). 'off' coloca o 2º fator em
+# STANDBY (login sem MFA) — SÓ para testes; jamais em produção real.
+# MFA_ENFORCEMENT=off
 # Redis — opcional
 # REDIS_URL=redis://<REDIS_HOST>:6379
 ```
@@ -87,6 +90,10 @@ Segredos JWT: `openssl rand -hex 32`. Healthcheck do Coolify: `GET /api/health`.
 **Bootstrap do super-admin**: setar `PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD` cria o dono
 da plataforma no próximo boot (o login exige MFA no 1º acesso — doc 15). Trocar a
 senha na ENV propaga no boot seguinte.
+**MFA em standby**: `MFA_ENFORCEMENT=off` desliga o 2º fator (gestão + plataforma)
+para facilitar testes — o login emite sessão direto, sem desafio nem setup forçado.
+Válvula de escape temporária; a API loga um `warn` no boot. Remover a var (ou `=on`)
+restaura o MFA obrigatório. **Nunca `off` em produção real.**
 Docs OpenAPI (`/api/docs`) ficam **desabilitados** quando `NODE_ENV=production`
 (nenhuma rota a mais exposta — doc 02); o contrato segue gerado offline por
 `openapi:gen`. Para expor a parceiros, publicar atrás de proxy/authz.
