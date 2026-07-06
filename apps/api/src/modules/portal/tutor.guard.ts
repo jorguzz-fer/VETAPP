@@ -43,7 +43,7 @@ export class TutorGuard implements CanActivate {
         tenantId: string;
         responsavelId: string;
         scope?: string;
-      }>(token, { secret: this.env.JWT_ACCESS_SECRET });
+      }>(token, { secret: this.env.JWT_ACCESS_SECRET, algorithms: ['HS256'] });
       if (payload.scope !== 'tutor') {
         throw new UnauthorizedException('Token inválido para o portal');
       }

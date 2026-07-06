@@ -19,18 +19,23 @@ import {
   TokensDto,
 } from './auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  // Anti-abuso: no máx. 5 cadastros por IP/hora.
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('register')
   @ApiCreatedResponse({ type: TokensDto })
   register(@Body() dto: RegisterDto): Promise<TokensDto> {
     return this.auth.register(dto);
   }
 
+  // Anti-brute-force: 10 tentativas de login por IP/min.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
@@ -39,6 +44,7 @@ export class AuthController {
   }
 
   // Login com Google (id_token validado no servidor — docs/spec/02 §2.1).
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('google')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
