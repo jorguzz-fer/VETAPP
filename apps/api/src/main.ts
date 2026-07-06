@@ -12,6 +12,11 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
   const env = app.get<EnvConfig>('ENV');
 
+  // Atrás de proxy reverso (Coolify/Traefik): confia no 1º proxy para que req.ip
+  // reflita o X-Forwarded-For real — o rate limiting precisa da IP do cliente,
+  // não a do proxy (senão todos compartilhariam a mesma chave de limite).
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({ origin: env.CORS_ORIGINS, credentials: true });

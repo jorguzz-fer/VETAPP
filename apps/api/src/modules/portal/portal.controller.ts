@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { PortalAuthService } from './portal-auth.service';
 import { PortalService } from './portal.service';
 import { TutorGuard } from './tutor.guard';
+import { Throttle } from '@nestjs/throttler';
 import {
   OkDto,
   PortalAcceptInviteDto,
@@ -38,6 +39,7 @@ export class PortalController {
     return this.auth.invitePreview(token);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('convite/aceitar')
   @HttpCode(200)
   @ApiOkResponse({ type: PortalTokensDto })
@@ -45,6 +47,7 @@ export class PortalController {
     return this.auth.aceitarConvite(dto.token, dto.password);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @HttpCode(200)
   @ApiOkResponse({ type: PortalTokensDto })

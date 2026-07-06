@@ -37,7 +37,7 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = await this.jwt.verifyAsync<{ sub: string; tenantId: string; role: string; scope?: string }>(
         token,
-        { secret: this.env.JWT_ACCESS_SECRET },
+        { secret: this.env.JWT_ACCESS_SECRET, algorithms: ['HS256'] },
       );
       // Só o token de sessão INTERNO vale aqui — e ele não carrega `scope`.
       // Rejeita explicitamente desafio MFA ('mfa') e token do portal do tutor
