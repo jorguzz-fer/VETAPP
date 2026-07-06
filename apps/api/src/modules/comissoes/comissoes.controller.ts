@@ -4,10 +4,12 @@ import type { Request } from 'express';
 import { ComissoesService } from './comissoes.service';
 import { ApuracaoColaboradorDto, ApuracaoLinhaDto, CreateRegraDto, RegraDto } from './comissoes.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('comissoes')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'financeiro')
 @Controller('comissoes')
 export class ComissoesController {
   constructor(private readonly comissoes: ComissoesService) {}
@@ -21,6 +23,7 @@ export class ComissoesController {
   }
 
   /** "Minhas comissões" — extrato do usuário logado (doc 05 §5.3). */
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario', 'internacao', 'financeiro')
   @Get('minhas')
   @ApiQuery({ name: 'from', required: false })
   @ApiQuery({ name: 'to', required: false })

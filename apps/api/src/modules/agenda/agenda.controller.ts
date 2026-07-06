@@ -12,10 +12,11 @@ import {
   UpdateTipoAtendimentoDto,
 } from './agenda.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('agenda')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('agenda')
 export class AgendaController {
   constructor(private readonly agenda: AgendaService) {}
@@ -34,6 +35,7 @@ export class AgendaController {
     return this.agenda.list(req.auth!.tenantId, from, to, profissionalId);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Post()
   @ApiCreatedResponse({ type: AgendamentoDto })
   create(@Req() req: Request, @Body() dto: CreateAgendamentoDto): Promise<AgendamentoDto> {
@@ -53,12 +55,14 @@ export class AgendaController {
     return this.agenda.listTipos(req.auth!.tenantId, incluirInativos === 'true');
   }
 
+  @Roles('admin', 'gestor')
   @Post('tipos')
   @ApiCreatedResponse({ type: TipoAtendimentoDto })
   createTipo(@Req() req: Request, @Body() dto: CreateTipoAtendimentoDto): Promise<TipoAtendimentoDto> {
     return this.agenda.createTipo(req.auth!.tenantId, dto);
   }
 
+  @Roles('admin', 'gestor')
   @Patch('tipos/:id')
   @ApiOkResponse({ type: TipoAtendimentoDto })
   updateTipo(
@@ -69,12 +73,14 @@ export class AgendaController {
     return this.agenda.updateTipo(req.auth!.tenantId, id, dto);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
   @Patch(':id/status')
   @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
   updateStatus(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateStatusDto): Promise<{ ok: boolean }> {
     return this.agenda.updateStatus(req.auth!.tenantId, id, dto.status);
   }
 
+  @Roles('admin', 'gestor', 'recepcao')
   @Delete(':id')
   @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
   cancelar(@Req() req: Request, @Param('id') id: string): Promise<{ ok: boolean }> {
