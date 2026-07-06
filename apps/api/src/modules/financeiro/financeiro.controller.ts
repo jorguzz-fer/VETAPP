@@ -14,10 +14,12 @@ import {
   UpdateFormaDto,
 } from './financeiro.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('financeiro')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'financeiro', 'recepcao')
 @Controller()
 export class FinanceiroController {
   constructor(private readonly financeiro: FinanceiroService) {}
@@ -68,12 +70,14 @@ export class FinanceiroController {
     return this.financeiro.listFormas(req.auth!.tenantId, incluirInativos === 'true');
   }
 
+  @Roles('admin', 'gestor', 'financeiro')
   @Post('formas-recebimento')
   @ApiCreatedResponse({ type: FormaRecebimentoDto })
   createForma(@Req() req: Request, @Body() dto: CreateFormaDto): Promise<FormaRecebimentoDto> {
     return this.financeiro.createForma(req.auth!.tenantId, dto);
   }
 
+  @Roles('admin', 'gestor', 'financeiro')
   @Patch('formas-recebimento/:id')
   @ApiOkResponse({ type: FormaRecebimentoDto })
   updateForma(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateFormaDto): Promise<FormaRecebimentoDto> {

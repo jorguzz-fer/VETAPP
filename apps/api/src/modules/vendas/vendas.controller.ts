@@ -12,10 +12,12 @@ import {
   UpdateOrcamentoStatusDto,
 } from './vendas.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('vendas')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'recepcao', 'financeiro', 'veterinario')
 @Controller('orcamentos')
 export class VendasController {
   constructor(private readonly vendas: VendasService) {}
@@ -32,6 +34,7 @@ export class VendasController {
     return this.vendas.list(req.auth!.tenantId, status, responsavelId);
   }
 
+  @Roles('admin', 'gestor', 'recepcao')
   @Post()
   @ApiCreatedResponse({ type: OrcamentoResumoDto })
   create(@Req() req: Request, @Body() dto: CreateOrcamentoDto): Promise<OrcamentoResumoDto> {
@@ -44,18 +47,21 @@ export class VendasController {
     return this.vendas.detalhe(req.auth!.tenantId, id);
   }
 
+  @Roles('admin', 'gestor', 'recepcao')
   @Post(':id/itens')
   @ApiCreatedResponse({ type: OrcamentoItemDto })
   addItem(@Req() req: Request, @Param('id') id: string, @Body() dto: AddOrcamentoItemDto): Promise<OrcamentoItemDto> {
     return this.vendas.addItem(req.auth!.tenantId, id, dto);
   }
 
+  @Roles('admin', 'gestor', 'recepcao')
   @Delete(':id/itens/:linhaId')
   @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
   removeItem(@Req() req: Request, @Param('id') id: string, @Param('linhaId') linhaId: string): Promise<{ ok: boolean }> {
     return this.vendas.removeItem(req.auth!.tenantId, id, linhaId);
   }
 
+  @Roles('admin', 'gestor', 'recepcao')
   @Patch(':id/status')
   @ApiOkResponse({ type: OrcamentoResumoDto })
   updateStatus(
@@ -66,6 +72,7 @@ export class VendasController {
     return this.vendas.updateStatus(req.auth!.tenantId, id, dto.status);
   }
 
+  @Roles('admin', 'gestor', 'recepcao', 'financeiro')
   @Post(':id/converter')
   @ApiOkResponse({ type: ConverterResultDto })
   converter(@Req() req: Request, @Param('id') id: string): Promise<ConverterResultDto> {

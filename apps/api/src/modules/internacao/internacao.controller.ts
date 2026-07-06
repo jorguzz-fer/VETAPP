@@ -12,10 +12,12 @@ import {
   PrescreverDto,
 } from './internacao.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('internacao')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'gestor', 'veterinario', 'internacao')
 @Controller('internacoes')
 export class InternacaoController {
   constructor(private readonly internacao: InternacaoService) {}
