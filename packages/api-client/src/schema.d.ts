@@ -2052,6 +2052,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mensagens/vacinas-vencendo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_vacinasVencendo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mensagens/templates": {
         parameters: {
             query?: never;
@@ -3467,6 +3483,17 @@ export interface components {
             referenciaId?: string;
             /** @description Template usado (opcional) */
             templateId?: string;
+        };
+        VacinaVencendoDto: {
+            vacinaId: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            vacina: string;
+            proximaEm: string;
+            /** @description Dias até a próxima dose (negativo = vencida) */
+            diasRestantes: number;
         };
         MensagemTemplateDto: {
             id: string;
@@ -7123,6 +7150,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_vacinasVencendo: {
+        parameters: {
+            query?: {
+                /** @description Janela em dias (default 30) */
+                dias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaVencendoDto"][];
                 };
             };
         };
