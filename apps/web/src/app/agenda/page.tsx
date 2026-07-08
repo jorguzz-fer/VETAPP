@@ -21,6 +21,15 @@ interface Agendamento {
   cor?: string | null;
   profissionalId?: string | null;
   profissionalNome?: string | null;
+  departamentoId?: string | null;
+  departamentoNome?: string | null;
+}
+
+interface Departamento {
+  id: string;
+  nome: string;
+  cor: string | null;
+  ativo: boolean;
 }
 
 interface TipoAtendimento {
@@ -43,6 +52,9 @@ export default function AgendaPage() {
   const [profissionais, setProfissionais] = useState<Profissional[]>([]);
   const [meuId, setMeuId] = useState<string | null>(null);
   const [filtroProf, setFiltroProf] = useState<string>('');
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
+  const [filtroDep, setFiltroDep] = useState<string>('');
+  const [depId, setDepId] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [inicio, setInicio] = useState('');
@@ -62,7 +74,14 @@ export default function AgendaPage() {
     // agenda do tenant conforme ela cresce.
     if (!range.from || !range.to) return;
     const { data } = await api.GET('/api/agenda', {
-      params: { query: { profissionalId: filtroProf || undefined, from: range.from, to: range.to } },
+      params: {
+        query: {
+          profissionalId: filtroProf || undefined,
+          departamentoId: filtroDep || undefined,
+          from: range.from,
+          to: range.to,
+        },
+      },
     });
     const items = (data as Agendamento[]) ?? [];
     setAgs(items);
@@ -79,7 +98,7 @@ export default function AgendaPage() {
           classNames: a.status === 'concluido' ? ['opacity-60'] : undefined,
         })),
     );
-  }, [filtroProf, range.from, range.to]);
+  }, [filtroProf, filtroDep, range.from, range.to]);
 
   useEffect(() => {
     void load();
@@ -91,6 +110,9 @@ export default function AgendaPage() {
     });
     void api.GET('/api/agenda/profissionais').then(({ data }) => {
       setProfissionais((data as Profissional[]) ?? []);
+    });
+    void api.GET('/api/agenda/departamentos', { params: { query: {} } }).then(({ data }) => {
+      setDepartamentos((data as Departamento[]) ?? []);
     });
     void api.GET('/api/auth/me').then(({ data }) => {
       const me = data as { userId?: string } | undefined;
@@ -148,6 +170,7 @@ export default function AgendaPage() {
         fim: fim ? new Date(fim).toISOString() : undefined,
         tipoAtendimentoId: tipoId || undefined,
         profissionalId: profId || undefined,
+        departamentoId: depId || undefined,
       },
     });
     setSaving(false);
@@ -159,6 +182,7 @@ export default function AgendaPage() {
       setTitulo('');
       setInicio('');
       setFim('');
+      setDepId('');
       setShowForm(false);
       await load();
     }
@@ -188,6 +212,14 @@ export default function AgendaPage() {
                 </option>
               ))}
           </select>
+          {departamentos.length > 0 && (
+            <select value={filtroDep} onChange={(e) => setFiltroDep(e.target.value)} className={`${inputCls} text-sm`}>
+              <option value="">Todos os departamentos</option>
+              {departamentos.map((d) => (
+                <option key={d.id} value={d.id}>{d.nome}</option>
+              ))}
+            </select>
+          )}
           <Button onClick={() => setShowForm((v) => !v)}>
             <i className="ri-add-line"></i> Novo agendamento
           </Button>
@@ -223,6 +255,17 @@ export default function AgendaPage() {
                 ))}
               </select>
             </label>
+            {departamentos.length > 0 && (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Departamento</span>
+                <select value={depId} onChange={(e) => setDepId(e.target.value)} className={inputCls}>
+                  <option value="">—</option>
+                  {departamentos.map((d) => (
+                    <option key={d.id} value={d.id}>{d.nome}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-gray-600 dark:text-gray-300">Início</span>
               <input
@@ -294,6 +337,7 @@ export default function AgendaPage() {
               <InfoLinha icon="ri-time-line" label="Fim" value={new Date(sel.fim).toLocaleString('pt-BR')} />
               {sel.tipoNome && <InfoLinha icon="ri-bookmark-line" label="Tipo" value={sel.tipoNome} />}
               {sel.profissionalNome && <InfoLinha icon="ri-user-3-line" label="Profissional" value={sel.profissionalNome} />}
+              {sel.departamentoNome && <InfoLinha icon="ri-building-line" label="Departamento" value={sel.departamentoNome} />}
             </div>
             {sel.status !== 'concluido' && sel.status !== 'cancelado' && (
               <div className="p-5 border-t border-gray-100 dark:border-[#172036] flex flex-col gap-2">

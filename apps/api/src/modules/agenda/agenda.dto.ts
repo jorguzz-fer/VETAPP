@@ -43,6 +43,11 @@ export class CreateAgendamentoDto {
   @IsUUID()
   profissionalId?: string;
 
+  @ApiPropertyOptional({ type: String, description: 'Departamento da agenda (Clínica, Hotel…)' })
+  @IsOptional()
+  @IsUUID()
+  departamentoId?: string;
+
   @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsUUID()
@@ -77,6 +82,8 @@ export class AgendamentoDto {
   @ApiPropertyOptional({ type: String }) cor?: string | null;
   @ApiPropertyOptional({ type: String }) profissionalId?: string | null;
   @ApiPropertyOptional({ type: String }) profissionalNome?: string | null;
+  @ApiPropertyOptional({ type: String }) departamentoId?: string | null;
+  @ApiPropertyOptional({ type: String }) departamentoNome?: string | null;
   @ApiPropertyOptional({ type: String }) animalId?: string | null;
   @ApiPropertyOptional({ type: String }) responsavelId?: string | null;
   @ApiPropertyOptional({ type: String }) observacoes?: string | null;
@@ -140,4 +147,44 @@ export class TipoAtendimentoDto {
   @ApiProperty() duracaoMinutos!: number;
   @ApiProperty({ type: String, nullable: true }) cor!: string | null;
   @ApiProperty() ativo!: boolean;
+}
+
+// Departamentos da agenda (doc 16 A1).
+export class DepartamentoDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() nome!: string;
+  @ApiProperty({ type: String, nullable: true }) cor!: string | null;
+  @ApiProperty() ativo!: boolean;
+}
+
+export class CreateDepartamentoDto {
+  @ApiProperty({ example: 'Hotel' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  nome!: string;
+
+  @ApiPropertyOptional({ example: '#7c5cff', description: 'Cor do departamento (hex)' })
+  @IsOptional()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  cor?: string;
+}
+
+export class UpdateDepartamentoDto {
+  @ApiPropertyOptional({ example: 'Hotel' })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  nome?: string;
+
+  @ApiPropertyOptional({ example: '#7c5cff' })
+  @IsOptional()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  cor?: string;
+
+  @ApiPropertyOptional({ type: Boolean })
+  @IsOptional()
+  @IsBoolean()
+  ativo?: boolean;
 }
