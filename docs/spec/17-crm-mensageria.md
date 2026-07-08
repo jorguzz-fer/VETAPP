@@ -65,10 +65,12 @@ escolhido, só se pluga o driver — o resto não muda.
 - **Disparo automático** (agendado) dos lembretes = 🔜 (depende do provider + scheduler).
 
 ## 5. Roadmap
-1. ✅/🟡 **Slice 1** — núcleo `mensagens` + driver `log` + histórico na ficha + menu ⋮.
-2. 🔜 **Slice 2** — templates (CRUD + placeholders).
-3. 🔜 **Slice 3** — lembretes de vacina (vencimentos → registrar) + chegada.
-4. 🔜 **Slice 4** — página CRM `/mensagens` (histórico geral + filtros) + relatórios.
+1. ✅ **Slice 1** — núcleo `mensagens` + driver `log` + histórico na ficha (migração 0037).
+2. ✅ **Slice 2** — templates (CRUD em `/cadastros` + placeholders + picker na ficha, migração 0038).
+3. ✅ **Slice 3** — lembretes de vacina (`GET /api/mensagens/vacinas-vencendo` → registrar) +
+   página CRM `/mensagens` (vacinas a vencer + histórico geral). Notificação ativa de chegada
+   e disparo automático ficam para a fase de integração (🔜, dependem de provider/scheduler).
+4. 🔜 **Slice 4** — filtros/relatórios do CRM + campanhas segmentadas.
 5. 🔜 **Externo (decisão do stakeholder)** — provider real (WhatsApp Business/SMS/e-mail),
    credenciais no cofre, webhooks de status (entregue/visualizado/clicado), disparo
    automático agendado, campanhas segmentadas.

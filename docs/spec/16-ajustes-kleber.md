@@ -151,8 +151,10 @@ Orçamentos abertos · Execuções clínicas pendentes · Próximos de hoje · C
 
 ## 9. Remoções
 
-- 🔜 **R1** — Remover a tela/modelo **"Atendimento clínico"** — redundante ("mais do
-  mesmo") com a ficha do cliente. *(Ajuste simples ainda pendente — não entrou nesta leva.)*
+- ✅ **R1** — "Atendimento clínico" redundante. **N/A no VETAPP**: essa tela era do
+  **concorrente** (simples.vet), que o Dr. Kleber apontou como "mais do mesmo" e pediu
+  para **não replicar**. O VETAPP nunca teve essa tela (confirmado: nenhuma rota/menu
+  "atendimento clínico") — logo, nada a remover. Item satisfeito por omissão.
 
 ---
 
