@@ -16,6 +16,7 @@ import {
   responsaveis,
 } from '../../database/schema';
 import { FaturamentoService } from '../financeiro/faturamento.service';
+import { StorageService } from '../storage/storage.service';
 import type {
   AdmitirDto,
   AltaDto,
@@ -42,6 +43,7 @@ export class InternacaoService {
   constructor(
     private readonly database: DatabaseService,
     private readonly faturamento: FaturamentoService,
+    private readonly storage: StorageService,
   ) {}
 
   // ───────── Listas gerenciadas da admissão (motivos/boxes) ─────────
@@ -302,7 +304,13 @@ export class InternacaoService {
 
       const [nova] = await tx
         .insert(internacoes)
-        .values({ tenantId, animalId: dto.animalId, motivo: dto.motivo, box: dto.box ?? null })
+        .values({
+          tenantId,
+          animalId: dto.animalId,
+          motivo: dto.motivo,
+          box: dto.box ?? null,
+          altaPrevistaEm: dto.altaPrevista ?? null,
+        })
         .returning();
 
       // Admissão vira evento na linha do tempo do animal (doc 05 §2.3).
@@ -314,7 +322,7 @@ export class InternacaoService {
       });
 
       const resp = await tx.query.responsaveis.findFirst({ where: eq(responsaveis.id, animal.responsavelId) });
-      return this.toResumo(nova, animal.nome, animal.responsavelId, resp?.nome ?? '', 0);
+      return this.toResumo(nova, animal.nome, animal.responsavelId, resp?.nome ?? '', 0, animal.fotoKey);
     });
   }
 
@@ -326,6 +334,7 @@ export class InternacaoService {
         .select({
           i: internacoes,
           animalNome: animais.nome,
+          fotoKey: animais.fotoKey,
           responsavelId: animais.responsavelId,
           responsavelNome: responsaveis.nome,
           pendentes: sql<number>`(select count(*)::int from ${internacaoExecucoes}
@@ -338,7 +347,9 @@ export class InternacaoService {
         .where(and(...conds))
         .orderBy(desc(internacoes.entradaEm))
         .limit(200);
-      return rows.map((r) => this.toResumo(r.i, r.animalNome, r.responsavelId, r.responsavelNome, r.pendentes));
+      return Promise.all(
+        rows.map((r) => this.toResumo(r.i, r.animalNome, r.responsavelId, r.responsavelNome, r.pendentes, r.fotoKey)),
+      );
     });
   }
 
@@ -351,8 +362,16 @@ export class InternacaoService {
         .where(eq(internacaoExecucoes.internacaoId, id))
         .orderBy(desc(internacaoExecucoes.createdAt));
       const pendentes = execucoes.filter((e) => !e.executadaEm).length;
+      const resumo = await this.toResumo(
+        base.internacao,
+        base.animal.nome,
+        base.animal.responsavelId,
+        base.responsavelNome,
+        pendentes,
+        base.animal.fotoKey,
+      );
       return {
-        ...this.toResumo(base.internacao, base.animal.nome, base.animal.responsavelId, base.responsavelNome, pendentes),
+        ...resumo,
         observacoes: base.internacao.observacoes,
         execucoes: execucoes.map((e) => this.toExecucao(e)),
       };
@@ -477,7 +496,7 @@ export class InternacaoService {
         descricao: `Alta${dto.observacoes ? `: ${dto.observacoes}` : ''}`,
       });
 
-      return this.toResumo(atualizada, animal.nome, animal.responsavelId, responsavelNome, pendentes[0]?.n ?? 0);
+      return this.toResumo(atualizada, animal.nome, animal.responsavelId, responsavelNome, pendentes[0]?.n ?? 0, animal.fotoKey);
     });
   }
 
@@ -490,13 +509,14 @@ export class InternacaoService {
     return { internacao, animal, responsavelNome: resp?.nome ?? '' };
   }
 
-  private toResumo(
+  private async toResumo(
     i: typeof internacoes.$inferSelect,
     animalNome: string,
     responsavelId: string,
     responsavelNome: string,
     pendentes: number,
-  ): InternacaoResumoDto {
+    fotoKey?: string | null,
+  ): Promise<InternacaoResumoDto> {
     return {
       id: i.id,
       animalId: i.animalId,
@@ -507,8 +527,10 @@ export class InternacaoService {
       box: i.box,
       status: i.status,
       entradaEm: i.entradaEm as unknown as string,
+      altaPrevistaEm: (i.altaPrevistaEm as unknown as string | null) ?? null,
       altaEm: (i.altaEm as unknown as string | null) ?? null,
       pendentes,
+      fotoUrl: await this.storage.signDownload(fotoKey ?? null),
     };
   }
 

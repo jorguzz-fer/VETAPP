@@ -17,8 +17,10 @@ interface Internacao {
   box: string | null;
   status: string;
   entradaEm: string;
+  altaPrevistaEm: string | null;
   altaEm: string | null;
   pendentes: number;
+  fotoUrl: string | null;
 }
 
 interface Execucao {
@@ -242,6 +244,56 @@ export default function InternacaoPage() {
           </Button>
         </div>
       </div>
+
+      {/* Dashboard de internação: cards dos pacientes internados (doc 16 I1-I4). */}
+      {internacoes.some((i) => i.status === 'internado') && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {internacoes
+            .filter((i) => i.status === 'internado')
+            .map((i) => (
+              <button
+                key={i.id}
+                type="button"
+                onClick={() => abrir(i.id)}
+                className="text-left rounded-lg border border-gray-100 dark:border-[#172036] bg-white dark:bg-[#0c1427] p-4 hover:border-primary-300 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-12 h-12 rounded-full overflow-hidden bg-primary-50 text-primary-500 grid place-items-center shrink-0">
+                    {i.fotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={i.fotoUrl} alt={i.animalNome} className="w-full h-full object-cover" />
+                    ) : (
+                      <i className="ri-bear-smile-line text-2xl"></i>
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-black dark:text-white truncate">{i.animalNome}</p>
+                    <p className="text-xs text-gray-500 truncate">{i.responsavelNome}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                  <span><i className="ri-time-line"></i> {diasDesde(i.entradaEm)}</span>
+                  {i.box && <span><i className="ri-home-4-line"></i> {i.box}</span>}
+                </div>
+                <p className={`mt-1 text-xs ${i.altaPrevistaEm ? 'text-gray-500' : 'text-gray-400'}`}>
+                  {i.altaPrevistaEm
+                    ? `Alta prevista ${new Date(i.altaPrevistaEm).toLocaleDateString('pt-BR')}`
+                    : 'Sem previsão de alta'}
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  {i.pendentes > 0 ? (
+                    <span className="text-xs rounded-full px-2.5 py-0.5 bg-amber-50 text-amber-600">
+                      <i className="ri-syringe-line"></i> {i.pendentes} pendente(s)
+                    </span>
+                  ) : (
+                    <span className="text-xs text-green-600"><i className="ri-check-line"></i> sem pendências</span>
+                  )}
+                  <span className="text-xs text-primary-500">Abrir mapa →</span>
+                </div>
+              </button>
+            ))}
+        </div>
+      )}
 
       <Card>
         <div className="flex gap-2 mb-4">

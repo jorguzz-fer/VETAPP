@@ -232,6 +232,13 @@
       "when": 1719593600000,
       "tag": "0032_animais_campos",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1719593700000,
+      "tag": "0033_internacao_alta_prevista",
+      "breakpoints": true
     }
   ]
 }
