@@ -372,6 +372,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais/{id}/vacinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_listVacinas"];
+        put?: never;
+        post: operations["ClientesController_criarVacina"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}/eventos": {
         parameters: {
             query?: never;
@@ -2252,6 +2268,34 @@ export interface components {
         ConfirmFotoDto: {
             key: string;
         };
+        VacinaDto: {
+            id: string;
+            animalId: string;
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            aplicadaEm: string;
+            proximaEm?: string;
+            aplicadaPorNome?: string;
+            observacao?: string;
+        };
+        CreateVacinaDto: {
+            /** @example Antirrábica */
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            /**
+             * @description AAAA-MM-DD
+             * @example 2026-07-08
+             */
+            aplicadaEm: string;
+            /**
+             * @description Próxima dose (AAAA-MM-DD)
+             * @example 2027-07-08
+             */
+            proximaEm?: string;
+            observacao?: string;
+        };
         EventoDto: {
             id: string;
             animalId: string;
@@ -3910,6 +3954,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_listVacinas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"][];
+                };
+            };
+        };
+    };
+    ClientesController_criarVacina: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVacinaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"];
                 };
             };
         };

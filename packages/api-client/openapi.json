@@ -998,6 +998,87 @@
         ]
       }
     },
+    "/api/animais/{id}/vacinas": {
+      "get": {
+        "operationId": "ClientesController_listVacinas",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VacinaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ClientesController_criarVacina",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVacinaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VacinaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}/eventos": {
       "get": {
         "operationId": "ProntuarioController_eventos",
@@ -6550,6 +6631,76 @@
         },
         "required": [
           "key"
+        ]
+      },
+      "VacinaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string"
+          },
+          "proximaEm": {
+            "type": "string"
+          },
+          "aplicadaPorNome": {
+            "type": "string"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "nome",
+          "aplicadaEm"
+        ]
+      },
+      "CreateVacinaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Antirrábica"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string",
+            "example": "2026-07-08",
+            "description": "AAAA-MM-DD"
+          },
+          "proximaEm": {
+            "type": "string",
+            "example": "2027-07-08",
+            "description": "Próxima dose (AAAA-MM-DD)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "aplicadaEm"
         ]
       },
       "EventoDto": {
