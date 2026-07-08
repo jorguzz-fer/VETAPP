@@ -14,8 +14,13 @@ interface Animal {
   nome: string;
   especie?: string | null;
   raca?: string | null;
+  pelagem?: string | null;
   sexo?: string | null;
   castrado: boolean;
+  microchip?: string | null;
+  marcacoes?: string[];
+  pedigree?: boolean;
+  pedigreeNumero?: string | null;
   status: string;
   fotoUrl?: string | null;
 }
@@ -100,12 +105,29 @@ export default function ProntuarioPage() {
   }
 
   const [editAnimal, setEditAnimal] = useState(false);
-  const [aForm, setAForm] = useState<{ nome: string; especie: string; raca: string; sexo: '' | 'M' | 'F'; castrado: boolean; status: 'vivo' | 'falecido' }>({
+  const [aForm, setAForm] = useState<{
+    nome: string;
+    especie: string;
+    raca: string;
+    pelagem: string;
+    sexo: '' | 'M' | 'F';
+    castrado: boolean;
+    microchip: string;
+    marcacoes: string;
+    pedigree: boolean;
+    pedigreeNumero: string;
+    status: 'vivo' | 'falecido';
+  }>({
     nome: '',
     especie: '',
     raca: '',
+    pelagem: '',
     sexo: '',
     castrado: false,
+    microchip: '',
+    marcacoes: '',
+    pedigree: false,
+    pedigreeNumero: '',
     status: 'vivo',
   });
   const [saving, setSaving] = useState(false);
@@ -127,8 +149,13 @@ export default function ProntuarioPage() {
         nome: an.nome,
         especie: an.especie ?? '',
         raca: an.raca ?? '',
+        pelagem: an.pelagem ?? '',
         sexo: (an.sexo as '' | 'M' | 'F') ?? '',
         castrado: an.castrado,
+        microchip: an.microchip ?? '',
+        marcacoes: (an.marcacoes ?? []).join(', '),
+        pedigree: an.pedigree ?? false,
+        pedigreeNumero: an.pedigreeNumero ?? '',
         status: (an.status as 'vivo' | 'falecido') ?? 'vivo',
       });
     }
@@ -292,8 +319,15 @@ export default function ProntuarioPage() {
         nome: aForm.nome,
         especie: aForm.especie || undefined,
         raca: aForm.raca || undefined,
+        pelagem: aForm.pelagem || undefined,
         sexo: aForm.sexo || undefined,
         castrado: aForm.castrado,
+        microchip: aForm.microchip || undefined,
+        marcacoes: aForm.marcacoes
+          ? aForm.marcacoes.split(',').map((s) => s.trim()).filter(Boolean)
+          : [],
+        pedigree: aForm.pedigree,
+        pedigreeNumero: aForm.pedigreeNumero || undefined,
         status: aForm.status,
       },
     });
@@ -338,10 +372,19 @@ export default function ProntuarioPage() {
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-black dark:text-white">{animal.nome}</h1>
             <p className="text-sm text-gray-500">
-              {[animal.especie, animal.raca, animal.sexo, animal.castrado ? 'Castrado' : null]
+              {[animal.especie, animal.raca, animal.pelagem, animal.sexo, animal.castrado ? 'Castrado' : null]
                 .filter(Boolean)
                 .join(' · ') || '—'}
             </p>
+            {animal.marcacoes && animal.marcacoes.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {animal.marcacoes.map((m) => (
+                  <span key={m} className="inline-flex items-center rounded-full bg-amber-50 dark:bg-[#15203c] text-amber-600 dark:text-amber-300 px-2 py-0.5 text-xs">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setEditAnimal((v) => !v)}>
@@ -475,6 +518,10 @@ export default function ProntuarioPage() {
               <input value={aForm.raca} onChange={(e) => setAForm({ ...aForm, raca: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
             </label>
             <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Pelagem</span>
+              <input value={aForm.pelagem} onChange={(e) => setAForm({ ...aForm, pelagem: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" placeholder="Ex.: Preto e marrom" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
               <span className="text-gray-600 dark:text-gray-300">Sexo</span>
               <select value={aForm.sexo} onChange={(e) => setAForm({ ...aForm, sexo: e.target.value as '' | 'M' | 'F' })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500">
                 <option value="">—</option>
@@ -491,8 +538,26 @@ export default function ProntuarioPage() {
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={aForm.castrado} onChange={(e) => setAForm({ ...aForm, castrado: e.target.checked })} />
-              <span className="text-gray-600 dark:text-gray-300">Castrado</span>
+              <span className="text-gray-600 dark:text-gray-300">Castrado/esterilizado</span>
             </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Microchip</span>
+              <input value={aForm.microchip} onChange={(e) => setAForm({ ...aForm, microchip: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" placeholder="Nº do microchip" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              <span className="text-gray-600 dark:text-gray-300">Marcações (separe por vírgula)</span>
+              <input value={aForm.marcacoes} onChange={(e) => setAForm({ ...aForm, marcacoes: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" placeholder="Ex.: renal, diabético" />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={aForm.pedigree} onChange={(e) => setAForm({ ...aForm, pedigree: e.target.checked })} />
+              <span className="text-gray-600 dark:text-gray-300">Possui pedigree</span>
+            </label>
+            {aForm.pedigree && (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Nº do pedigree</span>
+                <input value={aForm.pedigreeNumero} onChange={(e) => setAForm({ ...aForm, pedigreeNumero: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+              </label>
+            )}
             <div className="md:col-span-3 flex gap-2">
               <Button type="submit"><i className="ri-save-line"></i> Salvar</Button>
               <Button type="button" variant="ghost" onClick={() => setEditAnimal(false)}>Cancelar</Button>

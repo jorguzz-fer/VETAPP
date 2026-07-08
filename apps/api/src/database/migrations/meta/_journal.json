@@ -225,6 +225,13 @@
       "when": 1719593500000,
       "tag": "0031_assinaturas",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1719593600000,
+      "tag": "0032_animais_campos",
+      "breakpoints": true
     }
   ]
 }
