@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, lte } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { mensagemTemplates, mensagens, responsaveis, users } from '../../database/schema';
+import { animais, mensagemTemplates, mensagens, responsaveis, users, vacinas } from '../../database/schema';
 import { resolveMensagemProvider } from './mensagem-provider';
 import type {
   CreateMensagemDto,
@@ -9,6 +9,7 @@ import type {
   MensagemDto,
   MensagemTemplateDto,
   UpdateTemplateDto,
+  VacinaVencendoDto,
 } from './mensageria.dto';
 
 type MensagemRow = typeof mensagens.$inferSelect;
@@ -63,6 +64,50 @@ export class MensageriaService {
         })
         .returning();
       return this.toDto(row, resp.nome, null);
+    });
+  }
+
+  // ───────── Lembretes de vacina (doc 17 slice 3) ─────────
+
+  // Vacinas com próxima dose vencendo até `dias` (inclui vencidas). Usa
+  // vacinas.proxima_em (índice vacinas_proxima_idx). Ordena da mais urgente.
+  async vacinasVencendo(tenantId: string, dias: number): Promise<VacinaVencendoDto[]> {
+    const limite = new Date();
+    limite.setDate(limite.getDate() + dias);
+    const limiteStr = limite.toISOString().slice(0, 10); // AAAA-MM-DD
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          vacinaId: vacinas.id,
+          animalId: vacinas.animalId,
+          animalNome: animais.nome,
+          responsavelId: animais.responsavelId,
+          responsavelNome: responsaveis.nome,
+          vacina: vacinas.nome,
+          proximaEm: vacinas.proximaEm,
+        })
+        .from(vacinas)
+        .innerJoin(animais, eq(animais.id, vacinas.animalId))
+        .innerJoin(responsaveis, eq(responsaveis.id, animais.responsavelId))
+        .where(and(isNotNull(vacinas.proximaEm), lte(vacinas.proximaEm, limiteStr)))
+        .orderBy(asc(vacinas.proximaEm))
+        .limit(300);
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      return rows.map((r) => {
+        const prox = new Date(r.proximaEm as unknown as string);
+        const diasRestantes = Math.round((prox.getTime() - hoje.getTime()) / 86_400_000);
+        return {
+          vacinaId: r.vacinaId,
+          animalId: r.animalId,
+          animalNome: r.animalNome,
+          responsavelId: r.responsavelId,
+          responsavelNome: r.responsavelNome,
+          vacina: r.vacina,
+          proximaEm: r.proximaEm as unknown as string,
+          diasRestantes,
+        };
+      });
     });
   }
 

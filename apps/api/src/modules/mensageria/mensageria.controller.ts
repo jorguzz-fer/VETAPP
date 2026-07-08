@@ -8,6 +8,7 @@ import {
   MensagemDto,
   MensagemTemplateDto,
   UpdateTemplateDto,
+  VacinaVencendoDto,
 } from './mensageria.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles, RolesGuard } from '../../common/guards/roles.guard';
@@ -45,6 +46,16 @@ export class MensageriaController {
     @Query('status') status?: string,
   ): Promise<MensagemDto[]> {
     return this.mensageria.listGeral(req.auth!.tenantId, { canal, status });
+  }
+
+  // Vacinas a vencer (doc 17 slice 3) — base do lembrete. Qualquer staff clínico/recepção.
+  @Roles('admin', 'gestor', 'recepcao', 'veterinario')
+  @Get('mensagens/vacinas-vencendo')
+  @ApiQuery({ name: 'dias', required: false, type: Number, description: 'Janela em dias (default 30)' })
+  @ApiOkResponse({ type: [VacinaVencendoDto] })
+  vacinasVencendo(@Req() req: Request, @Query('dias') dias?: string): Promise<VacinaVencendoDto[]> {
+    const n = dias ? Math.max(0, Math.min(365, parseInt(dias, 10) || 30)) : 30;
+    return this.mensageria.vacinasVencendo(req.auth!.tenantId, n);
   }
 
   // Templates (doc 17 slice 2). Ver = staff (para usar ao registrar); gestão = admin/gestor.

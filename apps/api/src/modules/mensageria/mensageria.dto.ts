@@ -37,6 +37,18 @@ export class CreateMensagemDto {
   templateId?: string;
 }
 
+// Vacinas a vencer (doc 17 slice 3) — base do lembrete de vacina.
+export class VacinaVencendoDto {
+  @ApiProperty() vacinaId!: string;
+  @ApiProperty() animalId!: string;
+  @ApiProperty() animalNome!: string;
+  @ApiProperty() responsavelId!: string;
+  @ApiProperty() responsavelNome!: string;
+  @ApiProperty() vacina!: string;
+  @ApiProperty() proximaEm!: string;
+  @ApiProperty({ description: 'Dias até a próxima dose (negativo = vencida)' }) diasRestantes!: number;
+}
+
 export class MensagemTemplateDto {
   @ApiProperty() id!: string;
   @ApiProperty() nome!: string;

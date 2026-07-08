@@ -6002,6 +6002,45 @@
         ]
       }
     },
+    "/api/mensagens/vacinas-vencendo": {
+      "get": {
+        "operationId": "MensageriaController_vacinasVencendo",
+        "parameters": [
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "description": "Janela em dias (default 30)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VacinaVencendoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/mensagens/templates": {
       "get": {
         "operationId": "MensageriaController_listTemplates",
@@ -10591,6 +10630,46 @@
         "required": [
           "canal",
           "corpo"
+        ]
+      },
+      "VacinaVencendoDto": {
+        "type": "object",
+        "properties": {
+          "vacinaId": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "vacina": {
+            "type": "string"
+          },
+          "proximaEm": {
+            "type": "string"
+          },
+          "diasRestantes": {
+            "type": "number",
+            "description": "Dias até a próxima dose (negativo = vencida)"
+          }
+        },
+        "required": [
+          "vacinaId",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "vacina",
+          "proximaEm",
+          "diasRestantes"
         ]
       },
       "MensagemTemplateDto": {
