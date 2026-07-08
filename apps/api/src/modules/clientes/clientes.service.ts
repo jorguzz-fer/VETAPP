@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, faturas, prontuarioEventos, responsaveis, users, vacinas } from '../../database/schema';
+import { animais, faturas, responsaveis } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,

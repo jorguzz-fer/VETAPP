@@ -43,17 +43,6 @@ function whatsappLink(telefone?: string | null): string | null {
   return `https://wa.me/${d}`;
 }
 
-interface Mensagem {
-  id: string;
-  canal: string;
-  assunto?: string | null;
-  corpo: string;
-  status: string;
-  referenciaTipo?: string | null;
-  disparadoPorNome?: string | null;
-  criadaEm: string;
-}
-
 const inputCls =
   'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
 
