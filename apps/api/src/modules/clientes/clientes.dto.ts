@@ -128,9 +128,20 @@ export class AnimalDto {
   fotoUrl?: string | null;
 }
 
+// Resumo de vendas do cliente para a ficha (doc 16 F1).
+export class ClienteVendasResumoDto {
+  @ApiProperty() totalVendidoCentavos!: number;
+  @ApiProperty() ticketMedioCentavos!: number;
+  @ApiProperty() vendas!: number;
+  @ApiPropertyOptional({ type: String }) ultimaVendaEm?: string | null;
+}
+
 export class ResponsavelComAnimaisDto extends ResponsavelDto {
   @ApiProperty({ type: [AnimalDto] })
   animais!: AnimalDto[];
+
+  @ApiProperty({ type: ClienteVendasResumoDto })
+  vendas!: ClienteVendasResumoDto;
 }
 
 // Resultado da busca de paciente (prontuário): animal + tutor, para abrir a ficha.

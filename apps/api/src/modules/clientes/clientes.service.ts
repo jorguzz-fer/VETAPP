@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, responsaveis } from '../../database/schema';
+import { animais, faturas, responsaveis } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,
@@ -128,10 +128,29 @@ export class ClientesService {
         .from(animais)
         .where(eq(animais.responsavelId, id))
         .orderBy(desc(animais.createdAt));
-      return { r, pets };
+
+      // Resumo de vendas do cliente (doc 16 F1): faturas não canceladas.
+      const [v] = await tx
+        .select({
+          total: sql<number>`coalesce(sum(${faturas.totalCentavos}), 0)::int`,
+          n: sql<number>`count(*)::int`,
+          ultima: sql<string | null>`max(${faturas.createdAt})`,
+        })
+        .from(faturas)
+        .where(and(eq(faturas.responsavelId, id), ne(faturas.status, 'cancelada')));
+      return { r, pets, v };
     });
+
     const animaisDto = await Promise.all(resp.pets.map((p) => this.toAnimalDto(p)));
-    return { ...resp.r, animais: animaisDto } as ResponsavelComAnimaisDto;
+    const total = Number(resp.v?.total ?? 0);
+    const n = Number(resp.v?.n ?? 0);
+    const vendas = {
+      totalVendidoCentavos: total,
+      ticketMedioCentavos: n > 0 ? Math.round(total / n) : 0,
+      vendas: n,
+      ultimaVendaEm: (resp.v?.ultima as unknown as string) ?? null,
+    };
+    return { ...resp.r, animais: animaisDto, vendas } as ResponsavelComAnimaisDto;
   }
 
   async updateResponsavel(tenantId: string, id: string, dto: UpdateResponsavelDto): Promise<ResponsavelDto> {

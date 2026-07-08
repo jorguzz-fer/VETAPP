@@ -6264,6 +6264,28 @@
           "status"
         ]
       },
+      "ClienteVendasResumoDto": {
+        "type": "object",
+        "properties": {
+          "totalVendidoCentavos": {
+            "type": "number"
+          },
+          "ticketMedioCentavos": {
+            "type": "number"
+          },
+          "vendas": {
+            "type": "number"
+          },
+          "ultimaVendaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalVendidoCentavos",
+          "ticketMedioCentavos",
+          "vendas"
+        ]
+      },
       "ResponsavelComAnimaisDto": {
         "type": "object",
         "properties": {
@@ -6293,12 +6315,16 @@
             "items": {
               "$ref": "#/components/schemas/AnimalDto"
             }
+          },
+          "vendas": {
+            "$ref": "#/components/schemas/ClienteVendasResumoDto"
           }
         },
         "required": [
           "id",
           "nome",
-          "animais"
+          "animais",
+          "vendas"
         ]
       },
       "UpdateResponsavelDto": {
