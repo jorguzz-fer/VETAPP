@@ -2751,9 +2751,9 @@ export interface components {
             internados: number;
             execucoesPendentes: number;
             faturasAbertas: number;
-            faturasAbertasCentavos: number;
-            receitaMesCentavos: number;
-            estoqueAbaixoMinimo: number;
+            receitaLiquidaMesCentavos: number;
+            ticketMedioCentavos: number;
+            aReceberCentavos: number;
             orcamentosAbertos: number;
             clientes: number;
             minhasComissoesMesCentavos: number;

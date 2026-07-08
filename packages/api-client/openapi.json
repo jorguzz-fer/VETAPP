@@ -8113,13 +8113,13 @@
           "faturasAbertas": {
             "type": "number"
           },
-          "faturasAbertasCentavos": {
+          "receitaLiquidaMesCentavos": {
             "type": "number"
           },
-          "receitaMesCentavos": {
+          "ticketMedioCentavos": {
             "type": "number"
           },
-          "estoqueAbaixoMinimo": {
+          "aReceberCentavos": {
             "type": "number"
           },
           "orcamentosAbertos": {
@@ -8139,9 +8139,9 @@
           "internados",
           "execucoesPendentes",
           "faturasAbertas",
-          "faturasAbertasCentavos",
-          "receitaMesCentavos",
-          "estoqueAbaixoMinimo",
+          "receitaLiquidaMesCentavos",
+          "ticketMedioCentavos",
+          "aReceberCentavos",
           "orcamentosAbertos",
           "clientes",
           "minhasComissoesMesCentavos"

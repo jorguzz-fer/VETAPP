@@ -12,9 +12,9 @@ interface Dashboard {
   internados: number;
   execucoesPendentes: number;
   faturasAbertas: number;
-  faturasAbertasCentavos: number;
-  receitaMesCentavos: number;
-  estoqueAbaixoMinimo: number;
+  receitaLiquidaMesCentavos: number;
+  ticketMedioCentavos: number;
+  aReceberCentavos: number;
   orcamentosAbertos: number;
   clientes: number;
   minhasComissoesMesCentavos: number;
@@ -29,8 +29,9 @@ function Kpi({ label, value, icon, href, alerta }: { label: string; value: strin
     <Card>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className={`text-2xl font-bold mt-1 ${alerta ? 'text-red-500' : 'text-black dark:text-white'}`}>{value}</p>
+          {/* Título mais destacado/legível (doc 16 T1/D1). */}
+          <p className="text-[15px] font-semibold text-gray-600 dark:text-gray-300">{label}</p>
+          <p className={`text-[28px] leading-tight font-bold mt-1 ${alerta ? 'text-red-500' : 'text-black dark:text-white'}`}>{value}</p>
         </div>
         <span className={`inline-grid place-items-center w-12 h-12 rounded-md ${alerta ? 'bg-red-50 text-red-500' : 'bg-primary-50 text-primary-500'}`}>
           <i className={`${icon} text-2xl`}></i>
@@ -87,13 +88,10 @@ export default function DashboardPage() {
             />
             {gestor ? (
               <>
-                <Kpi label="Receita do mês" value={brl(dados.receitaMesCentavos)} icon="ri-money-dollar-circle-line" href="/faturas" />
-                <Kpi
-                  label="Em aberto (faturas)"
-                  value={brl(dados.faturasAbertasCentavos)}
-                  icon="ri-bill-line"
-                  href="/faturas"
-                />
+                {/* D2: receita líquida do mês (recebido, líquido de taxas). */}
+                <Kpi label="Receita líquida do mês" value={brl(dados.receitaLiquidaMesCentavos)} icon="ri-money-dollar-circle-line" href="/faturas" />
+                {/* D4: ticket médio do mês. */}
+                <Kpi label="Ticket médio" value={brl(dados.ticketMedioCentavos)} icon="ri-scales-3-line" href="/faturas" />
               </>
             ) : (
               <>
@@ -105,17 +103,13 @@ export default function DashboardPage() {
 
           {gestor && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[25px]">
+              {/* D5: faturas a receber (saldo em aberto). D3 removeu o card de estoque. */}
+              <Kpi label="Faturas a receber" value={brl(dados.aReceberCentavos)} icon="ri-bill-line" href="/faturas" alerta={dados.aReceberCentavos > 0} />
               <Kpi label="Clientes" value={String(dados.clientes)} icon="ri-user-heart-line" href="/clientes" />
               <Kpi label="Orçamentos abertos" value={String(dados.orcamentosAbertos)} icon="ri-file-list-3-line" href="/orcamentos" />
+              {/* D6: renomeado para "Execuções clínicas pendentes". */}
               <Kpi
-                label="Estoque abaixo do mínimo"
-                value={String(dados.estoqueAbaixoMinimo)}
-                icon="ri-archive-2-line"
-                href="/estoque"
-                alerta={dados.estoqueAbaixoMinimo > 0}
-              />
-              <Kpi
-                label="Execuções pendentes"
+                label="Execuções clínicas pendentes"
                 value={String(dados.execucoesPendentes)}
                 icon="ri-syringe-line"
                 href="/internacao"
@@ -128,7 +122,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[25px]">
               <Kpi label="Minhas comissões (mês)" value={brl(dados.minhasComissoesMesCentavos)} icon="ri-hand-coin-line" href="/comissoes" />
               <Kpi
-                label="Execuções pendentes (internação)"
+                label="Execuções clínicas pendentes"
                 value={String(dados.execucoesPendentes)}
                 icon="ri-syringe-line"
                 href="/internacao"

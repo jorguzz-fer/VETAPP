@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, count, eq, gte, isNull, lt, ne, sql, sum } from 'drizzle-orm';
+import { and, asc, count, eq, gte, isNull, lt, ne, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import {
   agendamentos,
-  estoqueMovimentos,
-  faturaItens,
   faturas,
+  formasRecebimento,
   internacaoExecucoes,
   internacoes,
-  itensCatalogo,
   orcamentos,
+  recebimentos,
   responsaveis,
   tiposAtendimento,
   users,
@@ -66,29 +65,38 @@ export class DashboardService {
         .where(and(isNull(internacaoExecucoes.executadaEm), eq(internacoes.status, 'internado')));
 
       const [faturasRow] = await tx
-        .select({ n: count(), total: sum(faturas.totalCentavos) })
+        .select({ n: count() })
         .from(faturas)
         .where(eq(faturas.status, 'aberta'));
 
-      const [receitaRow] = await tx
-        .select({ total: sum(faturaItens.valorCentavos) })
-        .from(faturaItens)
-        .where(gte(faturaItens.createdAt, mes0));
-
-      const [estoqueRow] = await tx
+      // Receita líquida do mês (doc 16 D2): recebido no mês, líquido da taxa da forma.
+      // bruto = Σ recebimentos; taxa = Σ (valor × bps) → líquida = bruto − taxa/10000.
+      const [recebRow] = await tx
         .select({
+          bruto: sql<number>`coalesce(sum(${recebimentos.valorCentavos}), 0)::int`,
+          taxa: sql<number>`coalesce(sum(${recebimentos.valorCentavos} * coalesce(${formasRecebimento.taxaBps}, 0)), 0)`,
+        })
+        .from(recebimentos)
+        .leftJoin(formasRecebimento, eq(formasRecebimento.id, recebimentos.formaId))
+        .where(gte(recebimentos.createdAt, mes0));
+
+      // Ticket médio do mês (doc 16 D4): média das faturas não canceladas criadas no mês.
+      const [ticketRow] = await tx
+        .select({
+          total: sql<number>`coalesce(sum(${faturas.totalCentavos}), 0)::int`,
           n: sql<number>`count(*)::int`,
         })
-        .from(itensCatalogo)
-        .where(
-          and(
-            eq(itensCatalogo.ativo, true),
-            sql`${itensCatalogo.tipo} <> 'servico'`,
-            sql`${itensCatalogo.estoqueMinimo} > 0`,
-            sql`coalesce((select sum(${estoqueMovimentos.quantidade}) from ${estoqueMovimentos}
-              where ${estoqueMovimentos.itemId} = ${itensCatalogo.id}), 0) < ${itensCatalogo.estoqueMinimo}`,
-          ),
-        );
+        .from(faturas)
+        .where(and(gte(faturas.createdAt, mes0), ne(faturas.status, 'cancelada')));
+
+      // Faturas a receber (doc 16 D5): saldo em aberto (total − recebido) das
+      // faturas não canceladas e não pagas.
+      const recebidoExpr = sql<number>`coalesce((select sum(${recebimentos.valorCentavos})
+        from ${recebimentos} where ${recebimentos.faturaId} = ${faturas.id}), 0)`;
+      const [receberRow] = await tx
+        .select({ total: sql<number>`coalesce(sum(${faturas.totalCentavos} - ${recebidoExpr}), 0)::int` })
+        .from(faturas)
+        .where(and(ne(faturas.status, 'cancelada'), ne(faturas.status, 'paga')));
 
       const [orcRow] = await tx
         .select({ n: count() })
@@ -97,14 +105,19 @@ export class DashboardService {
 
       const [clientesRow] = await tx.select({ n: count() }).from(responsaveis);
 
+      const bruto = Number(recebRow?.bruto ?? 0);
+      const receitaLiquidaMesCentavos = bruto - Math.round(Number(recebRow?.taxa ?? 0) / 10000);
+      const ticketMedioCentavos =
+        ticketRow && ticketRow.n > 0 ? Math.round(ticketRow.total / ticketRow.n) : 0;
+
       return {
         agendaHoje,
         internados: internadosRow?.n ?? 0,
         pendentes: pendentesRow?.n ?? 0,
         faturasAbertas: faturasRow?.n ?? 0,
-        faturasAbertasCentavos: Number(faturasRow?.total ?? 0),
-        receitaMesCentavos: Number(receitaRow?.total ?? 0),
-        estoqueAbaixoMinimo: estoqueRow?.n ?? 0,
+        receitaLiquidaMesCentavos,
+        ticketMedioCentavos,
+        aReceberCentavos: Number(receberRow?.total ?? 0),
         orcamentosAbertos: orcRow?.n ?? 0,
         clientes: clientesRow?.n ?? 0,
       };
@@ -126,9 +139,9 @@ export class DashboardService {
       internados: base.internados,
       execucoesPendentes: base.pendentes,
       faturasAbertas: base.faturasAbertas,
-      faturasAbertasCentavos: base.faturasAbertasCentavos,
-      receitaMesCentavos: base.receitaMesCentavos,
-      estoqueAbaixoMinimo: base.estoqueAbaixoMinimo,
+      receitaLiquidaMesCentavos: base.receitaLiquidaMesCentavos,
+      ticketMedioCentavos: base.ticketMedioCentavos,
+      aReceberCentavos: base.aReceberCentavos,
       orcamentosAbertos: base.orcamentosAbertos,
       clientes: base.clientes,
       minhasComissoesMesCentavos,
