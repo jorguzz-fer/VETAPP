@@ -11,10 +11,11 @@ import {
   VencimentoDto,
 } from './estoque.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 
 @ApiTags('estoque')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('estoque')
 export class EstoqueController {
   constructor(private readonly estoque: EstoqueService) {}
@@ -45,12 +46,14 @@ export class EstoqueController {
     return this.estoque.listMovimentos(req.auth!.tenantId, itemId);
   }
 
+  @Roles('admin', 'gestor')
   @Post('movimentos')
   @ApiCreatedResponse({ type: MovimentoResultDto })
   registrar(@Req() req: Request, @Body() dto: CreateMovimentoDto): Promise<MovimentoResultDto> {
     return this.estoque.registrar(req.auth!.tenantId, dto);
   }
 
+  @Roles('admin', 'gestor')
   @Patch(':itemId/minimo')
   @ApiOkResponse({ type: SaldoItemDto })
   minimo(@Req() req: Request, @Param('itemId') itemId: string, @Body() dto: SetMinimoDto): Promise<SaldoItemDto> {
