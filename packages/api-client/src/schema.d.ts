@@ -2158,6 +2158,12 @@ export interface components {
             /** @description URL assinada (curta) da foto, se houver */
             fotoUrl?: string;
         };
+        ClienteVendasResumoDto: {
+            totalVendidoCentavos: number;
+            ticketMedioCentavos: number;
+            vendas: number;
+            ultimaVendaEm?: string;
+        };
         ResponsavelComAnimaisDto: {
             id: string;
             codigo?: string;
@@ -2167,6 +2173,7 @@ export interface components {
             documento?: string;
             origem?: string;
             animais: components["schemas"]["AnimalDto"][];
+            vendas: components["schemas"]["ClienteVendasResumoDto"];
         };
         UpdateResponsavelDto: {
             nome?: string;

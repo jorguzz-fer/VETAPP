@@ -16,6 +16,12 @@ interface Animal {
   raca?: string | null;
   status: string;
 }
+interface VendasResumo {
+  totalVendidoCentavos: number;
+  ticketMedioCentavos: number;
+  vendas: number;
+  ultimaVendaEm?: string | null;
+}
 interface Ficha {
   id: string;
   nome: string;
@@ -24,6 +30,17 @@ interface Ficha {
   documento?: string | null;
   origem?: string | null;
   animais: Animal[];
+  vendas?: VendasResumo;
+}
+
+const brl = (c: number) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Link do WhatsApp a partir do telefone (só dígitos; assume BR se faltar DDI).
+function whatsappLink(telefone?: string | null): string | null {
+  if (!telefone) return null;
+  let d = telefone.replace(/\D/g, '');
+  if (!d) return null;
+  if (d.length <= 11) d = `55${d}`;
+  return `https://wa.me/${d}`;
 }
 
 const inputCls =
@@ -194,6 +211,17 @@ export default function FichaClientePage() {
                 )}
               </div>
               <div className="flex gap-2">
+                {whatsappLink(ficha.telefone) && (
+                  <a
+                    href={whatsappLink(ficha.telefone)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-[#15203c]"
+                    title="Falar no WhatsApp"
+                  >
+                    <i className="ri-whatsapp-line text-lg"></i> WhatsApp
+                  </a>
+                )}
                 <Button variant="ghost" onClick={onNovoOrcamento}><i className="ri-file-list-3-line"></i> Orçamento</Button>
                 {podeExportar && (
                   <Button variant="ghost" onClick={onExportarLgpd} disabled={exportando} title="Exportar dados do titular (LGPD)">
@@ -212,6 +240,18 @@ export default function FichaClientePage() {
               <Info label="Documento" value={ficha.documento} />
               <Info label="Como nos conheceu?" value={ficha.origem} />
             </div>
+            {/* Resumo de vendas (doc 16 F1). */}
+            {ficha.vendas && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-[#172036] text-sm">
+                <Info label="Total vendido" value={brl(ficha.vendas.totalVendidoCentavos)} />
+                <Info label="Ticket médio" value={ficha.vendas.vendas > 0 ? brl(ficha.vendas.ticketMedioCentavos) : '—'} />
+                <Info label="Vendas" value={String(ficha.vendas.vendas)} />
+                <Info
+                  label="Última venda"
+                  value={ficha.vendas.ultimaVendaEm ? new Date(ficha.vendas.ultimaVendaEm).toLocaleDateString('pt-BR') : '—'}
+                />
+              </div>
+            )}
           </>
         )}
       </Card>
