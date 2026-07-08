@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateResponsavelDto {
   @ApiProperty({ example: 'Maria Silva' })
@@ -70,6 +70,32 @@ export class CreateAnimalDto {
   @IsOptional()
   @IsString()
   nascimento?: string;
+
+  @ApiPropertyOptional({ example: 'Preto e marrom' })
+  @IsOptional()
+  @IsString()
+  pelagem?: string;
+
+  @ApiPropertyOptional({ description: 'Número do microchip' })
+  @IsOptional()
+  @IsString()
+  microchip?: string;
+
+  @ApiPropertyOptional({ type: [String], description: 'Marcações/tags clínicas (ex.: renal)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  marcacoes?: string[];
+
+  @ApiPropertyOptional({ type: Boolean })
+  @IsOptional()
+  @IsBoolean()
+  pedigree?: boolean;
+
+  @ApiPropertyOptional({ description: 'Número do pedigree' })
+  @IsOptional()
+  @IsString()
+  pedigreeNumero?: string;
 }
 
 export class ResponsavelDto {
@@ -89,9 +115,14 @@ export class AnimalDto {
   @ApiProperty() nome!: string;
   @ApiPropertyOptional({ type: String }) especie?: string | null;
   @ApiPropertyOptional({ type: String }) raca?: string | null;
+  @ApiPropertyOptional({ type: String }) pelagem?: string | null;
   @ApiPropertyOptional({ type: String }) sexo?: string | null;
   @ApiProperty() castrado!: boolean;
   @ApiPropertyOptional({ type: String }) nascimento?: string | null;
+  @ApiPropertyOptional({ type: String }) microchip?: string | null;
+  @ApiProperty({ type: [String] }) marcacoes!: string[];
+  @ApiProperty() pedigree!: boolean;
+  @ApiPropertyOptional({ type: String }) pedigreeNumero?: string | null;
   @ApiProperty() status!: string;
   @ApiPropertyOptional({ type: String, description: 'URL assinada (curta) da foto, se houver' })
   fotoUrl?: string | null;
@@ -127,9 +158,14 @@ export class UpdateAnimalDto {
   @ApiPropertyOptional() @IsOptional() @IsString() codigo?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() especie?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() raca?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() pelagem?: string;
   @ApiPropertyOptional({ enum: ['M', 'F'] }) @IsOptional() @IsIn(['M', 'F']) sexo?: string;
   @ApiPropertyOptional({ type: Boolean }) @IsOptional() @IsBoolean() castrado?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() nascimento?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() microchip?: string;
+  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @IsString({ each: true }) marcacoes?: string[];
+  @ApiPropertyOptional({ type: Boolean }) @IsOptional() @IsBoolean() pedigree?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsString() pedigreeNumero?: string;
   @ApiPropertyOptional({ enum: ['vivo', 'falecido'] }) @IsOptional() @IsIn(['vivo', 'falecido']) status?: string;
 }
 

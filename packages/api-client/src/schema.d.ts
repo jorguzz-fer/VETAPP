@@ -2146,9 +2146,14 @@ export interface components {
             nome: string;
             especie?: string;
             raca?: string;
+            pelagem?: string;
             sexo?: string;
             castrado: boolean;
             nascimento?: string;
+            microchip?: string;
+            marcacoes: string[];
+            pedigree: boolean;
+            pedigreeNumero?: string;
             status: string;
             /** @description URL assinada (curta) da foto, se houver */
             fotoUrl?: string;
@@ -2190,6 +2195,15 @@ export interface components {
              * @example 2020-05-10
              */
             nascimento?: string;
+            /** @example Preto e marrom */
+            pelagem?: string;
+            /** @description Número do microchip */
+            microchip?: string;
+            /** @description Marcações/tags clínicas (ex.: renal) */
+            marcacoes?: string[];
+            pedigree?: boolean;
+            /** @description Número do pedigree */
+            pedigreeNumero?: string;
         };
         BuscaAnimalDto: {
             id: string;
@@ -2205,10 +2219,15 @@ export interface components {
             codigo?: string;
             especie?: string;
             raca?: string;
+            pelagem?: string;
             /** @enum {string} */
             sexo?: "M" | "F";
             castrado?: boolean;
             nascimento?: string;
+            microchip?: string;
+            marcacoes?: string[];
+            pedigree?: boolean;
+            pedigreeNumero?: string;
             /** @enum {string} */
             status?: "vivo" | "falecido";
         };

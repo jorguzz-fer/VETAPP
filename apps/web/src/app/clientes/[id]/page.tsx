@@ -115,7 +115,7 @@ export default function FichaClientePage() {
   }
 
   async function onDeleteAnimal(animalId: string, animalNome: string) {
-    if (!confirm(`Excluir o animal "${animalNome}"?`)) return;
+    if (!confirm(`Excluir o paciente "${animalNome}"?`)) return;
     await api.DELETE('/api/animais/{id}', { params: { path: { id: animalId } } });
     void load();
   }
@@ -218,9 +218,9 @@ export default function FichaClientePage() {
 
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-black dark:text-white">Animais</h2>
+          <h2 className="text-base font-semibold text-black dark:text-white">Pacientes</h2>
           <Button variant="ghost" onClick={() => setShowAnimal((v) => !v)}>
-            <i className="ri-add-line"></i> Adicionar animal
+            <i className="ri-add-line"></i> Adicionar paciente
           </Button>
         </div>
 
@@ -239,7 +239,7 @@ export default function FichaClientePage() {
         )}
 
         {ficha.animais.length === 0 ? (
-          <p className="text-sm text-gray-500">Nenhum animal cadastrado.</p>
+          <p className="text-sm text-gray-500">Nenhum paciente cadastrado.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {ficha.animais.map((a) => (
