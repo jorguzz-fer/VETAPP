@@ -75,6 +75,7 @@ export default function ProntuarioPage() {
   const [internarOpen, setInternarOpen] = useState(false);
   const [motivoInput, setMotivoInput] = useState('');
   const [boxInput, setBoxInput] = useState('');
+  const [altaPrevistaInput, setAltaPrevistaInput] = useState('');
   const [motivos, setMotivos] = useState<{ id: string; nome: string }[]>([]);
   const [boxes, setBoxes] = useState<{ id: string; nome: string }[]>([]);
   const [internando, setInternando] = useState(false);
@@ -267,7 +268,7 @@ export default function ProntuarioPage() {
     await api.POST('/api/internacoes/motivos', { body: { nome: motivo } });
     if (box) await api.POST('/api/internacoes/boxes', { body: { nome: box } });
     const { error } = await api.POST('/api/internacoes', {
-      body: { animalId: id, motivo, box: box || undefined },
+      body: { animalId: id, motivo, box: box || undefined, altaPrevista: altaPrevistaInput || undefined },
     });
     setInternando(false);
     if (error) {
@@ -434,6 +435,15 @@ export default function ProntuarioPage() {
                   <option key={b.id} value={b.nome} />
                 ))}
               </datalist>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Previsão de alta (opcional)</span>
+              <input
+                type="date"
+                value={altaPrevistaInput}
+                onChange={(e) => setAltaPrevistaInput(e.target.value)}
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
             </label>
             <p className="text-xs text-gray-400">
               Motivos e boxes novos são salvos na lista automaticamente (sem duplicar).

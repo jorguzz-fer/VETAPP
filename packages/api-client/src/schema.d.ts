@@ -2561,9 +2561,12 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
         };
         AdmitirDto: {
             /** @description Animal a internar */
@@ -2572,6 +2575,11 @@ export interface components {
             motivo: string;
             /** @example Box 2 */
             box?: string;
+            /**
+             * @description Previsão de alta (AAAA-MM-DD)
+             * @example 2026-07-15
+             */
+            altaPrevista?: string;
         };
         ItemListaDto: {
             id: string;
@@ -2622,9 +2630,12 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
             observacoes: string | null;
             execucoes: components["schemas"]["ExecucaoDto"][];
         };

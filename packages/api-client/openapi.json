@@ -7504,6 +7504,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -7511,6 +7515,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           }
         },
         "required": [
@@ -7523,8 +7532,10 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
-          "pendentes"
+          "pendentes",
+          "fotoUrl"
         ]
       },
       "AdmitirDto": {
@@ -7541,6 +7552,11 @@
           "box": {
             "type": "string",
             "example": "Box 2"
+          },
+          "altaPrevista": {
+            "type": "string",
+            "example": "2026-07-15",
+            "description": "Previsão de alta (AAAA-MM-DD)"
           }
         },
         "required": [
@@ -7718,6 +7734,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -7725,6 +7745,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           },
           "observacoes": {
             "type": "string",
@@ -7747,8 +7772,10 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
           "pendentes",
+          "fotoUrl",
           "observacoes",
           "execucoes"
         ]

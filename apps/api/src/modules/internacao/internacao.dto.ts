@@ -43,6 +43,11 @@ export class AdmitirDto {
   @IsString()
   @MaxLength(60)
   box?: string;
+
+  @ApiPropertyOptional({ example: '2026-07-15', description: 'Previsão de alta (AAAA-MM-DD)' })
+  @IsOptional()
+  @IsString()
+  altaPrevista?: string;
 }
 
 export class PrescreverDto {
@@ -104,8 +109,10 @@ export class InternacaoResumoDto {
   @ApiProperty({ type: String, nullable: true }) box!: string | null;
   @ApiProperty() status!: string;
   @ApiProperty() entradaEm!: string;
+  @ApiProperty({ type: String, nullable: true }) altaPrevistaEm!: string | null;
   @ApiProperty({ type: String, nullable: true }) altaEm!: string | null;
   @ApiProperty({ description: 'Prescrições ainda não executadas' }) pendentes!: number;
+  @ApiProperty({ type: String, nullable: true, description: 'URL assinada da foto do paciente' }) fotoUrl!: string | null;
 }
 
 export class InternacaoDetalheDto extends InternacaoResumoDto {
