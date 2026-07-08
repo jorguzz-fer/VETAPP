@@ -60,6 +60,7 @@ export default function ProntuarioPage() {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [fatura, setFatura] = useState<Fatura | null>(null);
+  const [cobrando, setCobrando] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -137,6 +138,20 @@ export default function ProntuarioPage() {
     const { data } = await api.GET('/api/clientes/{id}/fatura', { params: { path: { id: responsavelId } } });
     setFatura((data as Fatura) ?? null);
   }, []);
+
+  // Efetuar cobrança (doc 16 B3): baixa integral da comanda em aberto.
+  async function onEfetuarCobranca() {
+    if (!fatura || !animal) return;
+    if (!confirm(`Efetuar cobrança de ${brl(fatura.totalCentavos)} e marcar a comanda como paga?`)) return;
+    setCobrando(true);
+    const { error } = await api.POST('/api/faturas/{id}/pagar', { params: { path: { id: fatura.id } } });
+    setCobrando(false);
+    if (error) {
+      alert('Não foi possível efetuar a cobrança.');
+      return;
+    }
+    await loadFatura(animal.responsavelId);
+  }
 
   const load = useCallback(async () => {
     const [a, e] = await Promise.all([
@@ -659,11 +674,19 @@ export default function ProntuarioPage() {
         )}
       </Card>
 
-      {/* Fatura em aberto (faturamento acoplado) */}
+      {/* A cobrar / comanda (doc 16 B1-B3) — faturamento acoplado */}
       {fatura && fatura.itens.length > 0 && (
         <Card>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-black dark:text-white">Fatura em aberto</h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-black dark:text-white">A cobrar</h2>
+              {/* Status nítido: em aberto vs. faturado/fechado (B2). */}
+              {fatura.status === 'aberta' ? (
+                <span className="text-xs rounded-full px-2.5 py-0.5 bg-amber-50 text-amber-600">Em aberto</span>
+              ) : (
+                <span className="text-xs rounded-full px-2.5 py-0.5 bg-green-50 text-green-600 capitalize">{fatura.status}</span>
+              )}
+            </div>
             <span className="text-lg font-bold text-primary-600">{brl(fatura.totalCentavos)}</span>
           </div>
           <ul className="mt-3 divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
@@ -674,6 +697,16 @@ export default function ProntuarioPage() {
               </li>
             ))}
           </ul>
+          {fatura.status === 'aberta' && (
+            <div className="mt-4 flex justify-end gap-2">
+              <Link href="/faturas" className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-gray-500 hover:text-primary-500">
+                <i className="ri-external-link-line"></i> Ver no financeiro
+              </Link>
+              <Button onClick={onEfetuarCobranca} disabled={cobrando}>
+                <i className="ri-money-dollar-circle-line"></i> {cobrando ? 'Cobrando…' : 'Efetuar cobrança'}
+              </Button>
+            </div>
+          )}
         </Card>
       )}
 
