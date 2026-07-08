@@ -4,6 +4,7 @@ export * from './memberships';
 export * from './responsaveis';
 export * from './animais';
 export * from './vacinas';
+export * from './mensagens';
 export * from './prontuario';
 export * from './departamentos';
 export * from './agenda';
