@@ -2020,6 +2020,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/clientes/{id}/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listPorCliente"];
+        put?: never;
+        post: operations["MensageriaController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listGeral"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3378,6 +3410,29 @@ export interface components {
             totalClinicas: number;
             porStatus: Record<string, never>;
             mrrCentavos: number;
+        };
+        MensagemDto: {
+            id: string;
+            responsavelId?: string;
+            responsavelNome?: string;
+            canal: string;
+            direcao: string;
+            assunto?: string;
+            corpo: string;
+            status: string;
+            referenciaTipo?: string;
+            disparadoPorNome?: string;
+            criadaEm: string;
+        };
+        CreateMensagemDto: {
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            /** @description Assunto (e-mail) */
+            assunto?: string;
+            corpo: string;
+            /** @description Origem do disparo (ex.: vacina, agendamento) */
+            referenciaTipo?: string;
+            referenciaId?: string;
         };
     };
     responses: never;
@@ -6943,6 +6998,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KpisDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listPorCliente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMensagemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listGeral: {
+        parameters: {
+            query?: {
+                canal?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
                 };
             };
         };

@@ -5874,6 +5874,133 @@
           }
         ]
       }
+    },
+    "/api/clientes/{id}/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listPorCliente",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_registrar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMensagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listGeral",
+        "parameters": [
+          {
+            "name": "canal",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -10265,6 +10392,84 @@
           "totalClinicas",
           "porStatus",
           "mrrCentavos"
+        ]
+      },
+      "MensagemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "direcao": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string"
+          },
+          "disparadoPorNome": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "canal",
+          "direcao",
+          "corpo",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "CreateMensagemDto": {
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string",
+            "description": "Assunto (e-mail)"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string",
+            "description": "Origem do disparo (ex.: vacina, agendamento)"
+          },
+          "referenciaId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "canal",
+          "corpo"
         ]
       }
     }
