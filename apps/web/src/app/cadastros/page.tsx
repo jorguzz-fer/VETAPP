@@ -167,9 +167,125 @@ export default function CadastrosPage() {
         )}
       </Card>
 
+      <DepartamentosCard />
       <FormasRecebimentoCard />
       <InternacaoListasCard />
     </div>
+  );
+}
+
+// Departamentos da agenda (doc 16 A1): Clínica, Hotel, Banho & Tosa etc.
+interface Departamento {
+  id: string;
+  nome: string;
+  cor: string | null;
+  ativo: boolean;
+}
+
+function DepartamentosCard() {
+  const [deps, setDeps] = useState<Departamento[]>([]);
+  const [show, setShow] = useState(false);
+  const [form, setForm] = useState({ nome: '', cor: '#7c5cff' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data } = await api.GET('/api/agenda/departamentos', { params: { query: { incluirInativos: true } } });
+    setDeps((data as Departamento[]) ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!form.nome.trim()) return;
+    setSaving(true);
+    const { error } = await api.POST('/api/agenda/departamentos', {
+      body: { nome: form.nome.trim(), cor: form.cor || undefined },
+    });
+    setSaving(false);
+    if (error) {
+      alert('Não foi possível criar (nome repetido? só admin/gestor).');
+      return;
+    }
+    setForm({ nome: '', cor: '#7c5cff' });
+    setShow(false);
+    void load();
+  }
+
+  async function onToggle(d: Departamento) {
+    await api.PATCH('/api/agenda/departamentos/{id}', { params: { path: { id: d.id } }, body: { ativo: !d.ativo } });
+    void load();
+  }
+
+  const inputCls =
+    'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-semibold text-black dark:text-white">Departamentos da agenda</h2>
+          <p className="text-xs text-gray-500">Áreas para organizar a agenda (Clínica, Hotel, Banho &amp; Tosa…).</p>
+        </div>
+        <Button onClick={() => setShow((v) => !v)}>
+          <i className="ri-add-line"></i> Novo departamento
+        </Button>
+      </div>
+
+      {show && (
+        <form onSubmit={onCreate} className="flex flex-wrap gap-3 items-end mb-4">
+          <label className="flex flex-col gap-1 text-sm flex-1 min-w-[180px]">
+            <span className="text-gray-600 dark:text-gray-300">Nome</span>
+            <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Hotel" />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-gray-600 dark:text-gray-300">Cor</span>
+            <input type="color" value={form.cor} onChange={(e) => setForm({ ...form, cor: e.target.value })} className="h-[42px] w-14 rounded-md border border-gray-200 dark:border-[#172036] bg-transparent" />
+          </label>
+          <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
+        </form>
+      )}
+
+      {deps.length === 0 ? (
+        <p className="text-sm text-gray-500">Nenhum departamento — crie &quot;Clínica&quot;, &quot;Hotel&quot;, &quot;Banho &amp; Tosa&quot;…</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+              <th className="py-2 font-medium">Nome</th>
+              <th className="py-2 font-medium">Cor</th>
+              <th className="py-2 font-medium text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deps.map((d) => (
+              <tr key={d.id} className={`border-b border-gray-50 dark:border-[#172036]/50 ${d.ativo ? '' : 'opacity-50'}`}>
+                <td className="py-2.5 text-black dark:text-white">{d.nome}</td>
+                <td className="py-2.5">
+                  {d.cor ? (
+                    <span className="inline-block w-5 h-5 rounded-full border border-gray-200 dark:border-[#172036]" style={{ backgroundColor: d.cor }} />
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+                <td className="py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(d)}
+                    className={`${d.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                    title={d.ativo ? 'Desativar' : 'Ativar'}
+                    aria-label={d.ativo ? 'Desativar' : 'Ativar'}
+                  >
+                    <i className={d.ativo ? 'ri-toggle-fill text-xl' : 'ri-toggle-line text-xl'}></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Card>
   );
 }
 

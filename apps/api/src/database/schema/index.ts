@@ -5,6 +5,7 @@ export * from './responsaveis';
 export * from './animais';
 export * from './vacinas';
 export * from './prontuario';
+export * from './departamentos';
 export * from './agenda';
 export * from './catalogo';
 export * from './estoque';

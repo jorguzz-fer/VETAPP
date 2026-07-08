@@ -612,6 +612,38 @@ export interface paths {
         patch: operations["AgendaController_updateTipo"];
         trace?: never;
     };
+    "/api/agenda/departamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_departamentos"];
+        put?: never;
+        post: operations["AgendaController_createDepartamento"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/departamentos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateDepartamento"];
+        trace?: never;
+    };
     "/api/agenda/{id}/status": {
         parameters: {
             query?: never;
@@ -2422,6 +2454,8 @@ export interface components {
             cor?: string;
             profissionalId?: string;
             profissionalNome?: string;
+            departamentoId?: string;
+            departamentoNome?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -2443,6 +2477,8 @@ export interface components {
             tipoAtendimentoId?: string;
             /** @description Profissional responsável (membro do tenant) */
             profissionalId?: string;
+            /** @description Departamento da agenda (Clínica, Hotel…) */
+            departamentoId?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -2477,6 +2513,28 @@ export interface components {
             /** @example Consulta */
             nome?: string;
             duracaoMinutos?: number;
+            /** @example #7c5cff */
+            cor?: string;
+            ativo?: boolean;
+        };
+        DepartamentoDto: {
+            id: string;
+            nome: string;
+            cor: string | null;
+            ativo: boolean;
+        };
+        CreateDepartamentoDto: {
+            /** @example Hotel */
+            nome: string;
+            /**
+             * @description Cor do departamento (hex)
+             * @example #7c5cff
+             */
+            cor?: string;
+        };
+        UpdateDepartamentoDto: {
+            /** @example Hotel */
+            nome?: string;
             /** @example #7c5cff */
             cor?: string;
             ativo?: boolean;
@@ -4302,6 +4360,8 @@ export interface operations {
                 to?: string;
                 /** @description Filtra por profissional ("minha agenda") */
                 profissionalId?: string;
+                /** @description Filtra por departamento (Clínica, Hotel…) */
+                departamentoId?: string;
             };
             header?: never;
             path?: never;
@@ -4426,6 +4486,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_departamentos: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_createDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDepartamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDepartamentoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
                 };
             };
         };
