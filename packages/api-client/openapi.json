@@ -998,6 +998,87 @@
         ]
       }
     },
+    "/api/animais/{id}/vacinas": {
+      "get": {
+        "operationId": "ClientesController_listVacinas",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VacinaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ClientesController_criarVacina",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVacinaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VacinaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}/eventos": {
       "get": {
         "operationId": "ProntuarioController_eventos",
@@ -1530,6 +1611,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "departamentoId",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por departamento (Clínica, Hotel…)",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1722,6 +1812,123 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/departamentos": {
+      "get": {
+        "operationId": "AgendaController_departamentos",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DepartamentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AgendaController_createDepartamento",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepartamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartamentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/departamentos/{id}": {
+      "patch": {
+        "operationId": "AgendaController_updateDepartamento",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDepartamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartamentoDto"
                 }
               }
             }
@@ -5667,6 +5874,289 @@
           }
         ]
       }
+    },
+    "/api/clientes/{id}/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listPorCliente",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_registrar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMensagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listGeral",
+        "parameters": [
+          {
+            "name": "canal",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/vacinas-vencendo": {
+      "get": {
+        "operationId": "MensageriaController_vacinasVencendo",
+        "parameters": [
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "description": "Janela em dias (default 30)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VacinaVencendoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/templates": {
+      "get": {
+        "operationId": "MensageriaController_listTemplates",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_createTemplate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/templates/{id}": {
+      "patch": {
+        "operationId": "MensageriaController_updateTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -6552,6 +7042,76 @@
           "key"
         ]
       },
+      "VacinaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string"
+          },
+          "proximaEm": {
+            "type": "string"
+          },
+          "aplicadaPorNome": {
+            "type": "string"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "nome",
+          "aplicadaEm"
+        ]
+      },
+      "CreateVacinaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Antirrábica"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string",
+            "example": "2026-07-08",
+            "description": "AAAA-MM-DD"
+          },
+          "proximaEm": {
+            "type": "string",
+            "example": "2027-07-08",
+            "description": "Próxima dose (AAAA-MM-DD)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "aplicadaEm"
+        ]
+      },
       "EventoDto": {
         "type": "object",
         "properties": {
@@ -6582,6 +7142,10 @@
           "anexoUrl": {
             "type": "string",
             "description": "URL assinada (curta) do anexo, se houver"
+          },
+          "registradoPorNome": {
+            "type": "string",
+            "description": "Quem registrou o evento (doc 16 PR7)"
           },
           "estoqueBaixado": {
             "type": "boolean",
@@ -6956,6 +7520,12 @@
           "profissionalNome": {
             "type": "string"
           },
+          "departamentoId": {
+            "type": "string"
+          },
+          "departamentoNome": {
+            "type": "string"
+          },
           "animalId": {
             "type": "string"
           },
@@ -6998,6 +7568,10 @@
           "profissionalId": {
             "type": "string",
             "description": "Profissional responsável (membro do tenant)"
+          },
+          "departamentoId": {
+            "type": "string",
+            "description": "Departamento da agenda (Clínica, Hotel…)"
           },
           "animalId": {
             "type": "string"
@@ -7092,6 +7666,63 @@
           },
           "duracaoMinutos": {
             "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "cor",
+          "ativo"
+        ]
+      },
+      "CreateDepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Hotel"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff",
+            "description": "Cor do departamento (hex)"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "UpdateDepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Hotel"
           },
           "cor": {
             "type": "string",
@@ -7504,6 +8135,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -7511,6 +8146,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           }
         },
         "required": [
@@ -7523,8 +8163,10 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
-          "pendentes"
+          "pendentes",
+          "fotoUrl"
         ]
       },
       "AdmitirDto": {
@@ -7541,6 +8183,11 @@
           "box": {
             "type": "string",
             "example": "Box 2"
+          },
+          "altaPrevista": {
+            "type": "string",
+            "example": "2026-07-15",
+            "description": "Previsão de alta (AAAA-MM-DD)"
           }
         },
         "required": [
@@ -7718,6 +8365,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -7725,6 +8376,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           },
           "observacoes": {
             "type": "string",
@@ -7747,8 +8403,10 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
           "pendentes",
+          "fotoUrl",
           "observacoes",
           "execucoes"
         ]
@@ -9891,6 +10549,205 @@
           "porStatus",
           "mrrCentavos"
         ]
+      },
+      "MensagemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "direcao": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string"
+          },
+          "disparadoPorNome": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "canal",
+          "direcao",
+          "corpo",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "CreateMensagemDto": {
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string",
+            "description": "Assunto (e-mail)"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string",
+            "description": "Origem do disparo (ex.: vacina, agendamento)"
+          },
+          "referenciaId": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Template usado (opcional)"
+          }
+        },
+        "required": [
+          "canal",
+          "corpo"
+        ]
+      },
+      "VacinaVencendoDto": {
+        "type": "object",
+        "properties": {
+          "vacinaId": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "animalNome": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "vacina": {
+            "type": "string"
+          },
+          "proximaEm": {
+            "type": "string"
+          },
+          "diasRestantes": {
+            "type": "number",
+            "description": "Dias até a próxima dose (negativo = vencida)"
+          }
+        },
+        "required": [
+          "vacinaId",
+          "animalId",
+          "animalNome",
+          "responsavelId",
+          "responsavelNome",
+          "vacina",
+          "proximaEm",
+          "diasRestantes"
+        ]
+      },
+      "MensagemTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "canal",
+          "corpo",
+          "ativo"
+        ]
+      },
+      "CreateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Lembrete de vacina"
+          },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string",
+            "description": "Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}}"
+          }
+        },
+        "required": [
+          "nome",
+          "canal",
+          "corpo"
+        ]
+      },
+      "UpdateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

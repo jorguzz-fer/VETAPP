@@ -46,6 +46,13 @@ function whatsappLink(telefone?: string | null): string | null {
 const inputCls =
   'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
 
+const CANAL_ICONE: Record<string, string> = {
+  whatsapp: 'ri-whatsapp-line',
+  email: 'ri-mail-line',
+  sms: 'ri-message-2-line',
+  manual: 'ri-sticky-note-line',
+};
+
 export default function FichaClientePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -65,6 +72,58 @@ export default function FichaClientePage() {
   const [especie, setEspecie] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  const [showMsg, setShowMsg] = useState(false);
+  const [msgForm, setMsgForm] = useState({ canal: 'whatsapp', assunto: '', corpo: '' });
+  const [savingMsg, setSavingMsg] = useState(false);
+  const [templates, setTemplates] = useState<{ id: string; nome: string; canal: string; assunto?: string | null; corpo: string }[]>([]);
+
+  useEffect(() => {
+    void api.GET('/api/mensagens/templates', { params: { query: {} } }).then(({ data }) => {
+      setTemplates((data as typeof templates) ?? []);
+    });
+  }, []);
+
+  // Aplica um template preenchendo o formulário, substituindo placeholders simples.
+  function aplicarTemplate(templateId: string) {
+    const t = templates.find((x) => x.id === templateId);
+    if (!t || !ficha) return;
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const sub = (s: string) =>
+      s
+        .replaceAll('{{cliente}}', ficha.nome)
+        .replaceAll('{{pet}}', ficha.animais[0]?.nome ?? '')
+        .replaceAll('{{data}}', hoje);
+    setMsgForm({ canal: t.canal, assunto: sub(t.assunto ?? ''), corpo: sub(t.corpo) });
+  }
+
+  const loadMensagens = useCallback(async () => {
+    const { data } = await api.GET('/api/clientes/{id}/mensagens', { params: { path: { id } } });
+    setMensagens((data as Mensagem[]) ?? []);
+  }, [id]);
+
+  async function onRegistrarMensagem(e: FormEvent) {
+    e.preventDefault();
+    if (!msgForm.corpo.trim()) return;
+    setSavingMsg(true);
+    const { error } = await api.POST('/api/clientes/{id}/mensagens', {
+      params: { path: { id } },
+      body: {
+        canal: msgForm.canal as 'whatsapp' | 'email' | 'sms' | 'manual',
+        assunto: msgForm.canal === 'email' ? msgForm.assunto || undefined : undefined,
+        corpo: msgForm.corpo.trim(),
+      },
+    });
+    setSavingMsg(false);
+    if (error) {
+      alert('Não foi possível registrar a mensagem.');
+      return;
+    }
+    setMsgForm({ canal: 'whatsapp', assunto: '', corpo: '' });
+    setShowMsg(false);
+    void loadMensagens();
+  }
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await api.GET('/api/clientes/{id}', { params: { path: { id } } });
@@ -77,6 +136,10 @@ export default function FichaClientePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadMensagens();
+  }, [loadMensagens]);
 
   useEffect(() => {
     void api.GET('/api/financeiro/saldos/{responsavelId}', { params: { path: { responsavelId: id } } }).then(({ data }) => {
@@ -299,6 +362,89 @@ export default function FichaClientePage() {
               </div>
             ))}
           </div>
+        )}
+      </Card>
+
+      {/* Histórico de mensagens / CRM (doc 17 · doc 16 F3) */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-black dark:text-white">Mensagens</h2>
+            <p className="text-xs text-gray-500">Histórico de contatos com o cliente (registro; envio pelo canal).</p>
+          </div>
+          <Button variant="ghost" onClick={() => setShowMsg((v) => !v)}>
+            <i className="ri-chat-new-line"></i> Registrar mensagem
+          </Button>
+        </div>
+
+        {showMsg && (
+          <form onSubmit={onRegistrarMensagem} className="flex flex-col gap-3 mb-4">
+            <div className="flex flex-wrap gap-3">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Canal</span>
+                <select value={msgForm.canal} onChange={(e) => setMsgForm({ ...msgForm, canal: e.target.value })} className={inputCls}>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">E-mail</option>
+                  <option value="sms">SMS</option>
+                  <option value="manual">Anotação / manual</option>
+                </select>
+              </label>
+              {templates.length > 0 && (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Template</span>
+                  <select defaultValue="" onChange={(e) => e.target.value && aplicarTemplate(e.target.value)} className={inputCls}>
+                    <option value="">— usar template —</option>
+                    {templates
+                      .filter((t) => t.canal === msgForm.canal)
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>{t.nome}</option>
+                      ))}
+                  </select>
+                </label>
+              )}
+              {msgForm.canal === 'email' && (
+                <label className="flex flex-col gap-1 text-sm flex-1 min-w-[200px]">
+                  <span className="text-gray-600 dark:text-gray-300">Assunto</span>
+                  <input value={msgForm.assunto} onChange={(e) => setMsgForm({ ...msgForm, assunto: e.target.value })} className={inputCls} />
+                </label>
+              )}
+            </div>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Mensagem</span>
+              <textarea required rows={3} value={msgForm.corpo} onChange={(e) => setMsgForm({ ...msgForm, corpo: e.target.value })} className={inputCls} placeholder="Conteúdo da mensagem…" />
+            </label>
+            <p className="text-xs text-gray-400">
+              Isto registra a mensagem no histórico. O envio ativo por WhatsApp/SMS/e-mail
+              depende de integração com o provedor (fase futura); por ora, envie pelo botão do canal.
+            </p>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingMsg}>{savingMsg ? 'Registrando…' : 'Registrar'}</Button>
+            </div>
+          </form>
+        )}
+
+        {mensagens.length === 0 ? (
+          <p className="text-sm text-gray-400">Nenhuma mensagem registrada ainda.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
+            {mensagens.map((m) => (
+              <li key={m.id} className="py-2.5 flex items-start gap-3">
+                <span className="inline-grid place-items-center w-8 h-8 rounded-full bg-primary-50 text-primary-500 shrink-0">
+                  <i className={CANAL_ICONE[m.canal] ?? 'ri-chat-1-line'}></i>
+                </span>
+                <div className="min-w-0 flex-1">
+                  {m.assunto && <p className="font-medium text-black dark:text-white">{m.assunto}</p>}
+                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words">{m.corpo}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(m.criadaEm).toLocaleString('pt-BR')} · {m.canal}
+                    {m.referenciaTipo && ` · ${m.referenciaTipo}`}
+                    {m.disparadoPorNome && ` · ${m.disparadoPorNome}`}
+                    {' · '}<span className="capitalize">{m.status}</span>
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </Card>
 

@@ -21,6 +21,15 @@ interface Agendamento {
   cor?: string | null;
   profissionalId?: string | null;
   profissionalNome?: string | null;
+  departamentoId?: string | null;
+  departamentoNome?: string | null;
+}
+
+interface Departamento {
+  id: string;
+  nome: string;
+  cor: string | null;
+  ativo: boolean;
 }
 
 interface TipoAtendimento {
@@ -43,6 +52,9 @@ export default function AgendaPage() {
   const [profissionais, setProfissionais] = useState<Profissional[]>([]);
   const [meuId, setMeuId] = useState<string | null>(null);
   const [filtroProf, setFiltroProf] = useState<string>('');
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
+  const [filtroDep, setFiltroDep] = useState<string>('');
+  const [depId, setDepId] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [inicio, setInicio] = useState('');
@@ -52,6 +64,9 @@ export default function AgendaPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<{ from?: string; to?: string }>({});
+  const [ags, setAgs] = useState<Agendamento[]>([]);
+  const [sel, setSel] = useState<Agendamento | null>(null);
+  const [acaoBusy, setAcaoBusy] = useState(false);
   const calRef = useRef<FullCalendar>(null);
 
   const load = useCallback(async () => {
@@ -59,9 +74,17 @@ export default function AgendaPage() {
     // agenda do tenant conforme ela cresce.
     if (!range.from || !range.to) return;
     const { data } = await api.GET('/api/agenda', {
-      params: { query: { profissionalId: filtroProf || undefined, from: range.from, to: range.to } },
+      params: {
+        query: {
+          profissionalId: filtroProf || undefined,
+          departamentoId: filtroDep || undefined,
+          from: range.from,
+          to: range.to,
+        },
+      },
     });
     const items = (data as Agendamento[]) ?? [];
+    setAgs(items);
     setEventos(
       items
         .filter((a) => a.status !== 'cancelado')
@@ -75,7 +98,7 @@ export default function AgendaPage() {
           classNames: a.status === 'concluido' ? ['opacity-60'] : undefined,
         })),
     );
-  }, [filtroProf, range.from, range.to]);
+  }, [filtroProf, filtroDep, range.from, range.to]);
 
   useEffect(() => {
     void load();
@@ -87,6 +110,9 @@ export default function AgendaPage() {
     });
     void api.GET('/api/agenda/profissionais').then(({ data }) => {
       setProfissionais((data as Profissional[]) ?? []);
+    });
+    void api.GET('/api/agenda/departamentos', { params: { query: {} } }).then(({ data }) => {
+      setDepartamentos((data as Departamento[]) ?? []);
     });
     void api.GET('/api/auth/me').then(({ data }) => {
       const me = data as { userId?: string } | undefined;
@@ -113,16 +139,19 @@ export default function AgendaPage() {
     setShowForm(true);
   }
 
-  async function onEventClick(arg: EventClickArg) {
-    const acao = prompt(`"${arg.event.title}" — digite: concluir, faltou ou cancelar`, 'concluir');
-    if (!acao) return;
-    const mapa: Record<string, string> = { concluir: 'concluido', faltou: 'faltou', cancelar: 'cancelado' };
-    const status = mapa[acao.trim().toLowerCase()];
-    if (!status) return;
-    await api.PATCH('/api/agenda/{id}/status', {
-      params: { path: { id: arg.event.id } },
-      body: { status: status as 'concluido' | 'faltou' | 'cancelado' },
-    });
+  // Clique no evento abre o painel lateral (slider) com detalhes + ações — sem
+  // prompt e sem nova janela (doc 16 A3).
+  function onEventClick(arg: EventClickArg) {
+    const ag = ags.find((a) => a.id === arg.event.id);
+    if (ag) setSel(ag);
+  }
+
+  async function mudarStatus(status: 'confirmado' | 'concluido' | 'faltou' | 'cancelado') {
+    if (!sel) return;
+    setAcaoBusy(true);
+    await api.PATCH('/api/agenda/{id}/status', { params: { path: { id: sel.id } }, body: { status } });
+    setAcaoBusy(false);
+    setSel(null);
     await load();
   }
 
@@ -141,6 +170,7 @@ export default function AgendaPage() {
         fim: fim ? new Date(fim).toISOString() : undefined,
         tipoAtendimentoId: tipoId || undefined,
         profissionalId: profId || undefined,
+        departamentoId: depId || undefined,
       },
     });
     setSaving(false);
@@ -152,6 +182,7 @@ export default function AgendaPage() {
       setTitulo('');
       setInicio('');
       setFim('');
+      setDepId('');
       setShowForm(false);
       await load();
     }
@@ -181,6 +212,14 @@ export default function AgendaPage() {
                 </option>
               ))}
           </select>
+          {departamentos.length > 0 && (
+            <select value={filtroDep} onChange={(e) => setFiltroDep(e.target.value)} className={`${inputCls} text-sm`}>
+              <option value="">Todos os departamentos</option>
+              {departamentos.map((d) => (
+                <option key={d.id} value={d.id}>{d.nome}</option>
+              ))}
+            </select>
+          )}
           <Button onClick={() => setShowForm((v) => !v)}>
             <i className="ri-add-line"></i> Novo agendamento
           </Button>
@@ -216,6 +255,17 @@ export default function AgendaPage() {
                 ))}
               </select>
             </label>
+            {departamentos.length > 0 && (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Departamento</span>
+                <select value={depId} onChange={(e) => setDepId(e.target.value)} className={inputCls}>
+                  <option value="">—</option>
+                  {departamentos.map((d) => (
+                    <option key={d.id} value={d.id}>{d.nome}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-gray-600 dark:text-gray-300">Início</span>
               <input
@@ -257,6 +307,91 @@ export default function AgendaPage() {
           eventClick={onEventClick}
         />
       </Card>
+
+      {/* Slider de detalhe do agendamento (doc 16 A3) — sem nova janela. */}
+      {sel && (
+        <div className="fixed inset-0 z-40" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={() => setSel(null)}
+            className="absolute inset-0 bg-black/30"
+          />
+          <div className="absolute right-0 top-0 h-full w-full max-w-[380px] bg-white dark:bg-[#0c1427] shadow-xl border-l border-gray-100 dark:border-[#172036] flex flex-col">
+            <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 dark:border-[#172036]">
+              <h2 className="font-semibold text-black dark:text-white">Agendamento</h2>
+              <button type="button" onClick={() => setSel(null)} className="text-gray-400 hover:text-red-500" aria-label="Fechar">
+                <i className="ri-close-line text-xl"></i>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+              <div>
+                <p className="text-lg font-semibold text-black dark:text-white">{sel.titulo}</p>
+                <span
+                  className={`inline-block mt-1 text-xs rounded-full px-2.5 py-0.5 ${STATUS_STYLE[sel.status] ?? 'bg-gray-100 text-gray-500'}`}
+                >
+                  {STATUS_LABEL[sel.status] ?? sel.status}
+                </span>
+              </div>
+              <InfoLinha icon="ri-calendar-line" label="Início" value={new Date(sel.inicio).toLocaleString('pt-BR')} />
+              <InfoLinha icon="ri-time-line" label="Fim" value={new Date(sel.fim).toLocaleString('pt-BR')} />
+              {sel.tipoNome && <InfoLinha icon="ri-bookmark-line" label="Tipo" value={sel.tipoNome} />}
+              {sel.profissionalNome && <InfoLinha icon="ri-user-3-line" label="Profissional" value={sel.profissionalNome} />}
+              {sel.departamentoNome && <InfoLinha icon="ri-building-line" label="Departamento" value={sel.departamentoNome} />}
+            </div>
+            {sel.status !== 'concluido' && sel.status !== 'cancelado' && (
+              <div className="p-5 border-t border-gray-100 dark:border-[#172036] flex flex-col gap-2">
+                {sel.status !== 'confirmado' && (
+                  <Button disabled={acaoBusy} onClick={() => mudarStatus('confirmado')} className="justify-center">
+                    <i className="ri-user-follow-line"></i> Informar chegada do cliente
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="ghost" disabled={acaoBusy} onClick={() => mudarStatus('concluido')} className="justify-center">
+                    <i className="ri-check-line"></i> Concluir
+                  </Button>
+                  <Button variant="ghost" disabled={acaoBusy} onClick={() => mudarStatus('faltou')} className="justify-center">
+                    <i className="ri-user-unfollow-line"></i> Faltou
+                  </Button>
+                </div>
+                <button
+                  type="button"
+                  disabled={acaoBusy}
+                  onClick={() => mudarStatus('cancelado')}
+                  className="text-sm text-red-500 hover:underline mt-1"
+                >
+                  Cancelar agendamento
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  agendado: 'bg-blue-50 text-blue-600',
+  confirmado: 'bg-green-50 text-green-600',
+  concluido: 'bg-gray-100 dark:bg-[#15203c] text-gray-500',
+  faltou: 'bg-amber-50 text-amber-600',
+  cancelado: 'bg-red-50 text-red-500 line-through',
+};
+const STATUS_LABEL: Record<string, string> = {
+  agendado: 'Agendado',
+  confirmado: 'Cliente chegou',
+  concluido: 'Concluído',
+  faltou: 'Faltou',
+  cancelado: 'Cancelado',
+};
+
+function InfoLinha({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <i className={`${icon} text-gray-400`}></i>
+      <span className="text-gray-500 w-24">{label}</span>
+      <span className="text-black dark:text-white">{value}</span>
     </div>
   );
 }

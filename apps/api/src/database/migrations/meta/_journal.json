@@ -232,6 +232,48 @@
       "when": 1719593600000,
       "tag": "0032_animais_campos",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1719593700000,
+      "tag": "0033_internacao_alta_prevista",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1719593800000,
+      "tag": "0034_vacinas",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1719593900000,
+      "tag": "0035_departamentos",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1719594000000,
+      "tag": "0036_evento_registrado_por",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1719594100000,
+      "tag": "0037_mensagens",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1719594200000,
+      "tag": "0038_mensagem_templates",
+      "breakpoints": true
     }
   ]
 }

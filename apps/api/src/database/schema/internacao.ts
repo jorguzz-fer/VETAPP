@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, date, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { tenants } from './tenants';
 import { animais } from './animais';
@@ -17,6 +17,7 @@ export const internacoes = pgTable(
     box: text('box'),
     status: text('status').notNull().default('internado'), // internado | alta
     entradaEm: timestamp('entrada_em', { withTimezone: true }).notNull().defaultNow(),
+    altaPrevistaEm: date('alta_prevista_em'), // previsão de alta (doc 16 I2)
     altaEm: timestamp('alta_em', { withTimezone: true }),
     observacoes: text('observacoes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

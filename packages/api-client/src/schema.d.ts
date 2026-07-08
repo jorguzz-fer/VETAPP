@@ -372,6 +372,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais/{id}/vacinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_listVacinas"];
+        put?: never;
+        post: operations["ClientesController_criarVacina"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}/eventos": {
         parameters: {
             query?: never;
@@ -594,6 +610,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["AgendaController_updateTipo"];
+        trace?: never;
+    };
+    "/api/agenda/departamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_departamentos"];
+        put?: never;
+        post: operations["AgendaController_createDepartamento"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/departamentos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateDepartamento"];
         trace?: never;
     };
     "/api/agenda/{id}/status": {
@@ -1972,6 +2020,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/clientes/{id}/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listPorCliente"];
+        put?: never;
+        post: operations["MensageriaController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listGeral"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/vacinas-vencendo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_vacinasVencendo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listTemplates"];
+        put?: never;
+        post: operations["MensageriaController_createTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MensageriaController_updateTemplate"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2252,6 +2380,34 @@ export interface components {
         ConfirmFotoDto: {
             key: string;
         };
+        VacinaDto: {
+            id: string;
+            animalId: string;
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            aplicadaEm: string;
+            proximaEm?: string;
+            aplicadaPorNome?: string;
+            observacao?: string;
+        };
+        CreateVacinaDto: {
+            /** @example Antirrábica */
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            /**
+             * @description AAAA-MM-DD
+             * @example 2026-07-08
+             */
+            aplicadaEm: string;
+            /**
+             * @description Próxima dose (AAAA-MM-DD)
+             * @example 2027-07-08
+             */
+            proximaEm?: string;
+            observacao?: string;
+        };
         EventoDto: {
             id: string;
             animalId: string;
@@ -2263,6 +2419,8 @@ export interface components {
             data: string;
             /** @description URL assinada (curta) do anexo, se houver */
             anexoUrl?: string;
+            /** @description Quem registrou o evento (doc 16 PR7) */
+            registradoPorNome?: string;
             /** @description Estoque baixado automaticamente neste registro */
             estoqueBaixado?: boolean;
         };
@@ -2378,6 +2536,8 @@ export interface components {
             cor?: string;
             profissionalId?: string;
             profissionalNome?: string;
+            departamentoId?: string;
+            departamentoNome?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -2399,6 +2559,8 @@ export interface components {
             tipoAtendimentoId?: string;
             /** @description Profissional responsável (membro do tenant) */
             profissionalId?: string;
+            /** @description Departamento da agenda (Clínica, Hotel…) */
+            departamentoId?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -2433,6 +2595,28 @@ export interface components {
             /** @example Consulta */
             nome?: string;
             duracaoMinutos?: number;
+            /** @example #7c5cff */
+            cor?: string;
+            ativo?: boolean;
+        };
+        DepartamentoDto: {
+            id: string;
+            nome: string;
+            cor: string | null;
+            ativo: boolean;
+        };
+        CreateDepartamentoDto: {
+            /** @example Hotel */
+            nome: string;
+            /**
+             * @description Cor do departamento (hex)
+             * @example #7c5cff
+             */
+            cor?: string;
+        };
+        UpdateDepartamentoDto: {
+            /** @example Hotel */
+            nome?: string;
             /** @example #7c5cff */
             cor?: string;
             ativo?: boolean;
@@ -2561,9 +2745,12 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
         };
         AdmitirDto: {
             /** @description Animal a internar */
@@ -2572,6 +2759,11 @@ export interface components {
             motivo: string;
             /** @example Box 2 */
             box?: string;
+            /**
+             * @description Previsão de alta (AAAA-MM-DD)
+             * @example 2026-07-15
+             */
+            altaPrevista?: string;
         };
         ItemListaDto: {
             id: string;
@@ -2622,9 +2814,12 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
             observacoes: string | null;
             execucoes: components["schemas"]["ExecucaoDto"][];
         };
@@ -3263,6 +3458,65 @@ export interface components {
             totalClinicas: number;
             porStatus: Record<string, never>;
             mrrCentavos: number;
+        };
+        MensagemDto: {
+            id: string;
+            responsavelId?: string;
+            responsavelNome?: string;
+            canal: string;
+            direcao: string;
+            assunto?: string;
+            corpo: string;
+            status: string;
+            referenciaTipo?: string;
+            disparadoPorNome?: string;
+            criadaEm: string;
+        };
+        CreateMensagemDto: {
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            /** @description Assunto (e-mail) */
+            assunto?: string;
+            corpo: string;
+            /** @description Origem do disparo (ex.: vacina, agendamento) */
+            referenciaTipo?: string;
+            referenciaId?: string;
+            /** @description Template usado (opcional) */
+            templateId?: string;
+        };
+        VacinaVencendoDto: {
+            vacinaId: string;
+            animalId: string;
+            animalNome: string;
+            responsavelId: string;
+            responsavelNome: string;
+            vacina: string;
+            proximaEm: string;
+            /** @description Dias até a próxima dose (negativo = vencida) */
+            diasRestantes: number;
+        };
+        MensagemTemplateDto: {
+            id: string;
+            nome: string;
+            canal: string;
+            assunto?: string;
+            corpo: string;
+            ativo: boolean;
+        };
+        CreateTemplateDto: {
+            /** @example Lembrete de vacina */
+            nome: string;
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            assunto?: string;
+            /** @description Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}} */
+            corpo: string;
+        };
+        UpdateTemplateDto: {
+            nome?: string;
+            assunto?: string;
+            corpo?: string;
+            ativo?: boolean;
         };
     };
     responses: never;
@@ -3903,6 +4157,52 @@ export interface operations {
             };
         };
     };
+    ClientesController_listVacinas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"][];
+                };
+            };
+        };
+    };
+    ClientesController_criarVacina: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVacinaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"];
+                };
+            };
+        };
+    };
     ProntuarioController_eventos: {
         parameters: {
             query?: never;
@@ -4201,6 +4501,8 @@ export interface operations {
                 to?: string;
                 /** @description Filtra por profissional ("minha agenda") */
                 profissionalId?: string;
+                /** @description Filtra por departamento (Clínica, Hotel…) */
+                departamentoId?: string;
             };
             header?: never;
             path?: never;
@@ -4325,6 +4627,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_departamentos: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_createDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDepartamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDepartamentoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
                 };
             };
         };
@@ -6711,6 +7082,165 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KpisDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listPorCliente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMensagemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listGeral: {
+        parameters: {
+            query?: {
+                canal?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_vacinasVencendo: {
+        parameters: {
+            query?: {
+                /** @description Janela em dias (default 30) */
+                dias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaVencendoDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_listTemplates: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_createTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_updateTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
                 };
             };
         };

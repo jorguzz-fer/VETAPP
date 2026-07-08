@@ -31,12 +31,23 @@ interface Evento {
   valorCentavos?: number | null;
   data: string;
   anexoUrl?: string | null;
+  registradoPorNome?: string | null;
 }
 interface Fatura {
   id: string;
   status: string;
   totalCentavos: number;
   itens: { id: string; descricao: string; valorCentavos: number }[];
+}
+interface Vacina {
+  id: string;
+  nome: string;
+  laboratorio?: string | null;
+  lote?: string | null;
+  aplicadaEm: string;
+  proximaEm?: string | null;
+  aplicadaPorNome?: string | null;
+  observacao?: string | null;
 }
 
 const TIPOS = ['atendimento', 'peso', 'vacina', 'exame', 'receita', 'observacao', 'internacao'] as const;
@@ -60,6 +71,12 @@ export default function ProntuarioPage() {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [fatura, setFatura] = useState<Fatura | null>(null);
+  const [cobrando, setCobrando] = useState(false);
+  const [filtroMedico, setFiltroMedico] = useState<string>('');
+  const [vacinas, setVacinas] = useState<Vacina[]>([]);
+  const [vacForm, setVacForm] = useState({ nome: '', laboratorio: '', lote: '', aplicadaEm: '', proximaEm: '' });
+  const [showVacForm, setShowVacForm] = useState(false);
+  const [salvandoVac, setSalvandoVac] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -75,6 +92,7 @@ export default function ProntuarioPage() {
   const [internarOpen, setInternarOpen] = useState(false);
   const [motivoInput, setMotivoInput] = useState('');
   const [boxInput, setBoxInput] = useState('');
+  const [altaPrevistaInput, setAltaPrevistaInput] = useState('');
   const [motivos, setMotivos] = useState<{ id: string; nome: string }[]>([]);
   const [boxes, setBoxes] = useState<{ id: string; nome: string }[]>([]);
   const [internando, setInternando] = useState(false);
@@ -137,6 +155,49 @@ export default function ProntuarioPage() {
     setFatura((data as Fatura) ?? null);
   }, []);
 
+  const loadVacinas = useCallback(async () => {
+    const { data } = await api.GET('/api/animais/{id}/vacinas', { params: { path: { id } } });
+    setVacinas((data as Vacina[]) ?? []);
+  }, [id]);
+
+  async function onAddVacina(e: FormEvent) {
+    e.preventDefault();
+    if (!vacForm.nome.trim() || !vacForm.aplicadaEm) return;
+    setSalvandoVac(true);
+    const { error } = await api.POST('/api/animais/{id}/vacinas', {
+      params: { path: { id } },
+      body: {
+        nome: vacForm.nome.trim(),
+        laboratorio: vacForm.laboratorio || undefined,
+        lote: vacForm.lote || undefined,
+        aplicadaEm: vacForm.aplicadaEm,
+        proximaEm: vacForm.proximaEm || undefined,
+      },
+    });
+    setSalvandoVac(false);
+    if (error) {
+      alert('Não foi possível registrar a vacina (permissão de perfil clínico?).');
+      return;
+    }
+    setVacForm({ nome: '', laboratorio: '', lote: '', aplicadaEm: '', proximaEm: '' });
+    setShowVacForm(false);
+    await Promise.all([loadVacinas(), load()]);
+  }
+
+  // Efetuar cobrança (doc 16 B3): baixa integral da comanda em aberto.
+  async function onEfetuarCobranca() {
+    if (!fatura || !animal) return;
+    if (!confirm(`Efetuar cobrança de ${brl(fatura.totalCentavos)} e marcar a comanda como paga?`)) return;
+    setCobrando(true);
+    const { error } = await api.POST('/api/faturas/{id}/pagar', { params: { path: { id: fatura.id } } });
+    setCobrando(false);
+    if (error) {
+      alert('Não foi possível efetuar a cobrança.');
+      return;
+    }
+    await loadFatura(animal.responsavelId);
+  }
+
   const load = useCallback(async () => {
     const [a, e] = await Promise.all([
       api.GET('/api/animais/{id}', { params: { path: { id } } }),
@@ -167,6 +228,10 @@ export default function ProntuarioPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadVacinas();
+  }, [loadVacinas]);
 
   async function onAddEvento(e: FormEvent) {
     e.preventDefault();
@@ -267,7 +332,7 @@ export default function ProntuarioPage() {
     await api.POST('/api/internacoes/motivos', { body: { nome: motivo } });
     if (box) await api.POST('/api/internacoes/boxes', { body: { nome: box } });
     const { error } = await api.POST('/api/internacoes', {
-      body: { animalId: id, motivo, box: box || undefined },
+      body: { animalId: id, motivo, box: box || undefined, altaPrevista: altaPrevistaInput || undefined },
     });
     setInternando(false);
     if (error) {
@@ -337,6 +402,20 @@ export default function ProntuarioPage() {
 
   if (loading) return <p className="text-sm text-gray-500">Carregando…</p>;
   if (!animal) return <p className="text-sm text-gray-500">Animal não encontrado.</p>;
+
+  // Evolução por médico (doc 16 PR7): profissionais presentes na timeline + filtro.
+  const medicosNaTimeline = Array.from(
+    new Set(eventos.map((e) => e.registradoPorNome).filter((n): n is string => !!n)),
+  ).sort();
+  const eventosFiltrados = filtroMedico ? eventos.filter((e) => e.registradoPorNome === filtroMedico) : eventos;
+  // Blocos por data (doc 16 PR5): agrupa por dia preservando a ordem (mais recente primeiro).
+  const timelinePorDia = Object.entries(
+    eventosFiltrados.reduce<Record<string, Evento[]>>((acc, ev) => {
+      const dia = new Date(ev.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      (acc[dia] ??= []).push(ev);
+      return acc;
+    }, {}),
+  );
 
   return (
     <div className="flex flex-col gap-[25px]">
@@ -434,6 +513,15 @@ export default function ProntuarioPage() {
                   <option key={b.id} value={b.nome} />
                 ))}
               </datalist>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Previsão de alta (opcional)</span>
+              <input
+                type="date"
+                value={altaPrevistaInput}
+                onChange={(e) => setAltaPrevistaInput(e.target.value)}
+                className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500"
+              />
             </label>
             <p className="text-xs text-gray-400">
               Motivos e boxes novos são salvos na lista automaticamente (sem duplicar).
@@ -649,11 +737,19 @@ export default function ProntuarioPage() {
         )}
       </Card>
 
-      {/* Fatura em aberto (faturamento acoplado) */}
+      {/* A cobrar / comanda (doc 16 B1-B3) — faturamento acoplado */}
       {fatura && fatura.itens.length > 0 && (
         <Card>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-black dark:text-white">Fatura em aberto</h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-black dark:text-white">A cobrar</h2>
+              {/* Status nítido: em aberto vs. faturado/fechado (B2). */}
+              {fatura.status === 'aberta' ? (
+                <span className="text-xs rounded-full px-2.5 py-0.5 bg-amber-50 text-amber-600">Em aberto</span>
+              ) : (
+                <span className="text-xs rounded-full px-2.5 py-0.5 bg-green-50 text-green-600 capitalize">{fatura.status}</span>
+              )}
+            </div>
             <span className="text-lg font-bold text-primary-600">{brl(fatura.totalCentavos)}</span>
           </div>
           <ul className="mt-3 divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
@@ -664,41 +760,153 @@ export default function ProntuarioPage() {
               </li>
             ))}
           </ul>
+          {fatura.status === 'aberta' && (
+            <div className="mt-4 flex justify-end gap-2">
+              <Link href="/faturas" className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-gray-500 hover:text-primary-500">
+                <i className="ri-external-link-line"></i> Ver no financeiro
+              </Link>
+              <Button onClick={onEfetuarCobranca} disabled={cobrando}>
+                <i className="ri-money-dollar-circle-line"></i> {cobrando ? 'Cobrando…' : 'Efetuar cobrança'}
+              </Button>
+            </div>
+          )}
         </Card>
       )}
 
-      {/* Linha do tempo */}
+      {/* Protocolos vacinais (doc 16 PR9) */}
       <Card>
-        <h2 className="text-base font-semibold text-black dark:text-white mb-4">Linha do tempo</h2>
-        {eventos.length === 0 ? (
-          <p className="text-sm text-gray-400">Sem eventos registrados ainda.</p>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-black dark:text-white">Protocolos vacinais</h2>
+          <Button variant="ghost" onClick={() => setShowVacForm((v) => !v)}>
+            <i className="ri-syringe-line"></i> Registrar vacina
+          </Button>
+        </div>
+        {showVacForm && (
+          <form onSubmit={onAddVacina} className="grid grid-cols-1 md:grid-cols-5 gap-2 md:items-end mb-4">
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              <span className="text-gray-600 dark:text-gray-300">Vacina</span>
+              <input required value={vacForm.nome} onChange={(e) => setVacForm({ ...vacForm, nome: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" placeholder="Ex.: Antirrábica" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Laboratório</span>
+              <input value={vacForm.laboratorio} onChange={(e) => setVacForm({ ...vacForm, laboratorio: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Lote</span>
+              <input value={vacForm.lote} onChange={(e) => setVacForm({ ...vacForm, lote: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Aplicada em</span>
+              <input type="date" required value={vacForm.aplicadaEm} onChange={(e) => setVacForm({ ...vacForm, aplicadaEm: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Próxima dose</span>
+              <input type="date" value={vacForm.proximaEm} onChange={(e) => setVacForm({ ...vacForm, proximaEm: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <Button type="submit" disabled={salvandoVac} className="md:col-span-5 md:justify-self-start">
+              {salvandoVac ? 'Salvando…' : 'Salvar'}
+            </Button>
+          </form>
+        )}
+        {vacinas.length === 0 ? (
+          <p className="text-sm text-gray-400">Nenhuma vacina registrada.</p>
         ) : (
-          <ul className="flex flex-col gap-4">
-            {eventos.map((ev) => (
-              <li key={ev.id} className="flex gap-3">
-                <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-50 text-primary-500 shrink-0">
-                  <i className={ICONE[ev.tipo] ?? 'ri-circle-line'}></i>
-                </span>
-                <div className="flex-1 border-b border-gray-50 dark:border-[#172036]/50 pb-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-black dark:text-white capitalize">{ev.tipo}</p>
-                    {ev.valorCentavos ? (
-                      <span className="text-sm text-primary-600">{brl(ev.valorCentavos)}</span>
-                    ) : null}
+          <ul className="divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
+            {vacinas.map((v) => {
+              const prox = v.proximaEm ? new Date(v.proximaEm) : null;
+              const dias = prox ? Math.floor((prox.getTime() - Date.now()) / 86_400_000) : null;
+              const proxCls =
+                dias == null ? '' : dias < 0 ? 'text-red-500' : dias <= 30 ? 'text-amber-600' : 'text-gray-500';
+              return (
+                <li key={v.id} className="py-2.5 flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-black dark:text-white">{v.nome}</p>
+                    <p className="text-xs text-gray-500">
+                      Aplicada em {new Date(v.aplicadaEm).toLocaleDateString('pt-BR')}
+                      {v.laboratorio && ` · ${v.laboratorio}`}
+                      {v.lote && ` · lote ${v.lote}`}
+                      {v.aplicadaPorNome && ` · ${v.aplicadaPorNome}`}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-500">{ev.descricao}</p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <p className="text-xs text-gray-400">{new Date(ev.data).toLocaleString('pt-BR')}</p>
-                    {ev.anexoUrl ? (
-                      <a href={ev.anexoUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-500 hover:underline inline-flex items-center gap-1">
-                        <i className="ri-attachment-2"></i> Ver anexo
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-              </li>
-            ))}
+                  {prox && (
+                    <span className={`text-xs whitespace-nowrap ${proxCls}`}>
+                      Próxima {prox.toLocaleDateString('pt-BR')}
+                      {dias != null && dias < 0 ? ' (vencida)' : ''}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+        )}
+      </Card>
+
+      {/* Linha do tempo — blocos por data (PR5) + evolução por médico (PR7) */}
+      <Card>
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 className="text-base font-semibold text-black dark:text-white">Linha do tempo</h2>
+          {medicosNaTimeline.length > 0 && (
+            <select
+              value={filtroMedico}
+              onChange={(e) => setFiltroMedico(e.target.value)}
+              className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-1.5 text-sm outline-none focus:border-primary-500"
+            >
+              <option value="">Todos os profissionais</option>
+              {medicosNaTimeline.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        {eventosFiltrados.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            {filtroMedico ? 'Nenhum evento deste profissional.' : 'Sem eventos registrados ainda.'}
+          </p>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {timelinePorDia.map(([dia, itens]) => (
+              <div key={dia}>
+                {/* Bloco de data */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-black dark:text-white capitalize">{dia}</span>
+                  <span className="h-px flex-1 bg-gray-100 dark:bg-[#172036]"></span>
+                </div>
+                <ul className="flex flex-col gap-4">
+                  {itens.map((ev) => (
+                    <li key={ev.id} className="flex gap-3">
+                      <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-50 text-primary-500 shrink-0">
+                        <i className={ICONE[ev.tipo] ?? 'ri-circle-line'}></i>
+                      </span>
+                      <div className="flex-1 border-b border-gray-50 dark:border-[#172036]/50 pb-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-black dark:text-white capitalize">{ev.tipo}</p>
+                          {ev.valorCentavos ? (
+                            <span className="text-sm text-primary-600">{brl(ev.valorCentavos)}</span>
+                          ) : null}
+                        </div>
+                        <p className="text-sm text-gray-500">{ev.descricao}</p>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <p className="text-xs text-gray-400">
+                            {new Date(ev.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          {ev.registradoPorNome && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 dark:bg-[#15203c] text-gray-500 px-2 py-0.5 text-xs">
+                              <i className="ri-user-3-line"></i> {ev.registradoPorNome}
+                            </span>
+                          )}
+                          {ev.anexoUrl ? (
+                            <a href={ev.anexoUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-500 hover:underline inline-flex items-center gap-1">
+                              <i className="ri-attachment-2"></i> Ver anexo
+                            </a>
+                          ) : null}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         )}
       </Card>
     </div>
