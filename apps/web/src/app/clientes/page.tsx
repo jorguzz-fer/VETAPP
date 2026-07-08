@@ -6,12 +6,18 @@ import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
+interface PetResumo {
+  id: string;
+  nome: string;
+  codigo?: string | null;
+}
 interface Responsavel {
   id: string;
   nome: string;
   codigo?: string | null;
   email?: string | null;
   telefone?: string | null;
+  pets?: PetResumo[];
 }
 
 const PAGE_SIZE = 20;
@@ -71,8 +77,8 @@ export default function ClientesPage() {
     <div className="flex flex-col gap-[25px]">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold text-black dark:text-white">Clientes & Animais</h1>
-          <p className="text-sm text-gray-500">{total} responsáveis cadastrados</p>
+          <h1 className="text-xl font-semibold text-black dark:text-white">Clientes e Pacientes</h1>
+          <p className="text-sm text-gray-500">{total} clientes cadastrados</p>
         </div>
         <Button onClick={() => setShowForm((v) => !v)}>
           <i className="ri-add-line"></i> Novo cliente
@@ -125,20 +131,40 @@ export default function ClientesPage() {
           <p className="text-sm text-gray-500">Nenhum cliente encontrado.</p>
         ) : (
           <>
-            <table className="w-full text-sm">
+            {/* Fontes maiores (doc 16 C2); código na frente (C3); tutor + pacientes (C4). */}
+            <table className="w-full text-[15px]">
               <thead>
                 <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
-                  <th className="py-2 font-medium">Nome</th>
-                  <th className="py-2 font-medium">Telefone</th>
-                  <th className="py-2 font-medium text-right">Ações</th>
+                  <th className="py-2.5 font-medium w-20">Código</th>
+                  <th className="py-2.5 font-medium">Cliente e pacientes</th>
+                  <th className="py-2.5 font-medium">Telefone</th>
+                  <th className="py-2.5 font-medium text-right">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-50 dark:border-[#172036]/50">
-                    <td className="py-2.5 text-black dark:text-white">{r.nome}</td>
-                    <td className="py-2.5 text-gray-500">{r.telefone ?? '—'}</td>
-                    <td className="py-2.5 text-right whitespace-nowrap">
+                  <tr key={r.id} className="border-b border-gray-50 dark:border-[#172036]/50 align-top">
+                    <td className="py-3 text-gray-400 font-mono">{r.codigo ?? '—'}</td>
+                    <td className="py-3">
+                      <Link href={`/clientes/${r.id}`} className="font-semibold text-black dark:text-white hover:text-primary-500">
+                        {r.nome}
+                      </Link>
+                      {r.pets && r.pets.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {r.pets.map((p) => (
+                            <span
+                              key={p.id}
+                              className="inline-flex items-center gap-1 rounded-full bg-primary-50 dark:bg-[#15203c] text-primary-600 dark:text-primary-300 px-2 py-0.5 text-xs"
+                            >
+                              <i className="ri-footprint-line"></i> {p.nome}
+                              {p.codigo && <span className="text-primary-400/70">({p.codigo})</span>}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 text-gray-500">{r.telefone ?? '—'}</td>
+                    <td className="py-3 text-right whitespace-nowrap">
                       <Link href={`/clientes/${r.id}`} className="text-primary-500 hover:underline">Abrir ficha</Link>
                       <button
                         type="button"

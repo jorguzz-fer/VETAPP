@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
 import { animais, responsaveis } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
@@ -56,7 +56,24 @@ export class ClientesService {
         .limit(pageSize)
         .offset((page - 1) * pageSize);
 
-      return { items, total, page, pageSize };
+      // Pets da página em uma única query (doc 16 C4): tutor + pacientes na linha.
+      const ids = items.map((r) => r.id);
+      const petRows = ids.length
+        ? await tx
+            .select({ id: animais.id, nome: animais.nome, codigo: animais.codigo, responsavelId: animais.responsavelId })
+            .from(animais)
+            .where(inArray(animais.responsavelId, ids))
+            .orderBy(asc(animais.nome))
+        : [];
+      const petsPorResp = new Map<string, { id: string; nome: string; codigo: string | null }[]>();
+      for (const p of petRows) {
+        const lista = petsPorResp.get(p.responsavelId) ?? [];
+        lista.push({ id: p.id, nome: p.nome, codigo: p.codigo });
+        petsPorResp.set(p.responsavelId, lista);
+      }
+
+      const itemsComPets = items.map((r) => ({ ...r, pets: petsPorResp.get(r.id) ?? [] }));
+      return { items: itemsComPets, total, page, pageSize };
     });
   }
 
