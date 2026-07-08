@@ -31,6 +31,7 @@ interface Evento {
   valorCentavos?: number | null;
   data: string;
   anexoUrl?: string | null;
+  registradoPorNome?: string | null;
 }
 interface Fatura {
   id: string;
@@ -71,6 +72,7 @@ export default function ProntuarioPage() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [fatura, setFatura] = useState<Fatura | null>(null);
   const [cobrando, setCobrando] = useState(false);
+  const [filtroMedico, setFiltroMedico] = useState<string>('');
   const [vacinas, setVacinas] = useState<Vacina[]>([]);
   const [vacForm, setVacForm] = useState({ nome: '', laboratorio: '', lote: '', aplicadaEm: '', proximaEm: '' });
   const [showVacForm, setShowVacForm] = useState(false);
@@ -400,6 +402,20 @@ export default function ProntuarioPage() {
 
   if (loading) return <p className="text-sm text-gray-500">Carregando…</p>;
   if (!animal) return <p className="text-sm text-gray-500">Animal não encontrado.</p>;
+
+  // Evolução por médico (doc 16 PR7): profissionais presentes na timeline + filtro.
+  const medicosNaTimeline = Array.from(
+    new Set(eventos.map((e) => e.registradoPorNome).filter((n): n is string => !!n)),
+  ).sort();
+  const eventosFiltrados = filtroMedico ? eventos.filter((e) => e.registradoPorNome === filtroMedico) : eventos;
+  // Blocos por data (doc 16 PR5): agrupa por dia preservando a ordem (mais recente primeiro).
+  const timelinePorDia = Object.entries(
+    eventosFiltrados.reduce<Record<string, Evento[]>>((acc, ev) => {
+      const dia = new Date(ev.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      (acc[dia] ??= []).push(ev);
+      return acc;
+    }, {}),
+  );
 
   return (
     <div className="flex flex-col gap-[25px]">
@@ -825,38 +841,72 @@ export default function ProntuarioPage() {
         )}
       </Card>
 
-      {/* Linha do tempo */}
+      {/* Linha do tempo — blocos por data (PR5) + evolução por médico (PR7) */}
       <Card>
-        <h2 className="text-base font-semibold text-black dark:text-white mb-4">Linha do tempo</h2>
-        {eventos.length === 0 ? (
-          <p className="text-sm text-gray-400">Sem eventos registrados ainda.</p>
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 className="text-base font-semibold text-black dark:text-white">Linha do tempo</h2>
+          {medicosNaTimeline.length > 0 && (
+            <select
+              value={filtroMedico}
+              onChange={(e) => setFiltroMedico(e.target.value)}
+              className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-1.5 text-sm outline-none focus:border-primary-500"
+            >
+              <option value="">Todos os profissionais</option>
+              {medicosNaTimeline.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        {eventosFiltrados.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            {filtroMedico ? 'Nenhum evento deste profissional.' : 'Sem eventos registrados ainda.'}
+          </p>
         ) : (
-          <ul className="flex flex-col gap-4">
-            {eventos.map((ev) => (
-              <li key={ev.id} className="flex gap-3">
-                <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-50 text-primary-500 shrink-0">
-                  <i className={ICONE[ev.tipo] ?? 'ri-circle-line'}></i>
-                </span>
-                <div className="flex-1 border-b border-gray-50 dark:border-[#172036]/50 pb-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-black dark:text-white capitalize">{ev.tipo}</p>
-                    {ev.valorCentavos ? (
-                      <span className="text-sm text-primary-600">{brl(ev.valorCentavos)}</span>
-                    ) : null}
-                  </div>
-                  <p className="text-sm text-gray-500">{ev.descricao}</p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <p className="text-xs text-gray-400">{new Date(ev.data).toLocaleString('pt-BR')}</p>
-                    {ev.anexoUrl ? (
-                      <a href={ev.anexoUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-500 hover:underline inline-flex items-center gap-1">
-                        <i className="ri-attachment-2"></i> Ver anexo
-                      </a>
-                    ) : null}
-                  </div>
+          <div className="flex flex-col gap-5">
+            {timelinePorDia.map(([dia, itens]) => (
+              <div key={dia}>
+                {/* Bloco de data */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-black dark:text-white capitalize">{dia}</span>
+                  <span className="h-px flex-1 bg-gray-100 dark:bg-[#172036]"></span>
                 </div>
-              </li>
+                <ul className="flex flex-col gap-4">
+                  {itens.map((ev) => (
+                    <li key={ev.id} className="flex gap-3">
+                      <span className="inline-grid place-items-center w-9 h-9 rounded-full bg-primary-50 text-primary-500 shrink-0">
+                        <i className={ICONE[ev.tipo] ?? 'ri-circle-line'}></i>
+                      </span>
+                      <div className="flex-1 border-b border-gray-50 dark:border-[#172036]/50 pb-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-black dark:text-white capitalize">{ev.tipo}</p>
+                          {ev.valorCentavos ? (
+                            <span className="text-sm text-primary-600">{brl(ev.valorCentavos)}</span>
+                          ) : null}
+                        </div>
+                        <p className="text-sm text-gray-500">{ev.descricao}</p>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <p className="text-xs text-gray-400">
+                            {new Date(ev.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          {ev.registradoPorNome && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 dark:bg-[#15203c] text-gray-500 px-2 py-0.5 text-xs">
+                              <i className="ri-user-3-line"></i> {ev.registradoPorNome}
+                            </span>
+                          )}
+                          {ev.anexoUrl ? (
+                            <a href={ev.anexoUrl} target="_blank" rel="noreferrer" className="text-xs text-primary-500 hover:underline inline-flex items-center gap-1">
+                              <i className="ri-attachment-2"></i> Ver anexo
+                            </a>
+                          ) : null}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </Card>
     </div>

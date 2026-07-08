@@ -253,6 +253,13 @@
       "when": 1719593900000,
       "tag": "0035_departamentos",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1719594000000,
+      "tag": "0036_evento_registrado_por",
+      "breakpoints": true
     }
   ]
 }

@@ -80,6 +80,8 @@ export class EventoDto {
   @ApiProperty() data!: string;
   @ApiPropertyOptional({ type: String, description: 'URL assinada (curta) do anexo, se houver' })
   anexoUrl?: string | null;
+  @ApiPropertyOptional({ type: String, description: 'Quem registrou o evento (doc 16 PR7)' })
+  registradoPorNome?: string | null;
   @ApiPropertyOptional({ type: Boolean, description: 'Estoque baixado automaticamente neste registro' })
   estoqueBaixado?: boolean;
 }

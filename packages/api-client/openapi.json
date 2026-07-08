@@ -6860,6 +6860,10 @@
             "type": "string",
             "description": "URL assinada (curta) do anexo, se houver"
           },
+          "registradoPorNome": {
+            "type": "string",
+            "description": "Quem registrou o evento (doc 16 PR7)"
+          },
           "estoqueBaixado": {
             "type": "boolean",
             "description": "Estoque baixado automaticamente neste registro"
