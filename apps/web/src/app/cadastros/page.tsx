@@ -168,9 +168,147 @@ export default function CadastrosPage() {
       </Card>
 
       <DepartamentosCard />
+      <TemplatesMensagemCard />
       <FormasRecebimentoCard />
       <InternacaoListasCard />
     </div>
+  );
+}
+
+// Templates de mensagem (doc 17 slice 2): modelos por canal com placeholders.
+interface Template {
+  id: string;
+  nome: string;
+  canal: string;
+  assunto: string | null;
+  corpo: string;
+  ativo: boolean;
+}
+
+function TemplatesMensagemCard() {
+  const [items, setItems] = useState<Template[]>([]);
+  const [show, setShow] = useState(false);
+  const [form, setForm] = useState({ nome: '', canal: 'whatsapp', assunto: '', corpo: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data } = await api.GET('/api/mensagens/templates', { params: { query: { incluirInativos: true } } });
+    setItems((data as Template[]) ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!form.nome.trim() || !form.corpo.trim()) return;
+    setSaving(true);
+    const { error } = await api.POST('/api/mensagens/templates', {
+      body: {
+        nome: form.nome.trim(),
+        canal: form.canal as 'whatsapp' | 'email' | 'sms' | 'manual',
+        assunto: form.canal === 'email' ? form.assunto || undefined : undefined,
+        corpo: form.corpo.trim(),
+      },
+    });
+    setSaving(false);
+    if (error) {
+      alert('Não foi possível criar o template (só admin/gestor).');
+      return;
+    }
+    setForm({ nome: '', canal: 'whatsapp', assunto: '', corpo: '' });
+    setShow(false);
+    void load();
+  }
+
+  async function onToggle(t: Template) {
+    await api.PATCH('/api/mensagens/templates/{id}', { params: { path: { id: t.id } }, body: { ativo: !t.ativo } });
+    void load();
+  }
+
+  const inputCls =
+    'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-semibold text-black dark:text-white">Templates de mensagem</h2>
+          <p className="text-xs text-gray-500">
+            Modelos por canal. Placeholders: <code>{'{{cliente}}'}</code> <code>{'{{pet}}'}</code> <code>{'{{data}}'}</code>.
+          </p>
+        </div>
+        <Button onClick={() => setShow((v) => !v)}>
+          <i className="ri-add-line"></i> Novo template
+        </Button>
+      </div>
+
+      {show && (
+        <form onSubmit={onCreate} className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-wrap gap-3">
+            <label className="flex flex-col gap-1 text-sm flex-1 min-w-[160px]">
+              <span className="text-gray-600 dark:text-gray-300">Nome</span>
+              <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Lembrete de vacina" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Canal</span>
+              <select value={form.canal} onChange={(e) => setForm({ ...form, canal: e.target.value })} className={inputCls}>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">E-mail</option>
+                <option value="sms">SMS</option>
+                <option value="manual">Anotação</option>
+              </select>
+            </label>
+            {form.canal === 'email' && (
+              <label className="flex flex-col gap-1 text-sm flex-1 min-w-[160px]">
+                <span className="text-gray-600 dark:text-gray-300">Assunto</span>
+                <input value={form.assunto} onChange={(e) => setForm({ ...form, assunto: e.target.value })} className={inputCls} />
+              </label>
+            )}
+          </div>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-gray-600 dark:text-gray-300">Corpo</span>
+            <textarea required rows={3} value={form.corpo} onChange={(e) => setForm({ ...form, corpo: e.target.value })} className={inputCls} placeholder="Olá {{cliente}}, a vacina do {{pet}} vence em breve…" />
+          </label>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
+          </div>
+        </form>
+      )}
+
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">Nenhum template — crie modelos de lembrete, boas-vindas, aniversário…</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+              <th className="py-2 font-medium">Nome</th>
+              <th className="py-2 font-medium">Canal</th>
+              <th className="py-2 font-medium text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((t) => (
+              <tr key={t.id} className={`border-b border-gray-50 dark:border-[#172036]/50 ${t.ativo ? '' : 'opacity-50'}`}>
+                <td className="py-2.5 text-black dark:text-white">{t.nome}</td>
+                <td className="py-2.5 text-gray-500">{t.canal}</td>
+                <td className="py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(t)}
+                    className={`${t.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                    title={t.ativo ? 'Desativar' : 'Ativar'}
+                    aria-label={t.ativo ? 'Desativar' : 'Ativar'}
+                  >
+                    <i className={t.ativo ? 'ri-toggle-fill text-xl' : 'ri-toggle-line text-xl'}></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Card>
   );
 }
 
