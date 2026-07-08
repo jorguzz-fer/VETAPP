@@ -16,9 +16,12 @@ export class DashboardDto {
   @ApiProperty() internados!: number;
   @ApiProperty() execucoesPendentes!: number;
   @ApiProperty() faturasAbertas!: number;
-  @ApiProperty() faturasAbertasCentavos!: number;
-  @ApiProperty() receitaMesCentavos!: number;
-  @ApiProperty() estoqueAbaixoMinimo!: number;
+  // Receita líquida do mês (doc 16 D2): recebido no mês, líquido da taxa da forma.
+  @ApiProperty() receitaLiquidaMesCentavos!: number;
+  // Ticket médio do mês (doc 16 D4): média das faturas não canceladas do mês.
+  @ApiProperty() ticketMedioCentavos!: number;
+  // Faturas a receber (doc 16 D5): saldo em aberto (total − recebido), não canceladas/pagas.
+  @ApiProperty() aReceberCentavos!: number;
   @ApiProperty() orcamentosAbertos!: number;
   @ApiProperty() clientes!: number;
   @ApiProperty() minhasComissoesMesCentavos!: number;
