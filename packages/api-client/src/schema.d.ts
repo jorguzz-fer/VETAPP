@@ -2339,6 +2339,8 @@ export interface components {
             data: string;
             /** @description URL assinada (curta) do anexo, se houver */
             anexoUrl?: string;
+            /** @description Quem registrou o evento (doc 16 PR7) */
+            registradoPorNome?: string;
             /** @description Estoque baixado automaticamente neste registro */
             estoqueBaixado?: boolean;
         };

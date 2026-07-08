@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, estoqueMovimentos, faturaItens, faturas, itensCatalogo, prontuarioEventos } from '../../database/schema';
+import { animais, estoqueMovimentos, faturaItens, faturas, itensCatalogo, prontuarioEventos, users } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import { FaturamentoService } from '../financeiro/faturamento.service';
 import type {
@@ -28,12 +28,13 @@ export class ProntuarioService {
   async listEventos(tenantId: string, animalId: string): Promise<EventoDto[]> {
     const rows = await this.database.withTenant(tenantId, async (tx) =>
       tx
-        .select()
+        .select({ e: prontuarioEventos, autorNome: users.name })
         .from(prontuarioEventos)
+        .leftJoin(users, eq(users.id, prontuarioEventos.registradoPor))
         .where(eq(prontuarioEventos.animalId, animalId))
         .orderBy(desc(prontuarioEventos.data)),
     );
-    return Promise.all(rows.map((r) => this.toEventoDto(r)));
+    return Promise.all(rows.map((r) => this.toEventoDto(r.e, r.autorNome)));
   }
 
   /** URL pré-assinada para anexar arquivo a um evento do prontuário deste animal. */
@@ -82,6 +83,7 @@ export class ProntuarioService {
           quantidade,
           valorCentavos: dto.valorCentavos ?? null,
           anexoKey: dto.anexoKey ?? null,
+          registradoPor: autorUserId ?? null,
         })
         .returning();
 
@@ -152,7 +154,7 @@ export class ProntuarioService {
     });
   }
 
-  private async toEventoDto(r: EventoRow): Promise<EventoDto> {
+  private async toEventoDto(r: EventoRow, registradoPorNome?: string | null): Promise<EventoDto> {
     return {
       id: r.id,
       animalId: r.animalId,
@@ -163,6 +165,7 @@ export class ProntuarioService {
       valorCentavos: r.valorCentavos,
       data: r.data as unknown as string,
       anexoUrl: await this.storage.signDownload(r.anexoKey),
+      registradoPorNome: registradoPorNome ?? null,
     };
   }
 
