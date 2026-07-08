@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { tenants } from './tenants';
 import { responsaveis } from './responsaveis';
 
@@ -32,3 +32,24 @@ export const mensagens = pgTable(
 );
 
 export type Mensagem = typeof mensagens.$inferSelect;
+
+// Templates de mensagem (doc 17 slice 2). Tenant-scoped → RLS (migração 0038).
+export const mensagemTemplates = pgTable(
+  'mensagem_templates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    canal: text('canal').notNull(), // whatsapp | email | sms | manual
+    assunto: text('assunto'),
+    corpo: text('corpo').notNull(),
+    ativo: boolean('ativo').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantIdx: index('mensagem_templates_tenant_idx').on(t.tenantId),
+  }),
+);
+
+export type MensagemTemplate = typeof mensagemTemplates.$inferSelect;

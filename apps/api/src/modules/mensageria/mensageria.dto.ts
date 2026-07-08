@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export const CANAIS = ['whatsapp', 'email', 'sms', 'manual'] as const;
 
@@ -30,6 +30,51 @@ export class CreateMensagemDto {
   @IsOptional()
   @IsUUID()
   referenciaId?: string;
+
+  @ApiPropertyOptional({ type: String, description: 'Template usado (opcional)' })
+  @IsOptional()
+  @IsUUID()
+  templateId?: string;
+}
+
+export class MensagemTemplateDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() nome!: string;
+  @ApiProperty() canal!: string;
+  @ApiPropertyOptional({ type: String }) assunto?: string | null;
+  @ApiProperty() corpo!: string;
+  @ApiProperty() ativo!: boolean;
+}
+
+export class CreateTemplateDto {
+  @ApiProperty({ example: 'Lembrete de vacina' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  nome!: string;
+
+  @ApiProperty({ enum: CANAIS })
+  @IsIn(CANAIS as unknown as string[])
+  canal!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  assunto?: string;
+
+  @ApiProperty({ description: 'Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}}' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(4000)
+  corpo!: string;
+}
+
+export class UpdateTemplateDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() @MinLength(1) @MaxLength(80) nome?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(200) assunto?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MinLength(1) @MaxLength(4000) corpo?: string;
+  @ApiPropertyOptional({ type: Boolean }) @IsOptional() @IsBoolean() ativo?: boolean;
 }
 
 export class MensagemDto {

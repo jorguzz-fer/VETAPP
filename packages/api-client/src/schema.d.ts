@@ -2052,6 +2052,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mensagens/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listTemplates"];
+        put?: never;
+        post: operations["MensageriaController_createTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MensageriaController_updateTemplate"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3433,6 +3465,31 @@ export interface components {
             /** @description Origem do disparo (ex.: vacina, agendamento) */
             referenciaTipo?: string;
             referenciaId?: string;
+            /** @description Template usado (opcional) */
+            templateId?: string;
+        };
+        MensagemTemplateDto: {
+            id: string;
+            nome: string;
+            canal: string;
+            assunto?: string;
+            corpo: string;
+            ativo: boolean;
+        };
+        CreateTemplateDto: {
+            /** @example Lembrete de vacina */
+            nome: string;
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            assunto?: string;
+            /** @description Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}} */
+            corpo: string;
+        };
+        UpdateTemplateDto: {
+            nome?: string;
+            assunto?: string;
+            corpo?: string;
+            ativo?: boolean;
         };
     };
     responses: never;
@@ -7066,6 +7123,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_listTemplates: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_createTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_updateTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
                 };
             };
         };

@@ -6001,6 +6001,123 @@
           }
         ]
       }
+    },
+    "/api/mensagens/templates": {
+      "get": {
+        "operationId": "MensageriaController_listTemplates",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_createTemplate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/templates/{id}": {
+      "patch": {
+        "operationId": "MensageriaController_updateTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -10465,12 +10582,93 @@
           },
           "referenciaId": {
             "type": "string"
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Template usado (opcional)"
           }
         },
         "required": [
           "canal",
           "corpo"
         ]
+      },
+      "MensagemTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "canal",
+          "corpo",
+          "ativo"
+        ]
+      },
+      "CreateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Lembrete de vacina"
+          },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string",
+            "description": "Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}}"
+          }
+        },
+        "required": [
+          "nome",
+          "canal",
+          "corpo"
+        ]
+      },
+      "UpdateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

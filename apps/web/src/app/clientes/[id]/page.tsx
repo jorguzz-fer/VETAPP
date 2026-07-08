@@ -87,6 +87,26 @@ export default function FichaClientePage() {
   const [showMsg, setShowMsg] = useState(false);
   const [msgForm, setMsgForm] = useState({ canal: 'whatsapp', assunto: '', corpo: '' });
   const [savingMsg, setSavingMsg] = useState(false);
+  const [templates, setTemplates] = useState<{ id: string; nome: string; canal: string; assunto?: string | null; corpo: string }[]>([]);
+
+  useEffect(() => {
+    void api.GET('/api/mensagens/templates', { params: { query: {} } }).then(({ data }) => {
+      setTemplates((data as typeof templates) ?? []);
+    });
+  }, []);
+
+  // Aplica um template preenchendo o formulário, substituindo placeholders simples.
+  function aplicarTemplate(templateId: string) {
+    const t = templates.find((x) => x.id === templateId);
+    if (!t || !ficha) return;
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const sub = (s: string) =>
+      s
+        .replaceAll('{{cliente}}', ficha.nome)
+        .replaceAll('{{pet}}', ficha.animais[0]?.nome ?? '')
+        .replaceAll('{{data}}', hoje);
+    setMsgForm({ canal: t.canal, assunto: sub(t.assunto ?? ''), corpo: sub(t.corpo) });
+  }
 
   const loadMensagens = useCallback(async () => {
     const { data } = await api.GET('/api/clientes/{id}/mensagens', { params: { path: { id } } });
@@ -380,6 +400,19 @@ export default function FichaClientePage() {
                   <option value="manual">Anotação / manual</option>
                 </select>
               </label>
+              {templates.length > 0 && (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300">Template</span>
+                  <select defaultValue="" onChange={(e) => e.target.value && aplicarTemplate(e.target.value)} className={inputCls}>
+                    <option value="">— usar template —</option>
+                    {templates
+                      .filter((t) => t.canal === msgForm.canal)
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>{t.nome}</option>
+                      ))}
+                  </select>
+                </label>
+              )}
               {msgForm.canal === 'email' && (
                 <label className="flex flex-col gap-1 text-sm flex-1 min-w-[200px]">
                   <span className="text-gray-600 dark:text-gray-300">Assunto</span>

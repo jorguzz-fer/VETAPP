@@ -1,9 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { mensagens, responsaveis, users } from '../../database/schema';
+import { mensagemTemplates, mensagens, responsaveis, users } from '../../database/schema';
 import { resolveMensagemProvider } from './mensagem-provider';
-import type { CreateMensagemDto, MensagemDto } from './mensageria.dto';
+import type {
+  CreateMensagemDto,
+  CreateTemplateDto,
+  MensagemDto,
+  MensagemTemplateDto,
+  UpdateTemplateDto,
+} from './mensageria.dto';
 
 type MensagemRow = typeof mensagens.$inferSelect;
 
@@ -52,10 +58,61 @@ export class MensageriaService {
           enviadaEm: res.enviadaEm ?? null,
           referenciaTipo: dto.referenciaTipo ?? null,
           referenciaId: dto.referenciaId ?? null,
+          templateId: dto.templateId ?? null,
           disparadoPor: userId,
         })
         .returning();
       return this.toDto(row, resp.nome, null);
+    });
+  }
+
+  // ───────── Templates (doc 17 slice 2) ─────────
+
+  async listTemplates(tenantId: string, incluirInativos = false): Promise<MensagemTemplateDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const conds = [eq(mensagemTemplates.tenantId, tenantId)];
+      if (!incluirInativos) conds.push(eq(mensagemTemplates.ativo, true));
+      const rows = await tx
+        .select()
+        .from(mensagemTemplates)
+        .where(and(...conds))
+        .orderBy(asc(mensagemTemplates.nome));
+      return rows.map((r) => ({
+        id: r.id,
+        nome: r.nome,
+        canal: r.canal,
+        assunto: r.assunto,
+        corpo: r.corpo,
+        ativo: r.ativo,
+      }));
+    });
+  }
+
+  async createTemplate(tenantId: string, dto: CreateTemplateDto): Promise<MensagemTemplateDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const [r] = await tx
+        .insert(mensagemTemplates)
+        .values({ tenantId, nome: dto.nome, canal: dto.canal, assunto: dto.assunto ?? null, corpo: dto.corpo })
+        .returning();
+      return { id: r.id, nome: r.nome, canal: r.canal, assunto: r.assunto, corpo: r.corpo, ativo: r.ativo };
+    });
+  }
+
+  async updateTemplate(tenantId: string, id: string, dto: UpdateTemplateDto): Promise<MensagemTemplateDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const [r] = await tx
+        .update(mensagemTemplates)
+        .set({
+          ...(dto.nome !== undefined ? { nome: dto.nome } : {}),
+          ...(dto.assunto !== undefined ? { assunto: dto.assunto } : {}),
+          ...(dto.corpo !== undefined ? { corpo: dto.corpo } : {}),
+          ...(dto.ativo !== undefined ? { ativo: dto.ativo } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(mensagemTemplates.id, id))
+        .returning();
+      if (!r) throw new NotFoundException('Template não encontrado');
+      return { id: r.id, nome: r.nome, canal: r.canal, assunto: r.assunto, corpo: r.corpo, ativo: r.ativo };
     });
   }
 
