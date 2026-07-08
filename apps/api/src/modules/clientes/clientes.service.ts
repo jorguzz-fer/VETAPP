@@ -1,19 +1,22 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, responsaveis } from '../../database/schema';
+import { animais, faturas, prontuarioEventos, responsaveis, users, vacinas } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,
+  BuscaAnimalDto,
   CreateAnimalDto,
   CreateResponsavelDto,
   ListResponsaveisDto,
   OkDto,
+  CreateVacinaDto,
   ResponsavelComAnimaisDto,
   ResponsavelDto,
   SignUploadResponseDto,
   UpdateAnimalDto,
   UpdateResponsavelDto,
+  VacinaDto,
 } from './clientes.dto';
 
 interface ListOpts {
@@ -55,7 +58,59 @@ export class ClientesService {
         .limit(pageSize)
         .offset((page - 1) * pageSize);
 
-      return { items, total, page, pageSize };
+      // Pets da página em uma única query (doc 16 C4): tutor + pacientes na linha.
+      const ids = items.map((r) => r.id);
+      const petRows = ids.length
+        ? await tx
+            .select({ id: animais.id, nome: animais.nome, codigo: animais.codigo, responsavelId: animais.responsavelId })
+            .from(animais)
+            .where(inArray(animais.responsavelId, ids))
+            .orderBy(asc(animais.nome))
+        : [];
+      const petsPorResp = new Map<string, { id: string; nome: string; codigo: string | null }[]>();
+      for (const p of petRows) {
+        const lista = petsPorResp.get(p.responsavelId) ?? [];
+        lista.push({ id: p.id, nome: p.nome, codigo: p.codigo });
+        petsPorResp.set(p.responsavelId, lista);
+      }
+
+      const itemsComPets = items.map((r) => ({ ...r, pets: petsPorResp.get(r.id) ?? [] }));
+      return { items: itemsComPets, total, page, pageSize };
+    });
+  }
+
+  /**
+   * Busca de paciente para o Prontuário: por nome do animal OU nome/telefone do
+   * tutor. Retorna o animal + tutor para abrir a ficha (timeline) direto.
+   */
+  async buscarAnimais(tenantId: string, search?: string): Promise<BuscaAnimalDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const base = eq(animais.tenantId, tenantId);
+      const where = search
+        ? and(
+            base,
+            or(
+              ilike(animais.nome, `%${search}%`),
+              ilike(responsaveis.nome, `%${search}%`),
+              ilike(responsaveis.telefone, `%${search}%`),
+            ),
+          )
+        : base;
+      return tx
+        .select({
+          id: animais.id,
+          nome: animais.nome,
+          especie: animais.especie,
+          raca: animais.raca,
+          status: animais.status,
+          responsavelId: animais.responsavelId,
+          responsavelNome: responsaveis.nome,
+        })
+        .from(animais)
+        .innerJoin(responsaveis, eq(responsaveis.id, animais.responsavelId))
+        .where(where)
+        .orderBy(asc(animais.nome))
+        .limit(30);
     });
   }
 
@@ -75,10 +130,29 @@ export class ClientesService {
         .from(animais)
         .where(eq(animais.responsavelId, id))
         .orderBy(desc(animais.createdAt));
-      return { r, pets };
+
+      // Resumo de vendas do cliente (doc 16 F1): faturas não canceladas.
+      const [v] = await tx
+        .select({
+          total: sql<number>`coalesce(sum(${faturas.totalCentavos}), 0)::int`,
+          n: sql<number>`count(*)::int`,
+          ultima: sql<string | null>`max(${faturas.createdAt})`,
+        })
+        .from(faturas)
+        .where(and(eq(faturas.responsavelId, id), ne(faturas.status, 'cancelada')));
+      return { r, pets, v };
     });
+
     const animaisDto = await Promise.all(resp.pets.map((p) => this.toAnimalDto(p)));
-    return { ...resp.r, animais: animaisDto } as ResponsavelComAnimaisDto;
+    const total = Number(resp.v?.total ?? 0);
+    const n = Number(resp.v?.n ?? 0);
+    const vendas = {
+      totalVendidoCentavos: total,
+      ticketMedioCentavos: n > 0 ? Math.round(total / n) : 0,
+      vendas: n,
+      ultimaVendaEm: (resp.v?.ultima as unknown as string) ?? null,
+    };
+    return { ...resp.r, animais: animaisDto, vendas } as ResponsavelComAnimaisDto;
   }
 
   async updateResponsavel(tenantId: string, id: string, dto: UpdateResponsavelDto): Promise<ResponsavelDto> {
@@ -166,6 +240,81 @@ export class ClientesService {
     return this.toAnimalDto(row);
   }
 
+  // ───────── Protocolos vacinais (doc 16 PR9) ─────────
+
+  async listVacinas(tenantId: string, animalId: string): Promise<VacinaDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          id: vacinas.id,
+          animalId: vacinas.animalId,
+          nome: vacinas.nome,
+          laboratorio: vacinas.laboratorio,
+          lote: vacinas.lote,
+          aplicadaEm: vacinas.aplicadaEm,
+          proximaEm: vacinas.proximaEm,
+          aplicadaPorNome: users.name,
+          observacao: vacinas.observacao,
+        })
+        .from(vacinas)
+        .leftJoin(users, eq(users.id, vacinas.aplicadaPor))
+        .where(eq(vacinas.animalId, animalId))
+        .orderBy(desc(vacinas.aplicadaEm));
+      return rows.map((r) => ({
+        ...r,
+        aplicadaEm: r.aplicadaEm as unknown as string,
+        proximaEm: (r.proximaEm as unknown as string | null) ?? null,
+      }));
+    });
+  }
+
+  async criarVacina(
+    tenantId: string,
+    animalId: string,
+    userId: string,
+    dto: CreateVacinaDto,
+  ): Promise<VacinaDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const animal = await tx.query.animais.findFirst({ where: eq(animais.id, animalId) });
+      if (!animal) throw new NotFoundException('Paciente não encontrado');
+      const [row] = await tx
+        .insert(vacinas)
+        .values({
+          tenantId,
+          animalId,
+          nome: dto.nome,
+          laboratorio: dto.laboratorio ?? null,
+          lote: dto.lote ?? null,
+          aplicadaEm: dto.aplicadaEm,
+          proximaEm: dto.proximaEm ?? null,
+          aplicadaPor: userId,
+          observacao: dto.observacao ?? null,
+        })
+        .returning();
+      // Também vira evento na linha do tempo do paciente.
+      await tx.insert(prontuarioEventos).values({
+        tenantId,
+        animalId,
+        tipo: 'vacina',
+        descricao: `Vacina: ${dto.nome}${dto.lote ? ` (lote ${dto.lote})` : ''}`,
+      });
+      const [autor] = userId
+        ? await tx.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
+        : [];
+      return {
+        id: row.id,
+        animalId: row.animalId,
+        nome: row.nome,
+        laboratorio: row.laboratorio,
+        lote: row.lote,
+        aplicadaEm: row.aplicadaEm as unknown as string,
+        proximaEm: (row.proximaEm as unknown as string | null) ?? null,
+        aplicadaPorNome: autor?.name ?? null,
+        observacao: row.observacao,
+      };
+    });
+  }
+
   private async toAnimalDto(r: AnimalRow): Promise<AnimalDto> {
     return {
       id: r.id,
@@ -174,9 +323,14 @@ export class ClientesService {
       nome: r.nome,
       especie: r.especie,
       raca: r.raca,
+      pelagem: r.pelagem,
       sexo: r.sexo,
       castrado: r.castrado,
       nascimento: r.nascimento,
+      microchip: r.microchip,
+      marcacoes: r.marcacoes ?? [],
+      pedigree: r.pedigree,
+      pedigreeNumero: r.pedigreeNumero,
       status: r.status,
       fotoUrl: await this.storage.signDownload(r.fotoKey),
     };

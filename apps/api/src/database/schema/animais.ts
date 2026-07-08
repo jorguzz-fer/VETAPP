@@ -18,9 +18,16 @@ export const animais = pgTable(
     nome: text('nome').notNull(),
     especie: text('especie'),
     raca: text('raca'),
+    pelagem: text('pelagem'),
     sexo: text('sexo'), // M | F
     castrado: boolean('castrado').notNull().default(false),
     nascimento: date('nascimento'),
+    microchip: text('microchip'),
+    // Marcações/tags clínicas do paciente (ex.: "renal") — doc 16 P2. Base para
+    // futuros recortes de campanha. text[] para consultar por tag depois.
+    marcacoes: text('marcacoes').array().notNull().default([]),
+    pedigree: boolean('pedigree').notNull().default(false),
+    pedigreeNumero: text('pedigree_numero'),
     status: text('status').notNull().default('vivo'), // vivo | falecido
     fotoKey: text('foto_key'), // chave do objeto no storage (R2); leitura via URL assinada
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

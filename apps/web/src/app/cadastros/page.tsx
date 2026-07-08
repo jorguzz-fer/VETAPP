@@ -167,8 +167,263 @@ export default function CadastrosPage() {
         )}
       </Card>
 
+      <DepartamentosCard />
+      <TemplatesMensagemCard />
       <FormasRecebimentoCard />
+      <InternacaoListasCard />
     </div>
+  );
+}
+
+// Templates de mensagem (doc 17 slice 2): modelos por canal com placeholders.
+interface Template {
+  id: string;
+  nome: string;
+  canal: string;
+  assunto: string | null;
+  corpo: string;
+  ativo: boolean;
+}
+
+function TemplatesMensagemCard() {
+  const [items, setItems] = useState<Template[]>([]);
+  const [show, setShow] = useState(false);
+  const [form, setForm] = useState({ nome: '', canal: 'whatsapp', assunto: '', corpo: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data } = await api.GET('/api/mensagens/templates', { params: { query: { incluirInativos: true } } });
+    setItems((data as Template[]) ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!form.nome.trim() || !form.corpo.trim()) return;
+    setSaving(true);
+    const { error } = await api.POST('/api/mensagens/templates', {
+      body: {
+        nome: form.nome.trim(),
+        canal: form.canal as 'whatsapp' | 'email' | 'sms' | 'manual',
+        assunto: form.canal === 'email' ? form.assunto || undefined : undefined,
+        corpo: form.corpo.trim(),
+      },
+    });
+    setSaving(false);
+    if (error) {
+      alert('Não foi possível criar o template (só admin/gestor).');
+      return;
+    }
+    setForm({ nome: '', canal: 'whatsapp', assunto: '', corpo: '' });
+    setShow(false);
+    void load();
+  }
+
+  async function onToggle(t: Template) {
+    await api.PATCH('/api/mensagens/templates/{id}', { params: { path: { id: t.id } }, body: { ativo: !t.ativo } });
+    void load();
+  }
+
+  const inputCls =
+    'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-semibold text-black dark:text-white">Templates de mensagem</h2>
+          <p className="text-xs text-gray-500">
+            Modelos por canal. Placeholders: <code>{'{{cliente}}'}</code> <code>{'{{pet}}'}</code> <code>{'{{data}}'}</code>.
+          </p>
+        </div>
+        <Button onClick={() => setShow((v) => !v)}>
+          <i className="ri-add-line"></i> Novo template
+        </Button>
+      </div>
+
+      {show && (
+        <form onSubmit={onCreate} className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-wrap gap-3">
+            <label className="flex flex-col gap-1 text-sm flex-1 min-w-[160px]">
+              <span className="text-gray-600 dark:text-gray-300">Nome</span>
+              <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Lembrete de vacina" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Canal</span>
+              <select value={form.canal} onChange={(e) => setForm({ ...form, canal: e.target.value })} className={inputCls}>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">E-mail</option>
+                <option value="sms">SMS</option>
+                <option value="manual">Anotação</option>
+              </select>
+            </label>
+            {form.canal === 'email' && (
+              <label className="flex flex-col gap-1 text-sm flex-1 min-w-[160px]">
+                <span className="text-gray-600 dark:text-gray-300">Assunto</span>
+                <input value={form.assunto} onChange={(e) => setForm({ ...form, assunto: e.target.value })} className={inputCls} />
+              </label>
+            )}
+          </div>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-gray-600 dark:text-gray-300">Corpo</span>
+            <textarea required rows={3} value={form.corpo} onChange={(e) => setForm({ ...form, corpo: e.target.value })} className={inputCls} placeholder="Olá {{cliente}}, a vacina do {{pet}} vence em breve…" />
+          </label>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
+          </div>
+        </form>
+      )}
+
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">Nenhum template — crie modelos de lembrete, boas-vindas, aniversário…</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+              <th className="py-2 font-medium">Nome</th>
+              <th className="py-2 font-medium">Canal</th>
+              <th className="py-2 font-medium text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((t) => (
+              <tr key={t.id} className={`border-b border-gray-50 dark:border-[#172036]/50 ${t.ativo ? '' : 'opacity-50'}`}>
+                <td className="py-2.5 text-black dark:text-white">{t.nome}</td>
+                <td className="py-2.5 text-gray-500">{t.canal}</td>
+                <td className="py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(t)}
+                    className={`${t.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                    title={t.ativo ? 'Desativar' : 'Ativar'}
+                    aria-label={t.ativo ? 'Desativar' : 'Ativar'}
+                  >
+                    <i className={t.ativo ? 'ri-toggle-fill text-xl' : 'ri-toggle-line text-xl'}></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Card>
+  );
+}
+
+// Departamentos da agenda (doc 16 A1): Clínica, Hotel, Banho & Tosa etc.
+interface Departamento {
+  id: string;
+  nome: string;
+  cor: string | null;
+  ativo: boolean;
+}
+
+function DepartamentosCard() {
+  const [deps, setDeps] = useState<Departamento[]>([]);
+  const [show, setShow] = useState(false);
+  const [form, setForm] = useState({ nome: '', cor: '#7c5cff' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data } = await api.GET('/api/agenda/departamentos', { params: { query: { incluirInativos: true } } });
+    setDeps((data as Departamento[]) ?? []);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!form.nome.trim()) return;
+    setSaving(true);
+    const { error } = await api.POST('/api/agenda/departamentos', {
+      body: { nome: form.nome.trim(), cor: form.cor || undefined },
+    });
+    setSaving(false);
+    if (error) {
+      alert('Não foi possível criar (nome repetido? só admin/gestor).');
+      return;
+    }
+    setForm({ nome: '', cor: '#7c5cff' });
+    setShow(false);
+    void load();
+  }
+
+  async function onToggle(d: Departamento) {
+    await api.PATCH('/api/agenda/departamentos/{id}', { params: { path: { id: d.id } }, body: { ativo: !d.ativo } });
+    void load();
+  }
+
+  const inputCls =
+    'rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500';
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-semibold text-black dark:text-white">Departamentos da agenda</h2>
+          <p className="text-xs text-gray-500">Áreas para organizar a agenda (Clínica, Hotel, Banho &amp; Tosa…).</p>
+        </div>
+        <Button onClick={() => setShow((v) => !v)}>
+          <i className="ri-add-line"></i> Novo departamento
+        </Button>
+      </div>
+
+      {show && (
+        <form onSubmit={onCreate} className="flex flex-wrap gap-3 items-end mb-4">
+          <label className="flex flex-col gap-1 text-sm flex-1 min-w-[180px]">
+            <span className="text-gray-600 dark:text-gray-300">Nome</span>
+            <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Hotel" />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-gray-600 dark:text-gray-300">Cor</span>
+            <input type="color" value={form.cor} onChange={(e) => setForm({ ...form, cor: e.target.value })} className="h-[42px] w-14 rounded-md border border-gray-200 dark:border-[#172036] bg-transparent" />
+          </label>
+          <Button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</Button>
+        </form>
+      )}
+
+      {deps.length === 0 ? (
+        <p className="text-sm text-gray-500">Nenhum departamento — crie &quot;Clínica&quot;, &quot;Hotel&quot;, &quot;Banho &amp; Tosa&quot;…</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-[#172036]">
+              <th className="py-2 font-medium">Nome</th>
+              <th className="py-2 font-medium">Cor</th>
+              <th className="py-2 font-medium text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deps.map((d) => (
+              <tr key={d.id} className={`border-b border-gray-50 dark:border-[#172036]/50 ${d.ativo ? '' : 'opacity-50'}`}>
+                <td className="py-2.5 text-black dark:text-white">{d.nome}</td>
+                <td className="py-2.5">
+                  {d.cor ? (
+                    <span className="inline-block w-5 h-5 rounded-full border border-gray-200 dark:border-[#172036]" style={{ backgroundColor: d.cor }} />
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+                <td className="py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(d)}
+                    className={`${d.ativo ? 'text-green-500' : 'text-gray-400'} hover:opacity-70`}
+                    title={d.ativo ? 'Desativar' : 'Ativar'}
+                    aria-label={d.ativo ? 'Desativar' : 'Ativar'}
+                  >
+                    <i className={d.ativo ? 'ri-toggle-fill text-xl' : 'ri-toggle-line text-xl'}></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Card>
   );
 }
 
@@ -304,5 +559,160 @@ function FormasRecebimentoCard() {
         </table>
       )}
     </Card>
+  );
+}
+
+interface ItemLista {
+  id: string;
+  nome: string;
+}
+
+// Motivos e boxes de internação (doc 05 §9.7): listas usadas na admissão.
+function InternacaoListasCard() {
+  return (
+    <Card>
+      <div className="mb-4">
+        <h2 className="font-semibold text-black dark:text-white">Internação — motivos e boxes</h2>
+        <p className="text-sm text-gray-500">
+          Listas usadas na admissão. Renomeie ou remova; nomes não se duplicam.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <ListaColuna titulo="Motivos" recurso="motivos" />
+        <ListaColuna titulo="Boxes" recurso="boxes" />
+      </div>
+    </Card>
+  );
+}
+
+function ListaColuna({ titulo, recurso }: { titulo: string; recurso: 'motivos' | 'boxes' }) {
+  const [items, setItems] = useState<ItemLista[]>([]);
+  const [novo, setNovo] = useState('');
+  const [editing, setEditing] = useState<{ id: string; value: string } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const { data } =
+      recurso === 'motivos'
+        ? await api.GET('/api/internacoes/motivos')
+        : await api.GET('/api/internacoes/boxes');
+    setItems((data as ItemLista[]) ?? []);
+  }, [recurso]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function criar(e: FormEvent) {
+    e.preventDefault();
+    const nome = novo.trim();
+    if (!nome) return;
+    setErr(null);
+    const { error } =
+      recurso === 'motivos'
+        ? await api.POST('/api/internacoes/motivos', { body: { nome } })
+        : await api.POST('/api/internacoes/boxes', { body: { nome } });
+    if (error) {
+      setErr('Não foi possível adicionar.');
+      return;
+    }
+    setNovo('');
+    void load();
+  }
+
+  async function salvarEdicao() {
+    if (!editing) return;
+    const nome = editing.value.trim();
+    if (!nome) return;
+    setErr(null);
+    const { error } =
+      recurso === 'motivos'
+        ? await api.PATCH('/api/internacoes/motivos/{id}', { params: { path: { id: editing.id } }, body: { nome } })
+        : await api.PATCH('/api/internacoes/boxes/{id}', { params: { path: { id: editing.id } }, body: { nome } });
+    if (error) {
+      setErr('Já existe um item com esse nome.');
+      return;
+    }
+    setEditing(null);
+    void load();
+  }
+
+  async function remover(id: string) {
+    if (!confirm('Remover este item da lista?')) return;
+    if (recurso === 'motivos') await api.DELETE('/api/internacoes/motivos/{id}', { params: { path: { id } } });
+    else await api.DELETE('/api/internacoes/boxes/{id}', { params: { path: { id } } });
+    void load();
+  }
+
+  return (
+    <div>
+      <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{titulo}</p>
+      {items.length === 0 ? (
+        <p className="text-xs text-gray-400 mb-2">Nenhum ainda.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-gray-100 dark:divide-[#172036] mb-2">
+          {items.map((it) => (
+            <li key={it.id} className="flex items-center justify-between gap-2 py-2">
+              {editing?.id === it.id ? (
+                <>
+                  <input
+                    value={editing.value}
+                    onChange={(e) => setEditing({ id: it.id, value: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void salvarEdicao();
+                      if (e.key === 'Escape') setEditing(null);
+                    }}
+                    className={`${inputCls} flex-1 text-sm py-1`}
+                    autoFocus
+                  />
+                  <button type="button" onClick={() => void salvarEdicao()} className="text-sm text-primary-500">
+                    Salvar
+                  </button>
+                  <button type="button" onClick={() => setEditing(null)} className="text-sm text-gray-400">
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm text-black dark:text-white">{it.nome}</span>
+                  <span className="flex gap-2 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ id: it.id, value: it.nome })}
+                      className="text-gray-400 hover:text-primary-500"
+                      title="Renomear"
+                      aria-label="Renomear"
+                    >
+                      <i className="ri-pencil-line"></i>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remover(it.id)}
+                      className="text-gray-400 hover:text-red-500"
+                      title="Remover"
+                      aria-label="Remover"
+                    >
+                      <i className="ri-delete-bin-line"></i>
+                    </button>
+                  </span>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {err && <p className="text-xs text-red-500 mb-2">{err}</p>}
+      <form onSubmit={criar} className="flex gap-2">
+        <input
+          value={novo}
+          onChange={(e) => setNovo(e.target.value)}
+          placeholder={`Novo ${titulo.toLowerCase().replace(/s$/, '')}…`}
+          className={`${inputCls} flex-1 text-sm py-1`}
+        />
+        <Button type="submit" variant="ghost">
+          <i className="ri-add-line"></i>
+        </Button>
+      </form>
+    </div>
   );
 }

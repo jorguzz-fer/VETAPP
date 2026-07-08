@@ -78,6 +78,42 @@ export class LoginResultDto {
 
   @ApiProperty({ type: String, required: false, description: 'Token temporário para concluir o MFA' })
   mfaToken?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    description: 'MFA obrigatório para o papel e ainda não configurado: precisa concluir o setup para logar',
+  })
+  mfaSetupRequired?: boolean;
+
+  @ApiProperty({ type: String, required: false, description: 'Token temporário (escopo mfa_setup) para o setup forçado' })
+  mfaSetupToken?: string;
+}
+
+export class MfaForcedSetupDto {
+  @ApiProperty({ description: 'mfaSetupToken devolvido pelo login' })
+  @IsString()
+  @IsNotEmpty()
+  setupToken!: string;
+}
+
+export class MfaForcedEnableDto {
+  @ApiProperty({ description: 'mfaSetupToken devolvido pelo login' })
+  @IsString()
+  @IsNotEmpty()
+  setupToken!: string;
+
+  @ApiProperty({ example: '123456', description: 'Código TOTP do app autenticador' })
+  @IsString()
+  @Length(6, 6)
+  code!: string;
+}
+
+export class MfaForcedEnableResponseDto {
+  @ApiProperty() accessToken!: string;
+  @ApiProperty() refreshToken!: string;
+  @ApiProperty({ type: [String], description: 'Recovery codes de uso único — exibir uma única vez' })
+  recoveryCodes!: string[];
 }
 
 export class MfaVerifyDto {

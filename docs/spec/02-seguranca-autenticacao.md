@@ -42,8 +42,18 @@
 > tabela global sem RLS, escopo por `user_id`). `POST /auth/mfa/verify` aceita um
 > TOTP **ou** um recovery code (consumido → `used_at`). `POST /auth/mfa/recovery-codes`
 > regera o conjunto (exige TOTP; invalida os anteriores). Desativar o MFA apaga os
-> códigos. **Pendente**: MFA obrigatório por papel (exige fluxo de setup forçado),
-> WebAuthn, "lembrar dispositivo".
+> códigos.
+>
+> **MFA obrigatório por papel implementado** — papéis sensíveis (`admin`, `gestor`,
+> `financeiro`) **não recebem sessão sem 2º fator**. No login, se o papel exige MFA e
+> o usuário ainda não configurou, a API responde `mfaSetupRequired` + um
+> `mfaSetupToken` curto (JWT escopo `mfa_setup`, 15 min) que autoriza **apenas** o
+> setup forçado — `POST /auth/mfa/forced-setup` (gera o segredo TOTP) e
+> `POST /auth/mfa/forced-enable` (valida o código, liga o MFA, emite recovery codes E
+> a sessão). O `JwtAuthGuard` recusa o `mfa_setup` como token de sessão (tem `scope`).
+> Front: a tela de login entra no passo de setup (QR + código → recovery codes) antes
+> de liberar o app. **Pendente**: WebAuthn, "lembrar dispositivo", política de MFA
+> configurável por tenant.
 
 ### 2.3 Sessões e tokens
 - **Web**: sessão em **cookie httpOnly + Secure + SameSite=strict/lax**. Tokens
@@ -64,9 +74,25 @@
 > Apresentar um `jti` **já revogado** = reuso (replay/roubo) → **revoga a family
 > inteira** e recusa. `POST /auth/logout` revoga a family (best-effort, idempotente).
 > O access token segue stateless (`{ sub, tenantId, role }`, TTL curto). Frontend:
-> renovação **proativa** ~60s antes do `exp` (não intercepta 401). **Pendente**:
-> migrar do Bearer/localStorage para **cookie httpOnly/BFF**; lista de revogação por
-> troca de senha; limpeza periódica de tokens expirados.
+> renovação **proativa** ~60s antes do `exp` (não intercepta 401).
+>
+> **Portal do tutor com o MESMO padrão** — o refresh do tutor deixou de ser stateless:
+> agora é stateful com rotação por family + detecção de reuso + revogação
+> (`tutor_refresh_tokens`, migração 0026, tabela global sem RLS escopada por
+> `jti`/`credential_id`). `POST /portal/refresh` rotaciona (revoga o `jti` apresentado,
+> emite novo par na mesma family; jti já revogado → revoga a family). `POST /portal/logout`
+> passa a revogar a family de verdade. Revogar o acesso do tutor pela clínica também
+> derruba a family no próximo refresh.
+>
+> **Revogação por senha/desativação + limpeza implementadas** — `SessionsService`
+> (global): **reset de senha** (admin) e **desativação** de um usuário revogam todas
+> as suas famílias de refresh da gestão (`revogarUsuarioGestao`) — como o access token
+> é stateless e curto, o efeito é logout no máximo em ~1 TTL (sem denylist de access
+> ainda). **Limpeza periódica** dos refresh **expirados** (gestão e tutor) roda no boot
+> e a cada 24h (`setInterval`, sem dependência de scheduler); preserva os revogados
+> ainda válidos (necessários à detecção de reuso). **Pendente**: migrar do
+> Bearer/localStorage para **cookie httpOnly/BFF**; **denylist de access token** (Redis)
+> para revogação imediata; troca de senha self-service.
 
 ### 2.4 Proteções de fluxo
 - Rate limiting e **lockout progressivo** por usuário/IP em login e MFA.
@@ -126,6 +152,23 @@ Tradução concreta da diretriz:
 - **Trilha de auditoria** imutável (quem fez o quê, quando, em qual tenant) —
   corresponde ao módulo "Log" mantido (item 7.3 do mapeamento), elevado a
   requisito de segurança.
+
+  > **Implementado** — tabela `audit_log` **append-only por tenant** (`tenant_id`,
+  > `user_id` nullable, `acao`, `entidade`, `entidade_id`, `resumo`, `detalhe` jsonb,
+  > `ip`, `created_at`). **Imutabilidade garantida no banco**, não só na aplicação:
+  > a migração 0023 cria policies RLS **apenas** de `SELECT` e `INSERT` (isolamento
+  > por tenant, padrão `NULLIF` fail-closed) — como não há policy de `UPDATE`/`DELETE`
+  > e o RLS é *default-deny*, qualquer papel sujeito ao RLS afeta **zero linhas** ao
+  > tentar editar/apagar (role-agnóstico); em cima disso, `REVOKE UPDATE, DELETE` de
+  > `vetapp_app` dá erro **duro** em produção. `AuditService.registrar(tenantId, …)`
+  > é **best-effort** (falha nunca quebra a ação de negócio) e roda sob `withTenant`.
+  > Gravada hoje nas escritas sensíveis: **auth** (`login`/`logout`/`register`),
+  > **usuários/acessos** (criar/atualizar/reset-senha/remover), **fiscal**
+  > (emitir/cancelar) e **financeiro** (receber). Consulta em `GET /api/auditoria`
+  > (paginada + filtro por entidade), **restrita a admin** (doc 07). O teste de
+  > isolamento (`tenant-isolation.spec.ts`) cobre o append-only na CI. **Pendente**:
+  > `request_id` correlacionável, auditar prontuário/acessos de leitura sensível,
+  > exportação/retenção por política e alerta de anomalia.
 - Direitos do titular (acesso, correção, exclusão) suportados por processo.
 - Preferência por **hospedagem em região no Brasil** **[A DEFINIR]**.
 

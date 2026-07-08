@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/auditoria": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuditController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -78,6 +94,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AuthController_mfaVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/forced-setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_mfaForcedSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/forced-enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_mfaForcedEnable"];
         delete?: never;
         options?: never;
         head?: never;
@@ -260,6 +308,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/animais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_buscarAnimais"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/animais/{id}": {
         parameters: {
             query?: never;
@@ -302,6 +366,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ClientesController_confirmFoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/animais/{id}/vacinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientesController_listVacinas"];
+        put?: never;
+        post: operations["ClientesController_criarVacina"];
         delete?: never;
         options?: never;
         head?: never;
@@ -532,6 +612,38 @@ export interface paths {
         patch: operations["AgendaController_updateTipo"];
         trace?: never;
     };
+    "/api/agenda/departamentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AgendaController_departamentos"];
+        put?: never;
+        post: operations["AgendaController_createDepartamento"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agenda/departamentos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AgendaController_updateDepartamento"];
+        trace?: never;
+    };
     "/api/agenda/{id}/status": {
         parameters: {
             query?: never;
@@ -596,6 +708,22 @@ export interface paths {
         patch: operations["CatalogoController_update"];
         trace?: never;
     };
+    "/api/catalogo/{id}/precos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogoController_precos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/estoque": {
         parameters: {
             query?: never;
@@ -604,6 +732,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EstoqueController_saldos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/estoque/vencimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EstoqueController_vencimentos"];
         put?: never;
         post?: never;
         delete?: never;
@@ -676,6 +820,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internacoes/motivos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listMotivos"];
+        put?: never;
+        post: operations["InternacaoController_criarMotivo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/boxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listBoxes"];
+        put?: never;
+        post: operations["InternacaoController_criarBox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/motivos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["InternacaoController_removerMotivo"];
+        options?: never;
+        head?: never;
+        patch: operations["InternacaoController_renomearMotivo"];
+        trace?: never;
+    };
+    "/api/internacoes/boxes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["InternacaoController_removerBox"];
+        options?: never;
+        head?: never;
+        patch: operations["InternacaoController_renomearBox"];
+        trace?: never;
+    };
+    "/api/internacoes/modelos-prescricao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listModelosPrescricao"];
+        put?: never;
+        post: operations["InternacaoController_criarModeloPrescricao"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/modelos-prescricao/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["InternacaoController_removerModeloPrescricao"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internacoes/{id}": {
         parameters: {
             query?: never;
@@ -686,6 +926,38 @@ export interface paths {
         get: operations["InternacaoController_detalhe"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/aplicar-modelo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InternacaoController_aplicarModelo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internacoes/{id}/parametros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InternacaoController_listParametros"];
+        put?: never;
+        post: operations["InternacaoController_registrarParametro"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1364,10 +1636,477 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/site/solicitacoes/{id}/converter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SiteController_converter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/modelos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ModelosController_list"];
+        put?: never;
+        post: operations["ModelosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/modelos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ModelosController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["ModelosController_update"];
+        trace?: never;
+    };
+    "/api/modelos/{id}/gerar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ModelosController_gerar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["UsuariosController_list"];
+        put?: never;
+        post: operations["UsuariosController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["UsuariosController_remover"];
+        options?: never;
+        head?: never;
+        patch: operations["UsuariosController_atualizar"];
+        trace?: never;
+    };
+    "/api/usuarios/{userId}/reset-senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["UsuariosController_resetSenha"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BrandingController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/branding/logo/sign-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BrandingController_signLogo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/branding/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BrandingController_confirmLogo"];
+        delete: operations["BrandingController_removeLogo"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lgpd/clientes/{responsavelId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LgpdController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/forced-setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaForcedSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/mfa/forced-enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_mfaForcedEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/clinicas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_clinicas"];
+        put?: never;
+        post: operations["PlatformAdminController_provisionar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/clinicas/{tenantId}/assinatura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_assinatura"];
+        put: operations["PlatformAdminController_atualizarAssinatura"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/clinicas/{tenantId}/assinatura/pagar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PlatformAdminController_marcarPago"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/planos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_listPlanos"];
+        put?: never;
+        post: operations["PlatformAdminController_criarPlano"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/planos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PlatformAdminController_atualizarPlano"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlatformAdminController_kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{id}/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listPorCliente"];
+        put?: never;
+        post: operations["MensageriaController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listGeral"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MensageriaController_listTemplates"];
+        put?: never;
+        post: operations["MensageriaController_createTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mensagens/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MensageriaController_updateTemplate"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AuditLogItemDto: {
+            id: string;
+            userId: string | null;
+            userNome: string | null;
+            acao: string;
+            entidade: string;
+            entidadeId: string | null;
+            resumo: string;
+            detalhe: Record<string, never> | null;
+            ip: string | null;
+            criadoEm: string;
+        };
+        AuditLogPageDto: {
+            items: components["schemas"]["AuditLogItemDto"][];
+            /** @description Total de registros que casam o filtro */
+            total: number;
+            limit: number;
+            offset: number;
+        };
         RegisterDto: {
             /** @example Clínica Cuidar */
             tenantName: string;
@@ -1396,6 +2135,10 @@ export interface components {
             mfaRequired?: boolean;
             /** @description Token temporário para concluir o MFA */
             mfaToken?: string;
+            /** @description MFA obrigatório para o papel e ainda não configurado: precisa concluir o setup para logar */
+            mfaSetupRequired?: boolean;
+            /** @description Token temporário (escopo mfa_setup) para o setup forçado */
+            mfaSetupToken?: string;
         };
         GoogleLoginDto: {
             /** @description id_token retornado pelo Google Identity Services */
@@ -1409,6 +2152,31 @@ export interface components {
              * @example 123456
              */
             code: string;
+        };
+        MfaForcedSetupDto: {
+            /** @description mfaSetupToken devolvido pelo login */
+            setupToken: string;
+        };
+        MfaSetupResponseDto: {
+            /** @description Segredo TOTP (base32) — exibir uma única vez */
+            secret: string;
+            /** @description URL otpauth:// para QR code */
+            otpauthUrl: string;
+        };
+        MfaForcedEnableDto: {
+            /** @description mfaSetupToken devolvido pelo login */
+            setupToken: string;
+            /**
+             * @description Código TOTP do app autenticador
+             * @example 123456
+             */
+            code: string;
+        };
+        MfaForcedEnableResponseDto: {
+            accessToken: string;
+            refreshToken: string;
+            /** @description Recovery codes de uso único — exibir uma única vez */
+            recoveryCodes: string[];
         };
         RefreshDto: {
             /** @description Refresh token da sessão */
@@ -1426,12 +2194,6 @@ export interface components {
             /** @description Quantos recovery codes de uso único ainda restam */
             recoveryCodesRemaining: number;
         };
-        MfaSetupResponseDto: {
-            /** @description Segredo TOTP (base32) — exibir uma única vez */
-            secret: string;
-            /** @description URL otpauth:// para QR code */
-            otpauthUrl: string;
-        };
         MfaCodeDto: {
             /** @example 123456 */
             code: string;
@@ -1447,7 +2209,12 @@ export interface components {
             /** @example admin */
             role: string;
         };
-        ResponsavelDto: {
+        ResponsavelPetResumoDto: {
+            id: string;
+            nome: string;
+            codigo?: string;
+        };
+        ResponsavelListItemDto: {
             id: string;
             codigo?: string;
             nome: string;
@@ -1455,9 +2222,10 @@ export interface components {
             telefone?: string;
             documento?: string;
             origem?: string;
+            pets: components["schemas"]["ResponsavelPetResumoDto"][];
         };
         ListResponsaveisDto: {
-            items: components["schemas"]["ResponsavelDto"][];
+            items: components["schemas"]["ResponsavelListItemDto"][];
             total: number;
             page: number;
             pageSize: number;
@@ -1474,6 +2242,15 @@ export interface components {
             /** @description Como nos conheceu? */
             origem?: string;
         };
+        ResponsavelDto: {
+            id: string;
+            codigo?: string;
+            nome: string;
+            email?: string;
+            telefone?: string;
+            documento?: string;
+            origem?: string;
+        };
         AnimalDto: {
             id: string;
             responsavelId: string;
@@ -1481,12 +2258,23 @@ export interface components {
             nome: string;
             especie?: string;
             raca?: string;
+            pelagem?: string;
             sexo?: string;
             castrado: boolean;
             nascimento?: string;
+            microchip?: string;
+            marcacoes: string[];
+            pedigree: boolean;
+            pedigreeNumero?: string;
             status: string;
             /** @description URL assinada (curta) da foto, se houver */
             fotoUrl?: string;
+        };
+        ClienteVendasResumoDto: {
+            totalVendidoCentavos: number;
+            ticketMedioCentavos: number;
+            vendas: number;
+            ultimaVendaEm?: string;
         };
         ResponsavelComAnimaisDto: {
             id: string;
@@ -1497,6 +2285,7 @@ export interface components {
             documento?: string;
             origem?: string;
             animais: components["schemas"]["AnimalDto"][];
+            vendas: components["schemas"]["ClienteVendasResumoDto"];
         };
         UpdateResponsavelDto: {
             nome?: string;
@@ -1525,16 +2314,39 @@ export interface components {
              * @example 2020-05-10
              */
             nascimento?: string;
+            /** @example Preto e marrom */
+            pelagem?: string;
+            /** @description Número do microchip */
+            microchip?: string;
+            /** @description Marcações/tags clínicas (ex.: renal) */
+            marcacoes?: string[];
+            pedigree?: boolean;
+            /** @description Número do pedigree */
+            pedigreeNumero?: string;
+        };
+        BuscaAnimalDto: {
+            id: string;
+            nome: string;
+            especie?: string;
+            raca?: string;
+            status: string;
+            responsavelId: string;
+            responsavelNome: string;
         };
         UpdateAnimalDto: {
             nome?: string;
             codigo?: string;
             especie?: string;
             raca?: string;
+            pelagem?: string;
             /** @enum {string} */
             sexo?: "M" | "F";
             castrado?: boolean;
             nascimento?: string;
+            microchip?: string;
+            marcacoes?: string[];
+            pedigree?: boolean;
+            pedigreeNumero?: string;
             /** @enum {string} */
             status?: "vivo" | "falecido";
         };
@@ -1552,15 +2364,49 @@ export interface components {
         ConfirmFotoDto: {
             key: string;
         };
+        VacinaDto: {
+            id: string;
+            animalId: string;
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            aplicadaEm: string;
+            proximaEm?: string;
+            aplicadaPorNome?: string;
+            observacao?: string;
+        };
+        CreateVacinaDto: {
+            /** @example Antirrábica */
+            nome: string;
+            laboratorio?: string;
+            lote?: string;
+            /**
+             * @description AAAA-MM-DD
+             * @example 2026-07-08
+             */
+            aplicadaEm: string;
+            /**
+             * @description Próxima dose (AAAA-MM-DD)
+             * @example 2027-07-08
+             */
+            proximaEm?: string;
+            observacao?: string;
+        };
         EventoDto: {
             id: string;
             animalId: string;
             tipo: string;
             descricao: string;
             valorCentavos?: number;
+            itemId?: string;
+            quantidade?: number;
             data: string;
             /** @description URL assinada (curta) do anexo, se houver */
             anexoUrl?: string;
+            /** @description Quem registrou o evento (doc 16 PR7) */
+            registradoPorNome?: string;
+            /** @description Estoque baixado automaticamente neste registro */
+            estoqueBaixado?: boolean;
         };
         CreateEventoDto: {
             /** @enum {string} */
@@ -1569,6 +2415,13 @@ export interface components {
             descricao: string;
             /** @description Valor em centavos (ex.: 15000 = R$ 150,00) */
             valorCentavos?: number;
+            /** @description Item do catálogo (dá baixa no estoque se estocável) */
+            itemId?: string;
+            /**
+             * @description Quantidade do item (baixa de estoque)
+             * @default 1
+             */
+            quantidade: number;
             /**
              * @description Gera lançamento na fatura do cliente
              * @default true
@@ -1667,6 +2520,8 @@ export interface components {
             cor?: string;
             profissionalId?: string;
             profissionalNome?: string;
+            departamentoId?: string;
+            departamentoNome?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -1688,6 +2543,8 @@ export interface components {
             tipoAtendimentoId?: string;
             /** @description Profissional responsável (membro do tenant) */
             profissionalId?: string;
+            /** @description Departamento da agenda (Clínica, Hotel…) */
+            departamentoId?: string;
             animalId?: string;
             responsavelId?: string;
             observacoes?: string;
@@ -1722,6 +2579,28 @@ export interface components {
             /** @example Consulta */
             nome?: string;
             duracaoMinutos?: number;
+            /** @example #7c5cff */
+            cor?: string;
+            ativo?: boolean;
+        };
+        DepartamentoDto: {
+            id: string;
+            nome: string;
+            cor: string | null;
+            ativo: boolean;
+        };
+        CreateDepartamentoDto: {
+            /** @example Hotel */
+            nome: string;
+            /**
+             * @description Cor do departamento (hex)
+             * @example #7c5cff
+             */
+            cor?: string;
+        };
+        UpdateDepartamentoDto: {
+            /** @example Hotel */
+            nome?: string;
             /** @example #7c5cff */
             cor?: string;
             ativo?: boolean;
@@ -1762,6 +2641,14 @@ export interface components {
             precoCentavos?: number;
             ativo?: boolean;
         };
+        PrecoHistoricoDto: {
+            id: string;
+            precoCentavos: number;
+            /** @description Vigente a partir de (ISO) */
+            vigenteDesde: string;
+            alteradoPor: string | null;
+            alteradoPorNome: string | null;
+        };
         SaldoItemDto: {
             itemId: string;
             codigo: string;
@@ -1771,12 +2658,25 @@ export interface components {
             estoqueMinimo: number;
             abaixoDoMinimo: boolean;
         };
+        VencimentoDto: {
+            itemId: string;
+            codigo: string;
+            nome: string;
+            lote: string | null;
+            validade: string;
+            /** @description Quantidade da entrada com este lote */
+            quantidade: number;
+            /** @description Dias até vencer (negativo = já vencido) */
+            diasParaVencer: number;
+        };
         MovimentoDto: {
             id: string;
             itemId: string;
             tipo: string;
             quantidade: number;
             custoCentavos: number | null;
+            lote: string | null;
+            validade: string | null;
             motivo: string | null;
             criadoEm: string;
         };
@@ -1792,6 +2692,13 @@ export interface components {
             quantidade: number;
             /** @description Custo unitário em centavos (entrada) */
             custoCentavos?: number;
+            /** @description Lote (informado na entrada) */
+            lote?: string;
+            /**
+             * @description Validade do lote (YYYY-MM-DD, entrada)
+             * @example 2027-01-31
+             */
+            validade?: string;
             /** @description Observação (NF, fornecedor, motivo do ajuste) */
             motivo?: string;
         };
@@ -1801,6 +2708,8 @@ export interface components {
             tipo: string;
             quantidade: number;
             custoCentavos: number | null;
+            lote: string | null;
+            validade: string | null;
             motivo: string | null;
             criadoEm: string;
             /** @description Saldo do item após a movimentação */
@@ -1820,9 +2729,12 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
         };
         AdmitirDto: {
             /** @description Animal a internar */
@@ -1831,6 +2743,42 @@ export interface components {
             motivo: string;
             /** @example Box 2 */
             box?: string;
+            /**
+             * @description Previsão de alta (AAAA-MM-DD)
+             * @example 2026-07-15
+             */
+            altaPrevista?: string;
+        };
+        ItemListaDto: {
+            id: string;
+            nome: string;
+        };
+        CriarItemListaDto: {
+            /** @example Pós-operatório */
+            nome: string;
+        };
+        ModeloPrescricaoItemDto: {
+            itemId: string | null;
+            descricao: string;
+            quantidade: number;
+        };
+        ModeloPrescricaoDto: {
+            id: string;
+            nome: string;
+            itens: components["schemas"]["ModeloPrescricaoItemDto"][];
+        };
+        CriarModeloPrescricaoItemDto: {
+            /** @description Item do catálogo */
+            itemId?: string;
+            /** @description Descrição livre (obrigatória sem itemId) */
+            descricao?: string;
+            /** @example 1 */
+            quantidade?: number;
+        };
+        CriarModeloPrescricaoDto: {
+            /** @example Pós-cirúrgico padrão */
+            nome: string;
+            itens: components["schemas"]["CriarModeloPrescricaoItemDto"][];
         };
         ExecucaoDto: {
             id: string;
@@ -1850,11 +2798,44 @@ export interface components {
             box: string | null;
             status: string;
             entradaEm: string;
+            altaPrevistaEm: string | null;
             altaEm: string | null;
             /** @description Prescrições ainda não executadas */
             pendentes: number;
+            /** @description URL assinada da foto do paciente */
+            fotoUrl: string | null;
             observacoes: string | null;
             execucoes: components["schemas"]["ExecucaoDto"][];
+        };
+        AplicarModeloDto: {
+            /** @description Modelo de prescrição a aplicar na internação */
+            modeloId: string;
+        };
+        ParametroDto: {
+            id: string;
+            pesoKg: number | null;
+            temperaturaC: number | null;
+            fc: number | null;
+            fr: number | null;
+            observacao: string | null;
+            registradoEm: string;
+        };
+        RegistrarParametroDto: {
+            /**
+             * @description Peso em kg
+             * @example 4.2
+             */
+            pesoKg?: number;
+            /**
+             * @description Temperatura em °C
+             * @example 38.5
+             */
+            temperaturaC?: number;
+            /** @description Frequência cardíaca (bpm) */
+            fc?: number;
+            /** @description Frequência respiratória (rpm) */
+            fr?: number;
+            observacao?: string;
         };
         PrescreverDto: {
             /** @description Item do catálogo (medicamento/procedimento) */
@@ -1937,9 +2918,9 @@ export interface components {
             status: "aprovado" | "recusado";
         };
         ConverterResultDto: {
-            ok: boolean;
-            /** @description Total lançado na fatura aberta (centavos) */
-            totalCentavos: number;
+            /** @description ID do cliente/responsável criado */
+            responsavelId: string;
+            solicitacao: components["schemas"]["SolicitacaoDto"];
         };
         ApuracaoColaboradorDto: {
             userId: string;
@@ -1990,9 +2971,9 @@ export interface components {
             internados: number;
             execucoesPendentes: number;
             faturasAbertas: number;
-            faturasAbertasCentavos: number;
-            receitaMesCentavos: number;
-            estoqueAbaixoMinimo: number;
+            receitaLiquidaMesCentavos: number;
+            ticketMedioCentavos: number;
+            aReceberCentavos: number;
             orcamentosAbertos: number;
             clientes: number;
             minhasComissoesMesCentavos: number;
@@ -2246,11 +3227,269 @@ export interface components {
             origem?: string;
             status: string;
             observacaoInterna?: string;
+            /** @description Cliente criado a partir desta solicitação */
+            responsavelId?: string;
             criadaEm: string;
         };
         TriagemDto: {
             /** @description Observação interna (opcional) */
             observacao?: string;
+        };
+        ModeloDto: {
+            id: string;
+            /** @enum {string} */
+            tipo: "receita" | "documento";
+            nome: string;
+            conteudo: string;
+        };
+        CreateModeloDto: {
+            /** @enum {string} */
+            tipo: "receita" | "documento";
+            /** @example Receita simples */
+            nome: string;
+            /** @description Placeholders: {{animal}} {{especie}} {{raca}} {{tutor}} {{telefone}} {{data}} {{clinica}} */
+            conteudo: string;
+        };
+        UpdateModeloDto: {
+            /** @enum {string} */
+            tipo?: "receita" | "documento";
+            nome?: string;
+            conteudo?: string;
+        };
+        GerarModeloDto: {
+            /** @description Animal para preencher os placeholders */
+            animalId: string;
+        };
+        ModeloGeradoDto: {
+            titulo: string;
+            conteudo: string;
+        };
+        UsuarioDto: {
+            userId: string;
+            nome: string;
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @description active | disabled */
+            status: string;
+            mfaEnabled: boolean;
+        };
+        CriarUsuarioDto: {
+            /** @example Dra. Carla Nunes */
+            nome: string;
+            /** @example carla@clinica.com */
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+        };
+        CriarUsuarioResultDto: {
+            userId: string;
+            nome: string;
+            email: string;
+            /** @enum {string} */
+            role: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @description active | disabled */
+            status: string;
+            mfaEnabled: boolean;
+            /** @description Senha temporária (mostrada só uma vez). Null quando o usuário já existia (mantém a senha atual). */
+            senhaTemporaria: string | null;
+        };
+        AtualizarUsuarioDto: {
+            /** @enum {string} */
+            role?: "admin" | "gestor" | "veterinario" | "recepcao" | "financeiro" | "internacao";
+            /** @enum {string} */
+            status?: "active" | "disabled";
+        };
+        SenhaTemporariaDto: {
+            /** @description Nova senha temporária (mostrada só uma vez). */
+            senhaTemporaria: string;
+        };
+        BrandingDto: {
+            /** @description URL assinada (curta) do logo, ou null */
+            logoUrl: string | null;
+        };
+        LgpdExportDto: {
+            /** @description Instante da exportação (ISO) */
+            exportadoEm: string;
+            responsavelId: string;
+            /** @description Cadastro do responsável (titular) */
+            responsavel: Record<string, never>;
+            /** @description Animais + prontuário de cada um */
+            animais: Record<string, never>[];
+            /** @description Faturas + itens + recebimentos */
+            faturas: Record<string, never>[];
+            /** @description Agendamentos */
+            agendamentos: Record<string, never>[];
+        };
+        PlatformLoginDto: {
+            /** @example dono@vetapp.com */
+            email: string;
+            password: string;
+        };
+        PlatformLoginResultDto: {
+            accessToken?: string;
+            refreshToken?: string;
+            mfaRequired?: boolean;
+            mfaToken?: string;
+            mfaSetupRequired?: boolean;
+            mfaSetupToken?: string;
+        };
+        PlatformMfaVerifyDto: {
+            mfaToken: string;
+            /** @example 123456 */
+            code: string;
+        };
+        PlatformTokensDto: {
+            accessToken: string;
+            refreshToken: string;
+        };
+        PlatformMfaForcedSetupDto: {
+            setupToken: string;
+        };
+        PlatformMfaSetupResponseDto: {
+            secret: string;
+            otpauthUrl: string;
+        };
+        PlatformMfaForcedEnableDto: {
+            setupToken: string;
+            /** @example 123456 */
+            code: string;
+        };
+        PlatformMfaForcedEnableResponseDto: {
+            accessToken: string;
+            refreshToken: string;
+            recoveryCodes: string[];
+        };
+        PlatformRefreshDto: {
+            refreshToken: string;
+        };
+        PlatformLogoutDto: {
+            refreshToken: string;
+        };
+        PlatformOkDto: {
+            ok: boolean;
+        };
+        PlatformMeDto: {
+            adminId: string;
+            email: string;
+            nome: string;
+        };
+        ClinicaResumoDto: {
+            tenantId: string;
+            nome: string;
+            usuarios: number;
+            status: string;
+            planoNome: string | null;
+            precoCentavos: number;
+            vigenteAte: string | null;
+        };
+        AssinaturaDto: {
+            tenantId: string;
+            planoId: string | null;
+            status: string;
+            precoCentavos: number;
+            ciclo: string;
+            vigenteAte: string | null;
+            trialAte: string | null;
+            observacao: string | null;
+        };
+        AtualizarAssinaturaDto: {
+            planoId?: string | null;
+            /** @enum {string} */
+            status?: "trial" | "ativa" | "inadimplente" | "suspensa" | "cancelada";
+            /** @description Vigente até (YYYY-MM-DD) */
+            vigenteAte?: string;
+            observacao?: string;
+        };
+        ProvisionarClinicaDto: {
+            /** @example Clínica Bicho Feliz */
+            nome: string;
+            /** @example dono@clinica.com */
+            adminEmail: string;
+            /** @example Dr. Fulano */
+            adminNome: string;
+        };
+        ProvisionarClinicaResultDto: {
+            tenantId: string;
+            adminUserId: string;
+            /** @description Senha temporária do admin (exibida uma vez) */
+            senhaTemporaria: string;
+        };
+        PlanoDto: {
+            id: string;
+            nome: string;
+            slug: string;
+            precoCentavos: number;
+            ciclo: string;
+            ativo: string;
+        };
+        CriarPlanoDto: {
+            nome: string;
+            slug: string;
+            precoCentavos: number;
+            /** @enum {string} */
+            ciclo: "mensal" | "anual";
+        };
+        AtualizarPlanoDto: {
+            nome?: string;
+            precoCentavos?: number;
+            /** @enum {string} */
+            ciclo?: "mensal" | "anual";
+            /** @enum {string} */
+            ativo?: "true" | "false";
+        };
+        KpisDto: {
+            totalClinicas: number;
+            porStatus: Record<string, never>;
+            mrrCentavos: number;
+        };
+        MensagemDto: {
+            id: string;
+            responsavelId?: string;
+            responsavelNome?: string;
+            canal: string;
+            direcao: string;
+            assunto?: string;
+            corpo: string;
+            status: string;
+            referenciaTipo?: string;
+            disparadoPorNome?: string;
+            criadaEm: string;
+        };
+        CreateMensagemDto: {
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            /** @description Assunto (e-mail) */
+            assunto?: string;
+            corpo: string;
+            /** @description Origem do disparo (ex.: vacina, agendamento) */
+            referenciaTipo?: string;
+            referenciaId?: string;
+            /** @description Template usado (opcional) */
+            templateId?: string;
+        };
+        MensagemTemplateDto: {
+            id: string;
+            nome: string;
+            canal: string;
+            assunto?: string;
+            corpo: string;
+            ativo: boolean;
+        };
+        CreateTemplateDto: {
+            /** @example Lembrete de vacina */
+            nome: string;
+            /** @enum {string} */
+            canal: "whatsapp" | "email" | "sms" | "manual";
+            assunto?: string;
+            /** @description Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}} */
+            corpo: string;
+        };
+        UpdateTemplateDto: {
+            nome?: string;
+            assunto?: string;
+            corpo?: string;
+            ativo?: boolean;
         };
     };
     responses: never;
@@ -2261,6 +3500,31 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    AuditController_list: {
+        parameters: {
+            query?: {
+                entidade?: string;
+                acao?: string;
+                userId?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogPageDto"];
+                };
+            };
+        };
+    };
     HealthController_check: {
         parameters: {
             query?: never;
@@ -2366,6 +3630,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokensDto"];
+                };
+            };
+        };
+    };
+    AuthController_mfaForcedSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaForcedSetupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaSetupResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_mfaForcedEnable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaForcedEnableDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaForcedEnableResponseDto"];
                 };
             };
         };
@@ -2681,6 +3991,28 @@ export interface operations {
             };
         };
     };
+    ClientesController_buscarAnimais: {
+        parameters: {
+            query?: {
+                /** @description Nome do animal ou nome/telefone do tutor */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuscaAnimalDto"][];
+                };
+            };
+        };
+    };
     ClientesController_animal: {
         parameters: {
             query?: never;
@@ -2794,6 +4126,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnimalDto"];
+                };
+            };
+        };
+    };
+    ClientesController_listVacinas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"][];
+                };
+            };
+        };
+    };
+    ClientesController_criarVacina: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVacinaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacinaDto"];
                 };
             };
         };
@@ -3096,6 +4474,8 @@ export interface operations {
                 to?: string;
                 /** @description Filtra por profissional ("minha agenda") */
                 profissionalId?: string;
+                /** @description Filtra por departamento (Clínica, Hotel…) */
+                departamentoId?: string;
             };
             header?: never;
             path?: never;
@@ -3220,6 +4600,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TipoAtendimentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_departamentos: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"][];
+                };
+            };
+        };
+    };
+    AgendaController_createDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDepartamentoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
+                };
+            };
+        };
+    };
+    AgendaController_updateDepartamento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDepartamentoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartamentoDto"];
                 };
             };
         };
@@ -3369,6 +4818,27 @@ export interface operations {
             };
         };
     };
+    CatalogoController_precos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrecoHistoricoDto"][];
+                };
+            };
+        };
+    };
     EstoqueController_saldos: {
         parameters: {
             query?: {
@@ -3389,6 +4859,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaldoItemDto"][];
+                };
+            };
+        };
+    };
+    EstoqueController_vencimentos: {
+        parameters: {
+            query?: {
+                /** @description Janela em dias (default 90) */
+                dias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VencimentoDto"][];
                 };
             };
         };
@@ -3506,6 +4998,251 @@ export interface operations {
             };
         };
     };
+    InternacaoController_listMotivos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarMotivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_listBoxes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarBox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_removerMotivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    InternacaoController_renomearMotivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_removerBox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    InternacaoController_renomearBox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarItemListaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemListaDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_listModelosPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloPrescricaoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_criarModeloPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarModeloPrescricaoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloPrescricaoDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_removerModeloPrescricao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
     InternacaoController_detalhe: {
         parameters: {
             query?: never;
@@ -3523,6 +5260,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InternacaoDetalheDto"];
+                };
+            };
+        };
+    };
+    InternacaoController_aplicarModelo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AplicarModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_listParametros: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroDto"][];
+                };
+            };
+        };
+    };
+    InternacaoController_registrarParametro: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrarParametroDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroDto"];
                 };
             };
         };
@@ -4543,6 +6351,847 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SolicitacaoDto"];
+                };
+            };
+        };
+    };
+    SiteController_converter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConverterResultDto"];
+                };
+            };
+        };
+    };
+    ModelosController_list: {
+        parameters: {
+            query?: {
+                tipo?: "receita" | "documento";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"][];
+                };
+            };
+        };
+    };
+    ModelosController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateModeloDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"];
+                };
+            };
+        };
+    };
+    ModelosController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    ModelosController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloDto"];
+                };
+            };
+        };
+    };
+    ModelosController_gerar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GerarModeloDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloGeradoDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"][];
+                };
+            };
+        };
+    };
+    UsuariosController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarUsuarioDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CriarUsuarioResultDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_remover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_atualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarUsuarioDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"];
+                };
+            };
+        };
+    };
+    UsuariosController_resetSenha: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenhaTemporariaDto"];
+                };
+            };
+        };
+    };
+    BrandingController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    BrandingController_signLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignLogoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUploadResponseDto"];
+                };
+            };
+        };
+    };
+    BrandingController_confirmLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmLogoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    BrandingController_removeLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingDto"];
+                };
+            };
+        };
+    };
+    LgpdController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsavelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LgpdExportDto"];
+                };
+            };
+        };
+    };
+    PlatformController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformLoginResultDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaVerifyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformTokensDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaForcedSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaForcedSetupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMfaSetupResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformController_mfaForcedEnable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformMfaForcedEnableDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMfaForcedEnableResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformTokensDto"];
+                };
+            };
+        };
+    };
+    PlatformController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformLogoutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformOkDto"];
+                };
+            };
+        };
+    };
+    PlatformController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMeDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_clinicas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicaResumoDto"][];
+                };
+            };
+        };
+    };
+    PlatformAdminController_provisionar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProvisionarClinicaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProvisionarClinicaResultDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_assinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_atualizarAssinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarAssinaturaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_marcarPago: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssinaturaDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_listPlanos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"][];
+                };
+            };
+        };
+    };
+    PlatformAdminController_criarPlano: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarPlanoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_atualizarPlano: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarPlanoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDto"];
+                };
+            };
+        };
+    };
+    PlatformAdminController_kpis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KpisDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listPorCliente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMensagemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_listGeral: {
+        parameters: {
+            query?: {
+                canal?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_listTemplates: {
+        parameters: {
+            query?: {
+                incluirInativos?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"][];
+                };
+            };
+        };
+    };
+    MensageriaController_createTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
+                };
+            };
+        };
+    };
+    MensageriaController_updateTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemTemplateDto"];
                 };
             };
         };

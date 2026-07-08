@@ -1,6 +1,73 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/auditoria": {
+      "get": {
+        "operationId": "AuditController_list",
+        "parameters": [
+          {
+            "name": "entidade",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "acao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogPageDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auditoria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -129,6 +196,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/mfa/forced-setup": {
+      "post": {
+        "operationId": "AuthController_mfaForcedSetup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaForcedSetupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaSetupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/mfa/forced-enable": {
+      "post": {
+        "operationId": "AuthController_mfaForcedEnable",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaForcedEnableDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaForcedEnableResponseDto"
                 }
               }
             }
@@ -629,6 +758,45 @@
         ]
       }
     },
+    "/api/animais": {
+      "get": {
+        "operationId": "ClientesController_buscarAnimais",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Nome do animal ou nome/telefone do tutor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BuscaAnimalDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/animais/{id}": {
       "get": {
         "operationId": "ClientesController_animal",
@@ -815,6 +983,87 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AnimalDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/animais/{id}/vacinas": {
+      "get": {
+        "operationId": "ClientesController_listVacinas",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VacinaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clientes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ClientesController_criarVacina",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVacinaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VacinaDto"
                 }
               }
             }
@@ -1362,6 +1611,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "departamentoId",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por departamento (Clínica, Hotel…)",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1554,6 +1812,123 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TipoAtendimentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/departamentos": {
+      "get": {
+        "operationId": "AgendaController_departamentos",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DepartamentoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AgendaController_createDepartamento",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepartamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartamentoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "agenda"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/agenda/departamentos/{id}": {
+      "patch": {
+        "operationId": "AgendaController_updateDepartamento",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDepartamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartamentoDto"
                 }
               }
             }
@@ -1828,6 +2203,44 @@
         ]
       }
     },
+    "/api/catalogo/{id}/precos": {
+      "get": {
+        "operationId": "CatalogoController_precos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrecoHistoricoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catalogo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/estoque": {
       "get": {
         "operationId": "EstoqueController_saldos",
@@ -1860,6 +2273,45 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/SaldoItemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "estoque"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/estoque/vencimentos": {
+      "get": {
+        "operationId": "EstoqueController_vencimentos",
+        "parameters": [
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "description": "Janela em dias (default 90)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VencimentoDto"
                   }
                 }
               }
@@ -2071,6 +2523,398 @@
         ]
       }
     },
+    "/api/internacoes/motivos": {
+      "get": {
+        "operationId": "InternacaoController_listMotivos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemListaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_criarMotivo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarItemListaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/boxes": {
+      "get": {
+        "operationId": "InternacaoController_listBoxes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemListaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_criarBox",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarItemListaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/motivos/{id}": {
+      "patch": {
+        "operationId": "InternacaoController_renomearMotivo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarItemListaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "InternacaoController_removerMotivo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/boxes/{id}": {
+      "patch": {
+        "operationId": "InternacaoController_renomearBox",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarItemListaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "InternacaoController_removerBox",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/modelos-prescricao": {
+      "get": {
+        "operationId": "InternacaoController_listModelosPrescricao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModeloPrescricaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_criarModeloPrescricao",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarModeloPrescricaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloPrescricaoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/modelos-prescricao/{id}": {
+      "delete": {
+        "operationId": "InternacaoController_removerModeloPrescricao",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/internacoes/{id}": {
       "get": {
         "operationId": "InternacaoController_detalhe",
@@ -2091,6 +2935,135 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InternacaoDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/aplicar-modelo": {
+      "post": {
+        "operationId": "InternacaoController_aplicarModelo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AplicarModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExecucaoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/internacoes/{id}/parametros": {
+      "get": {
+        "operationId": "InternacaoController_listParametros",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParametroDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "internacao"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "InternacaoController_registrarParametro",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarParametroDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParametroDto"
                 }
               }
             }
@@ -3808,6 +4781,1343 @@
           }
         ]
       }
+    },
+    "/api/site/solicitacoes/{id}/converter": {
+      "post": {
+        "operationId": "SiteController_converter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConverterResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "site"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/modelos": {
+      "get": {
+        "operationId": "ModelosController_list",
+        "parameters": [
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "receita",
+                "documento"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModeloDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ModelosController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/modelos/{id}": {
+      "patch": {
+        "operationId": "ModelosController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ModelosController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/modelos/{id}/gerar": {
+      "post": {
+        "operationId": "ModelosController_gerar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GerarModeloDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloGeradoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "modelos"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios": {
+      "get": {
+        "operationId": "UsuariosController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "UsuariosController_criar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CriarUsuarioResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{userId}": {
+      "patch": {
+        "operationId": "UsuariosController_atualizar",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "UsuariosController_remover",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{userId}/reset-senha": {
+      "post": {
+        "operationId": "UsuariosController_resetSenha",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SenhaTemporariaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/branding": {
+      "get": {
+        "operationId": "BrandingController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "branding"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/branding/logo/sign-upload": {
+      "post": {
+        "operationId": "BrandingController_signLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "branding"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/branding/logo": {
+      "post": {
+        "operationId": "BrandingController_confirmLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmLogoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "branding"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "BrandingController_removeLogo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "branding"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/lgpd/clientes/{responsavelId}/export": {
+      "get": {
+        "operationId": "LgpdController_export",
+        "parameters": [
+          {
+            "name": "responsavelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LgpdExportDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "lgpd"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/auth/login": {
+      "post": {
+        "operationId": "PlatformController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformLoginResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/mfa/verify": {
+      "post": {
+        "operationId": "PlatformController_mfaVerify",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformMfaVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/mfa/forced-setup": {
+      "post": {
+        "operationId": "PlatformController_mfaForcedSetup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformMfaForcedSetupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformMfaSetupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/mfa/forced-enable": {
+      "post": {
+        "operationId": "PlatformController_mfaForcedEnable",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformMfaForcedEnableDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformMfaForcedEnableResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/refresh": {
+      "post": {
+        "operationId": "PlatformController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformRefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformTokensDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/logout": {
+      "post": {
+        "operationId": "PlatformController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformLogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/api/platform/auth/me": {
+      "get": {
+        "operationId": "PlatformController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformMeDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/clinicas": {
+      "get": {
+        "operationId": "PlatformAdminController_clinicas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClinicaResumoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "PlatformAdminController_provisionar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvisionarClinicaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvisionarClinicaResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/clinicas/{tenantId}/assinatura": {
+      "get": {
+        "operationId": "PlatformAdminController_assinatura",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "PlatformAdminController_atualizarAssinatura",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarAssinaturaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/clinicas/{tenantId}/assinatura/pagar": {
+      "post": {
+        "operationId": "PlatformAdminController_marcarPago",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssinaturaDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/planos": {
+      "get": {
+        "operationId": "PlatformAdminController_listPlanos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanoDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "PlatformAdminController_criarPlano",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarPlanoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/planos/{id}": {
+      "put": {
+        "operationId": "PlatformAdminController_atualizarPlano",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarPlanoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/platform/kpis": {
+      "get": {
+        "operationId": "PlatformAdminController_kpis",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KpisDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/clientes/{id}/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listPorCliente",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_registrar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMensagemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens": {
+      "get": {
+        "operationId": "MensageriaController_listGeral",
+        "parameters": [
+          {
+            "name": "canal",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/templates": {
+      "get": {
+        "operationId": "MensageriaController_listTemplates",
+        "parameters": [
+          {
+            "name": "incluirInativos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MensagemTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MensageriaController_createTemplate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/mensagens/templates/{id}": {
+      "patch": {
+        "operationId": "MensageriaController_updateTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "mensageria"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -3827,6 +6137,85 @@
       }
     },
     "schemas": {
+      "AuditLogItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "acao": {
+            "type": "string"
+          },
+          "entidade": {
+            "type": "string"
+          },
+          "entidadeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resumo": {
+            "type": "string"
+          },
+          "detalhe": {
+            "type": "object",
+            "nullable": true
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "criadoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "userNome",
+          "acao",
+          "entidade",
+          "entidadeId",
+          "resumo",
+          "detalhe",
+          "ip",
+          "criadoEm"
+        ]
+      },
+      "AuditLogPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLogItemDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de registros que casam o filtro"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
       "RegisterDto": {
         "type": "object",
         "properties": {
@@ -3906,6 +6295,14 @@
           "mfaToken": {
             "type": "string",
             "description": "Token temporário para concluir o MFA"
+          },
+          "mfaSetupRequired": {
+            "type": "boolean",
+            "description": "MFA obrigatório para o papel e ainda não configurado: precisa concluir o setup para logar"
+          },
+          "mfaSetupToken": {
+            "type": "string",
+            "description": "Token temporário (escopo mfa_setup) para o setup forçado"
           }
         }
       },
@@ -3937,6 +6334,76 @@
         "required": [
           "mfaToken",
           "code"
+        ]
+      },
+      "MfaForcedSetupDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string",
+            "description": "mfaSetupToken devolvido pelo login"
+          }
+        },
+        "required": [
+          "setupToken"
+        ]
+      },
+      "MfaSetupResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Segredo TOTP (base32) — exibir uma única vez"
+          },
+          "otpauthUrl": {
+            "type": "string",
+            "description": "URL otpauth:// para QR code"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUrl"
+        ]
+      },
+      "MfaForcedEnableDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string",
+            "description": "mfaSetupToken devolvido pelo login"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456",
+            "description": "Código TOTP do app autenticador"
+          }
+        },
+        "required": [
+          "setupToken",
+          "code"
+        ]
+      },
+      "MfaForcedEnableResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "recoveryCodes": {
+            "description": "Recovery codes de uso único — exibir uma única vez",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "recoveryCodes"
         ]
       },
       "RefreshDto": {
@@ -3990,23 +6457,6 @@
           "recoveryCodesRemaining"
         ]
       },
-      "MfaSetupResponseDto": {
-        "type": "object",
-        "properties": {
-          "secret": {
-            "type": "string",
-            "description": "Segredo TOTP (base32) — exibir uma única vez"
-          },
-          "otpauthUrl": {
-            "type": "string",
-            "description": "URL otpauth:// para QR code"
-          }
-        },
-        "required": [
-          "secret",
-          "otpauthUrl"
-        ]
-      },
       "MfaCodeDto": {
         "type": "object",
         "properties": {
@@ -4058,7 +6508,25 @@
           "role"
         ]
       },
-      "ResponsavelDto": {
+      "ResponsavelPetResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "ResponsavelListItemDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -4081,11 +6549,18 @@
           },
           "origem": {
             "type": "string"
+          },
+          "pets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResponsavelPetResumoDto"
+            }
           }
         },
         "required": [
           "id",
-          "nome"
+          "nome",
+          "pets"
         ]
       },
       "ListResponsaveisDto": {
@@ -4094,7 +6569,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ResponsavelDto"
+              "$ref": "#/components/schemas/ResponsavelListItemDto"
             }
           },
           "total": {
@@ -4144,6 +6619,36 @@
           "nome"
         ]
       },
+      "ResponsavelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
       "AnimalDto": {
         "type": "object",
         "properties": {
@@ -4165,6 +6670,9 @@
           "raca": {
             "type": "string"
           },
+          "pelagem": {
+            "type": "string"
+          },
           "sexo": {
             "type": "string"
           },
@@ -4172,6 +6680,21 @@
             "type": "boolean"
           },
           "nascimento": {
+            "type": "string"
+          },
+          "microchip": {
+            "type": "string"
+          },
+          "marcacoes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pedigree": {
+            "type": "boolean"
+          },
+          "pedigreeNumero": {
             "type": "string"
           },
           "status": {
@@ -4187,7 +6710,31 @@
           "responsavelId",
           "nome",
           "castrado",
+          "marcacoes",
+          "pedigree",
           "status"
+        ]
+      },
+      "ClienteVendasResumoDto": {
+        "type": "object",
+        "properties": {
+          "totalVendidoCentavos": {
+            "type": "number"
+          },
+          "ticketMedioCentavos": {
+            "type": "number"
+          },
+          "vendas": {
+            "type": "number"
+          },
+          "ultimaVendaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalVendidoCentavos",
+          "ticketMedioCentavos",
+          "vendas"
         ]
       },
       "ResponsavelComAnimaisDto": {
@@ -4219,12 +6766,16 @@
             "items": {
               "$ref": "#/components/schemas/AnimalDto"
             }
+          },
+          "vendas": {
+            "$ref": "#/components/schemas/ClienteVendasResumoDto"
           }
         },
         "required": [
           "id",
           "nome",
-          "animais"
+          "animais",
+          "vendas"
         ]
       },
       "UpdateResponsavelDto": {
@@ -4293,10 +6844,65 @@
             "type": "string",
             "example": "2020-05-10",
             "description": "AAAA-MM-DD"
+          },
+          "pelagem": {
+            "type": "string",
+            "example": "Preto e marrom"
+          },
+          "microchip": {
+            "type": "string",
+            "description": "Número do microchip"
+          },
+          "marcacoes": {
+            "description": "Marcações/tags clínicas (ex.: renal)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pedigree": {
+            "type": "boolean"
+          },
+          "pedigreeNumero": {
+            "type": "string",
+            "description": "Número do pedigree"
           }
         },
         "required": [
           "nome"
+        ]
+      },
+      "BuscaAnimalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "especie": {
+            "type": "string"
+          },
+          "raca": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "status",
+          "responsavelId",
+          "responsavelNome"
         ]
       },
       "UpdateAnimalDto": {
@@ -4314,6 +6920,9 @@
           "raca": {
             "type": "string"
           },
+          "pelagem": {
+            "type": "string"
+          },
           "sexo": {
             "type": "string",
             "enum": [
@@ -4325,6 +6934,21 @@
             "type": "boolean"
           },
           "nascimento": {
+            "type": "string"
+          },
+          "microchip": {
+            "type": "string"
+          },
+          "marcacoes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pedigree": {
+            "type": "boolean"
+          },
+          "pedigreeNumero": {
             "type": "string"
           },
           "status": {
@@ -4379,6 +7003,76 @@
           "key"
         ]
       },
+      "VacinaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "animalId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string"
+          },
+          "proximaEm": {
+            "type": "string"
+          },
+          "aplicadaPorNome": {
+            "type": "string"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "animalId",
+          "nome",
+          "aplicadaEm"
+        ]
+      },
+      "CreateVacinaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Antirrábica"
+          },
+          "laboratorio": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string"
+          },
+          "aplicadaEm": {
+            "type": "string",
+            "example": "2026-07-08",
+            "description": "AAAA-MM-DD"
+          },
+          "proximaEm": {
+            "type": "string",
+            "example": "2027-07-08",
+            "description": "Próxima dose (AAAA-MM-DD)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "aplicadaEm"
+        ]
+      },
       "EventoDto": {
         "type": "object",
         "properties": {
@@ -4397,12 +7091,26 @@
           "valorCentavos": {
             "type": "number"
           },
+          "itemId": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
           "data": {
             "type": "string"
           },
           "anexoUrl": {
             "type": "string",
             "description": "URL assinada (curta) do anexo, se houver"
+          },
+          "registradoPorNome": {
+            "type": "string",
+            "description": "Quem registrou o evento (doc 16 PR7)"
+          },
+          "estoqueBaixado": {
+            "type": "boolean",
+            "description": "Estoque baixado automaticamente neste registro"
           }
         },
         "required": [
@@ -4435,6 +7143,15 @@
           "valorCentavos": {
             "type": "number",
             "description": "Valor em centavos (ex.: 15000 = R$ 150,00)"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo (dá baixa no estoque se estocável)"
+          },
+          "quantidade": {
+            "type": "number",
+            "default": 1,
+            "description": "Quantidade do item (baixa de estoque)"
           },
           "faturar": {
             "type": "boolean",
@@ -4764,6 +7481,12 @@
           "profissionalNome": {
             "type": "string"
           },
+          "departamentoId": {
+            "type": "string"
+          },
+          "departamentoNome": {
+            "type": "string"
+          },
           "animalId": {
             "type": "string"
           },
@@ -4806,6 +7529,10 @@
           "profissionalId": {
             "type": "string",
             "description": "Profissional responsável (membro do tenant)"
+          },
+          "departamentoId": {
+            "type": "string",
+            "description": "Departamento da agenda (Clínica, Hotel…)"
           },
           "animalId": {
             "type": "string"
@@ -4900,6 +7627,63 @@
           },
           "duracaoMinutos": {
             "type": "number"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "cor",
+          "ativo"
+        ]
+      },
+      "CreateDepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Hotel"
+          },
+          "cor": {
+            "type": "string",
+            "example": "#7c5cff",
+            "description": "Cor do departamento (hex)"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "UpdateDepartamentoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Hotel"
           },
           "cor": {
             "type": "string",
@@ -5023,6 +7807,36 @@
           }
         }
       },
+      "PrecoHistoricoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "vigenteDesde": {
+            "type": "string",
+            "description": "Vigente a partir de (ISO)"
+          },
+          "alteradoPor": {
+            "type": "string",
+            "nullable": true
+          },
+          "alteradoPorNome": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "precoCentavos",
+          "vigenteDesde",
+          "alteradoPor",
+          "alteradoPorNome"
+        ]
+      },
       "SaldoItemDto": {
         "type": "object",
         "properties": {
@@ -5058,6 +7872,44 @@
           "abaixoDoMinimo"
         ]
       },
+      "VencimentoDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Quantidade da entrada com este lote"
+          },
+          "diasParaVencer": {
+            "type": "number",
+            "description": "Dias até vencer (negativo = já vencido)"
+          }
+        },
+        "required": [
+          "itemId",
+          "codigo",
+          "nome",
+          "lote",
+          "validade",
+          "quantidade",
+          "diasParaVencer"
+        ]
+      },
       "MovimentoDto": {
         "type": "object",
         "properties": {
@@ -5077,6 +7929,14 @@
             "type": "number",
             "nullable": true
           },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string",
+            "nullable": true
+          },
           "motivo": {
             "type": "string",
             "nullable": true
@@ -5091,6 +7951,8 @@
           "tipo",
           "quantidade",
           "custoCentavos",
+          "lote",
+          "validade",
           "motivo",
           "criadoEm"
         ]
@@ -5118,6 +7980,15 @@
           "custoCentavos": {
             "type": "number",
             "description": "Custo unitário em centavos (entrada)"
+          },
+          "lote": {
+            "type": "string",
+            "description": "Lote (informado na entrada)"
+          },
+          "validade": {
+            "type": "string",
+            "description": "Validade do lote (YYYY-MM-DD, entrada)",
+            "example": "2027-01-31"
           },
           "motivo": {
             "type": "string",
@@ -5149,6 +8020,14 @@
             "type": "number",
             "nullable": true
           },
+          "lote": {
+            "type": "string",
+            "nullable": true
+          },
+          "validade": {
+            "type": "string",
+            "nullable": true
+          },
           "motivo": {
             "type": "string",
             "nullable": true
@@ -5167,6 +8046,8 @@
           "tipo",
           "quantidade",
           "custoCentavos",
+          "lote",
+          "validade",
           "motivo",
           "criadoEm",
           "saldoAtual"
@@ -5215,6 +8096,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -5222,6 +8107,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           }
         },
         "required": [
@@ -5234,8 +8124,10 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
-          "pendentes"
+          "pendentes",
+          "fotoUrl"
         ]
       },
       "AdmitirDto": {
@@ -5252,11 +8144,121 @@
           "box": {
             "type": "string",
             "example": "Box 2"
+          },
+          "altaPrevista": {
+            "type": "string",
+            "example": "2026-07-15",
+            "description": "Previsão de alta (AAAA-MM-DD)"
           }
         },
         "required": [
           "animalId",
           "motivo"
+        ]
+      },
+      "ItemListaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "CriarItemListaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Pós-operatório"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "ModeloPrescricaoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "itemId",
+          "descricao",
+          "quantidade"
+        ]
+      },
+      "ModeloPrescricaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModeloPrescricaoItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "itens"
+        ]
+      },
+      "CriarModeloPrescricaoItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Item do catálogo"
+          },
+          "descricao": {
+            "type": "string",
+            "description": "Descrição livre (obrigatória sem itemId)"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "CriarModeloPrescricaoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Pós-cirúrgico padrão"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriarModeloPrescricaoItemDto"
+            }
+          }
+        },
+        "required": [
+          "nome",
+          "itens"
         ]
       },
       "ExecucaoDto": {
@@ -5324,6 +8326,10 @@
           "entradaEm": {
             "type": "string"
           },
+          "altaPrevistaEm": {
+            "type": "string",
+            "nullable": true
+          },
           "altaEm": {
             "type": "string",
             "nullable": true
@@ -5331,6 +8337,11 @@
           "pendentes": {
             "type": "number",
             "description": "Prescrições ainda não executadas"
+          },
+          "fotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada da foto do paciente"
           },
           "observacoes": {
             "type": "string",
@@ -5353,11 +8364,91 @@
           "box",
           "status",
           "entradaEm",
+          "altaPrevistaEm",
           "altaEm",
           "pendentes",
+          "fotoUrl",
           "observacoes",
           "execucoes"
         ]
+      },
+      "AplicarModeloDto": {
+        "type": "object",
+        "properties": {
+          "modeloId": {
+            "type": "string",
+            "description": "Modelo de prescrição a aplicar na internação"
+          }
+        },
+        "required": [
+          "modeloId"
+        ]
+      },
+      "ParametroDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "pesoKg": {
+            "type": "number",
+            "nullable": true
+          },
+          "temperaturaC": {
+            "type": "number",
+            "nullable": true
+          },
+          "fc": {
+            "type": "number",
+            "nullable": true
+          },
+          "fr": {
+            "type": "number",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "registradoEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "pesoKg",
+          "temperaturaC",
+          "fc",
+          "fr",
+          "observacao",
+          "registradoEm"
+        ]
+      },
+      "RegistrarParametroDto": {
+        "type": "object",
+        "properties": {
+          "pesoKg": {
+            "type": "number",
+            "description": "Peso em kg",
+            "example": 4.2
+          },
+          "temperaturaC": {
+            "type": "number",
+            "description": "Temperatura em °C",
+            "example": 38.5
+          },
+          "fc": {
+            "type": "number",
+            "description": "Frequência cardíaca (bpm)"
+          },
+          "fr": {
+            "type": "number",
+            "description": "Frequência respiratória (rpm)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
       },
       "PrescreverDto": {
         "type": "object",
@@ -5605,17 +8696,17 @@
       "ConverterResultDto": {
         "type": "object",
         "properties": {
-          "ok": {
-            "type": "boolean"
+          "responsavelId": {
+            "type": "string",
+            "description": "ID do cliente/responsável criado"
           },
-          "totalCentavos": {
-            "type": "number",
-            "description": "Total lançado na fatura aberta (centavos)"
+          "solicitacao": {
+            "$ref": "#/components/schemas/SolicitacaoDto"
           }
         },
         "required": [
-          "ok",
-          "totalCentavos"
+          "responsavelId",
+          "solicitacao"
         ]
       },
       "ApuracaoColaboradorDto": {
@@ -5782,13 +8873,13 @@
           "faturasAbertas": {
             "type": "number"
           },
-          "faturasAbertasCentavos": {
+          "receitaLiquidaMesCentavos": {
             "type": "number"
           },
-          "receitaMesCentavos": {
+          "ticketMedioCentavos": {
             "type": "number"
           },
-          "estoqueAbaixoMinimo": {
+          "aReceberCentavos": {
             "type": "number"
           },
           "orcamentosAbertos": {
@@ -5808,9 +8899,9 @@
           "internados",
           "execucoesPendentes",
           "faturasAbertas",
-          "faturasAbertasCentavos",
-          "receitaMesCentavos",
-          "estoqueAbaixoMinimo",
+          "receitaLiquidaMesCentavos",
+          "ticketMedioCentavos",
+          "aReceberCentavos",
           "orcamentosAbertos",
           "clientes",
           "minhasComissoesMesCentavos"
@@ -6654,6 +9745,10 @@
           "observacaoInterna": {
             "type": "string"
           },
+          "responsavelId": {
+            "type": "string",
+            "description": "Cliente criado a partir desta solicitação"
+          },
           "criadaEm": {
             "type": "string"
           }
@@ -6672,6 +9767,906 @@
           "observacao": {
             "type": "string",
             "description": "Observação interna (opcional)"
+          }
+        }
+      },
+      "ModeloDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "nome",
+          "conteudo"
+        ]
+      },
+      "CreateModeloDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string",
+            "example": "Receita simples"
+          },
+          "conteudo": {
+            "type": "string",
+            "description": "Placeholders: {{animal}} {{especie}} {{raca}} {{tutor}} {{telefone}} {{data}} {{clinica}}"
+          }
+        },
+        "required": [
+          "tipo",
+          "nome",
+          "conteudo"
+        ]
+      },
+      "UpdateModeloDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "receita",
+              "documento"
+            ]
+          },
+          "nome": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        }
+      },
+      "GerarModeloDto": {
+        "type": "object",
+        "properties": {
+          "animalId": {
+            "type": "string",
+            "description": "Animal para preencher os placeholders"
+          }
+        },
+        "required": [
+          "animalId"
+        ]
+      },
+      "ModeloGeradoDto": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "titulo",
+          "conteudo"
+        ]
+      },
+      "UsuarioDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "active | disabled"
+          },
+          "mfaEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "email",
+          "role",
+          "status",
+          "mfaEnabled"
+        ]
+      },
+      "CriarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Dra. Carla Nunes"
+          },
+          "email": {
+            "type": "string",
+            "example": "carla@clinica.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "role"
+        ]
+      },
+      "CriarUsuarioResultDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "active | disabled"
+          },
+          "mfaEnabled": {
+            "type": "boolean"
+          },
+          "senhaTemporaria": {
+            "type": "string",
+            "nullable": true,
+            "description": "Senha temporária (mostrada só uma vez). Null quando o usuário já existia (mantém a senha atual)."
+          }
+        },
+        "required": [
+          "userId",
+          "nome",
+          "email",
+          "role",
+          "status",
+          "mfaEnabled",
+          "senhaTemporaria"
+        ]
+      },
+      "AtualizarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "gestor",
+              "veterinario",
+              "recepcao",
+              "financeiro",
+              "internacao"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ]
+          }
+        }
+      },
+      "SenhaTemporariaDto": {
+        "type": "object",
+        "properties": {
+          "senhaTemporaria": {
+            "type": "string",
+            "description": "Nova senha temporária (mostrada só uma vez)."
+          }
+        },
+        "required": [
+          "senhaTemporaria"
+        ]
+      },
+      "BrandingDto": {
+        "type": "object",
+        "properties": {
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL assinada (curta) do logo, ou null"
+          }
+        },
+        "required": [
+          "logoUrl"
+        ]
+      },
+      "LgpdExportDto": {
+        "type": "object",
+        "properties": {
+          "exportadoEm": {
+            "type": "string",
+            "description": "Instante da exportação (ISO)"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "object",
+            "description": "Cadastro do responsável (titular)"
+          },
+          "animais": {
+            "description": "Animais + prontuário de cada um",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "faturas": {
+            "description": "Faturas + itens + recebimentos",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "agendamentos": {
+            "description": "Agendamentos",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "exportadoEm",
+          "responsavelId",
+          "responsavel",
+          "animais",
+          "faturas",
+          "agendamentos"
+        ]
+      },
+      "PlatformLoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "dono@vetapp.com"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "PlatformLoginResultDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "mfaRequired": {
+            "type": "boolean"
+          },
+          "mfaToken": {
+            "type": "string"
+          },
+          "mfaSetupRequired": {
+            "type": "boolean"
+          },
+          "mfaSetupToken": {
+            "type": "string"
+          }
+        }
+      },
+      "PlatformMfaVerifyDto": {
+        "type": "object",
+        "properties": {
+          "mfaToken": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "mfaToken",
+          "code"
+        ]
+      },
+      "PlatformTokensDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "PlatformMfaForcedSetupDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "setupToken"
+        ]
+      },
+      "PlatformMfaSetupResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string"
+          },
+          "otpauthUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUrl"
+        ]
+      },
+      "PlatformMfaForcedEnableDto": {
+        "type": "object",
+        "properties": {
+          "setupToken": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "setupToken",
+          "code"
+        ]
+      },
+      "PlatformMfaForcedEnableResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "recoveryCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "recoveryCodes"
+        ]
+      },
+      "PlatformRefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PlatformLogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "PlatformOkDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "PlatformMeDto": {
+        "type": "object",
+        "properties": {
+          "adminId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "adminId",
+          "email",
+          "nome"
+        ]
+      },
+      "ClinicaResumoDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "usuarios": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "planoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "vigenteAte": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenantId",
+          "nome",
+          "usuarios",
+          "status",
+          "planoNome",
+          "precoCentavos",
+          "vigenteAte"
+        ]
+      },
+      "AssinaturaDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "planoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string"
+          },
+          "vigenteAte": {
+            "type": "string",
+            "nullable": true
+          },
+          "trialAte": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenantId",
+          "planoId",
+          "status",
+          "precoCentavos",
+          "ciclo",
+          "vigenteAte",
+          "trialAte",
+          "observacao"
+        ]
+      },
+      "AtualizarAssinaturaDto": {
+        "type": "object",
+        "properties": {
+          "planoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "ativa",
+              "inadimplente",
+              "suspensa",
+              "cancelada"
+            ]
+          },
+          "vigenteAte": {
+            "type": "string",
+            "description": "Vigente até (YYYY-MM-DD)"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      },
+      "ProvisionarClinicaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Clínica Bicho Feliz"
+          },
+          "adminEmail": {
+            "type": "string",
+            "example": "dono@clinica.com"
+          },
+          "adminNome": {
+            "type": "string",
+            "example": "Dr. Fulano"
+          }
+        },
+        "required": [
+          "nome",
+          "adminEmail",
+          "adminNome"
+        ]
+      },
+      "ProvisionarClinicaResultDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "adminUserId": {
+            "type": "string"
+          },
+          "senhaTemporaria": {
+            "type": "string",
+            "description": "Senha temporária do admin (exibida uma vez)"
+          }
+        },
+        "required": [
+          "tenantId",
+          "adminUserId",
+          "senhaTemporaria"
+        ]
+      },
+      "PlanoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "slug",
+          "precoCentavos",
+          "ciclo",
+          "ativo"
+        ]
+      },
+      "CriarPlanoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string",
+            "enum": [
+              "mensal",
+              "anual"
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "slug",
+          "precoCentavos",
+          "ciclo"
+        ]
+      },
+      "AtualizarPlanoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "precoCentavos": {
+            "type": "number"
+          },
+          "ciclo": {
+            "type": "string",
+            "enum": [
+              "mensal",
+              "anual"
+            ]
+          },
+          "ativo": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ]
+          }
+        }
+      },
+      "KpisDto": {
+        "type": "object",
+        "properties": {
+          "totalClinicas": {
+            "type": "number"
+          },
+          "porStatus": {
+            "type": "object"
+          },
+          "mrrCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalClinicas",
+          "porStatus",
+          "mrrCentavos"
+        ]
+      },
+      "MensagemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "responsavelId": {
+            "type": "string"
+          },
+          "responsavelNome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "direcao": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string"
+          },
+          "disparadoPorNome": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "canal",
+          "direcao",
+          "corpo",
+          "status",
+          "criadaEm"
+        ]
+      },
+      "CreateMensagemDto": {
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string",
+            "description": "Assunto (e-mail)"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "referenciaTipo": {
+            "type": "string",
+            "description": "Origem do disparo (ex.: vacina, agendamento)"
+          },
+          "referenciaId": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Template usado (opcional)"
+          }
+        },
+        "required": [
+          "canal",
+          "corpo"
+        ]
+      },
+      "MensagemTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "canal": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "canal",
+          "corpo",
+          "ativo"
+        ]
+      },
+      "CreateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Lembrete de vacina"
+          },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "email",
+              "sms",
+              "manual"
+            ]
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string",
+            "description": "Placeholders: {{cliente}}, {{pet}}, {{vacina}}, {{data}}"
+          }
+        },
+        "required": [
+          "nome",
+          "canal",
+          "corpo"
+        ]
+      },
+      "UpdateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "corpo": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
           }
         }
       }

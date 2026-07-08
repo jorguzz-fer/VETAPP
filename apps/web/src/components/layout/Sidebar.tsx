@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { navSections } from '@/lib/nav';
+import { api } from '@/lib/api';
 
 interface SidebarProps {
   toggleActive: () => void;
@@ -15,14 +17,34 @@ interface SidebarProps {
  */
 export default function Sidebar({ toggleActive }: SidebarProps) {
   const pathname = usePathname();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  // Logo da clínica (branding do tenant). Silencioso se não houver/for indisponível.
+  useEffect(() => {
+    let alive = true;
+    api
+      .GET('/api/branding')
+      .then((res) => {
+        if (alive) setLogoUrl((res.data as { logoUrl: string | null } | undefined)?.logoUrl ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <aside className="sidebar-area bg-white dark:bg-[#0c1427] fixed z-[7] top-0 h-screen transition-all overflow-y-auto">
       <div className="flex items-center justify-between px-[25px] h-[70px] sticky top-0 bg-white dark:bg-[#0c1427] z-10">
         <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg text-black dark:text-white">
-          <span className="inline-grid place-items-center w-8 h-8 rounded-md bg-primary-500 text-white">
-            <i className="ri-heart-pulse-line"></i>
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo da clínica" className="h-8 w-8 rounded-md object-contain" />
+          ) : (
+            <span className="inline-grid place-items-center w-8 h-8 rounded-md bg-primary-500 text-white">
+              <i className="ri-heart-pulse-line"></i>
+            </span>
+          )}
           VETAPP
         </Link>
         <button type="button" onClick={toggleActive} className="burger-menu xl:hidden text-black dark:text-white" aria-label="Fechar menu">

@@ -210,4 +210,83 @@ describe('Isolamento de tenant (RLS)', () => {
     expect(rows[0].user_id).toBe(USER_1);
     expect(rows[0].role).toBe('gestor');
   });
+
+  // ── Auditoria (LGPD): isolamento por tenant + append-only — migração 0023 ──
+  it('audit_log: isolado por tenant e imutável (append-only) para o papel da app', async (ctx) => {
+    if (!dockerAvailable || !appSql || !adminSql) return ctx.skip();
+    // Semeia uma linha em cada tenant (superusuário ignora o RLS).
+    await adminSql`INSERT INTO audit_log (tenant_id, acao, entidade, resumo)
+      VALUES (${TENANT_A}, 'auth.login', 'sessao', 'login A'),
+             (${TENANT_B}, 'auth.login', 'sessao', 'login B')`;
+
+    // Sob o tenant A, só a linha de A é visível.
+    const visiveis = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT tenant_id, resumo FROM audit_log`;
+    });
+    expect(visiveis).toHaveLength(1);
+    expect(visiveis[0].resumo).toBe('login A');
+
+    // INSERT sob o próprio tenant é permitido (a app registra auditoria).
+    await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      await tx`INSERT INTO audit_log (tenant_id, acao, entidade, resumo)
+        VALUES (${TENANT_A}, 'usuario.criar', 'usuario', 'via app')`;
+    });
+
+    // Append-only: UPDATE e DELETE não afetam NENHUMA linha (RLS default-deny — não
+    // há policy de UPDATE/DELETE). Prova a imutabilidade sem depender de grants.
+    const upd = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`UPDATE audit_log SET resumo = 'adulterado' WHERE tenant_id = ${TENANT_A}`;
+    });
+    expect(upd.count).toBe(0);
+    const del = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`DELETE FROM audit_log WHERE tenant_id = ${TENANT_A}`;
+    });
+    expect(del.count).toBe(0);
+
+    // Nada foi adulterado nem removido: a linha original continua intacta.
+    const final = await appSql.begin(async (tx) => {
+      await tx`SELECT set_config('app.current_tenant', ${TENANT_A}, true)`;
+      return tx`SELECT resumo FROM audit_log WHERE acao = 'auth.login'`;
+    });
+    expect(final).toHaveLength(1);
+    expect(final[0].resumo).toBe('login A');
+  });
+
+  // ── Robustez fiscal: número único por (tenant, série, número) — migração 0019 ──
+  it('fiscal: mesmo número emitido colide; rascunhos (número NULL) convivem', async (ctx) => {
+    if (!dockerAvailable || !adminSql) return ctx.skip();
+    const [resp] = await adminSql`SELECT id FROM responsaveis WHERE tenant_id = ${TENANT_A} LIMIT 1`;
+    const [fat] = await adminSql`SELECT id FROM faturas WHERE tenant_id = ${TENANT_A} LIMIT 1`;
+    const nota = (numero: string | null) =>
+      adminSql!`INSERT INTO notas_fiscais (tenant_id, fatura_id, responsavel_id, status, serie, numero, valor_centavos)
+        VALUES (${TENANT_A}, ${fat.id}, ${resp.id}, ${numero ? 'emitida' : 'rascunho'}, '1', ${numero}, 10000)`;
+    // Índice é PARCIAL (WHERE numero IS NOT NULL): dois rascunhos convivem.
+    await nota(null);
+    await nota(null);
+    // Primeiro número emitido ok; repetir o mesmo (tenant, série, número) é barrado.
+    await nota('100');
+    await expect(nota('100')).rejects.toThrow();
+    // Número diferente na mesma série: ok.
+    await nota('101');
+  });
+
+  // ── Plataforma (SaaS): platform_audit_log é append-only — migração 0030 ──
+  it('platform_audit_log: INSERT/SELECT ok, mas UPDATE/DELETE afetam 0 linhas (append-only)', async (ctx) => {
+    if (!dockerAvailable || !appSql) return ctx.skip();
+    // Insere e lê pelo papel da app (RLS: policies só SELECT/INSERT).
+    await appSql`INSERT INTO platform_audit_log (acao, entidade, resumo)
+      VALUES ('platform.login', 'sessao', 'login super-admin')`;
+    const vis = await appSql`SELECT resumo FROM platform_audit_log WHERE acao = 'platform.login'`;
+    expect(vis.length).toBeGreaterThanOrEqual(1);
+
+    // Append-only: sem policy de UPDATE/DELETE → default-deny → 0 linhas afetadas.
+    const upd = await appSql`UPDATE platform_audit_log SET resumo = 'adulterado' WHERE acao = 'platform.login'`;
+    expect(upd.count).toBe(0);
+    const del = await appSql`DELETE FROM platform_audit_log WHERE acao = 'platform.login'`;
+    expect(del.count).toBe(0);
+  });
 });

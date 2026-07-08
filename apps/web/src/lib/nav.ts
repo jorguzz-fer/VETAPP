@@ -24,8 +24,9 @@ export const navSections: NavSection[] = [
   {
     title: 'Clínico',
     items: [
-      { label: 'Clientes & Animais', href: '/clientes', icon: 'ri-user-heart-line' },
+      { label: 'Clientes e Pacientes', href: '/clientes', icon: 'ri-user-heart-line' },
       { label: 'Prontuário', href: '/prontuario', icon: 'ri-stethoscope-line' },
+      { label: 'Modelos', href: '/modelos', icon: 'ri-file-text-line' },
       { label: 'Internação', href: '/internacao', icon: 'ri-hospital-line', roles: ['admin', 'veterinario', 'internacao'] },
     ],
   },
@@ -47,6 +48,7 @@ export const navSections: NavSection[] = [
       { label: 'Produtividade', href: '/produtividade', icon: 'ri-line-chart-line', roles: ['admin', 'gestor'] },
       { label: 'Site', href: '/site', icon: 'ri-global-line', roles: ['admin', 'gestor'] },
       { label: 'Cadastros', href: '/cadastros', icon: 'ri-archive-line' },
+      { label: 'Auditoria', href: '/auditoria', icon: 'ri-shield-check-line', roles: ['admin'] },
       { label: 'Configurações', href: '/configuracoes', icon: 'ri-settings-3-line', roles: ['admin'] },
     ],
   },

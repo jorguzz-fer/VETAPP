@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min, MinLength } from 'class-validator';
 
 export const TIPOS_EVENTO = [
   'atendimento',
@@ -27,6 +27,17 @@ export class CreateEventoDto {
   @IsInt()
   @Min(0)
   valorCentavos?: number;
+
+  @ApiPropertyOptional({ type: String, description: 'Item do catálogo (dá baixa no estoque se estocável)' })
+  @IsOptional()
+  @IsUUID()
+  itemId?: string;
+
+  @ApiPropertyOptional({ type: Number, default: 1, description: 'Quantidade do item (baixa de estoque)' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  quantidade?: number;
 
   @ApiPropertyOptional({ type: Boolean, default: true, description: 'Gera lançamento na fatura do cliente' })
   @IsOptional()
@@ -64,9 +75,15 @@ export class EventoDto {
   @ApiProperty() tipo!: string;
   @ApiProperty() descricao!: string;
   @ApiPropertyOptional({ type: Number }) valorCentavos?: number | null;
+  @ApiPropertyOptional({ type: String }) itemId?: string | null;
+  @ApiPropertyOptional({ type: Number }) quantidade?: number;
   @ApiProperty() data!: string;
   @ApiPropertyOptional({ type: String, description: 'URL assinada (curta) do anexo, se houver' })
   anexoUrl?: string | null;
+  @ApiPropertyOptional({ type: String, description: 'Quem registrou o evento (doc 16 PR7)' })
+  registradoPorNome?: string | null;
+  @ApiPropertyOptional({ type: Boolean, description: 'Estoque baixado automaticamente neste registro' })
+  estoqueBaixado?: boolean;
 }
 
 export class FaturaItemDto {

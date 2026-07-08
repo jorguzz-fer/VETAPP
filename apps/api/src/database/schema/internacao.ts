@@ -1,4 +1,5 @@
-import { pgTable, uuid, text, timestamp, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, date, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { tenants } from './tenants';
 import { animais } from './animais';
 import { itensCatalogo } from './catalogo';
@@ -16,6 +17,7 @@ export const internacoes = pgTable(
     box: text('box'),
     status: text('status').notNull().default('internado'), // internado | alta
     entradaEm: timestamp('entrada_em', { withTimezone: true }).notNull().defaultNow(),
+    altaPrevistaEm: date('alta_prevista_em'), // previsão de alta (doc 16 I2)
     altaEm: timestamp('alta_em', { withTimezone: true }),
     observacoes: text('observacoes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -50,5 +52,89 @@ export const internacaoExecucoes = pgTable(
   }),
 );
 
+// Listas gerenciadas por tenant para a admissão (doc 05 §9.7 boxes). Nome único
+// por tenant (case-insensitive) → não duplica. Tenant-scoped → RLS.
+export const internacaoMotivos = pgTable(
+  'internacao_motivos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nomeUniq: uniqueIndex('internacao_motivos_nome_uniq').on(t.tenantId, sql`lower(${t.nome})`),
+  }),
+);
+
+export const internacaoBoxes = pgTable(
+  'internacao_boxes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    nomeUniq: uniqueIndex('internacao_boxes_nome_uniq').on(t.tenantId, sql`lower(${t.nome})`),
+  }),
+);
+
+// Modelo de prescrição (doc 05 §9.6): acelera a montagem do mapa de execução.
+// Cabeçalho + itens (item de catálogo ou descrição livre). Tenant-scoped → RLS.
+export const modelosPrescricao = pgTable(
+  'modelos_prescricao',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantIdx: index('modelos_prescricao_tenant_idx').on(t.tenantId),
+  }),
+);
+
+export const modelosPrescricaoItens = pgTable(
+  'modelos_prescricao_itens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    modeloId: uuid('modelo_id').notNull().references(() => modelosPrescricao.id, { onDelete: 'cascade' }),
+    itemId: uuid('item_id').references(() => itensCatalogo.id, { onDelete: 'set null' }),
+    descricao: text('descricao').notNull(),
+    quantidade: integer('quantidade').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    modeloIdx: index('modelos_prescricao_itens_modelo_idx').on(t.tenantId, t.modeloId),
+  }),
+);
+
+// Parâmetros clínicos (doc 05 §9.5): sinais vitais por internação, na timeline.
+// Inteiros para evitar float: peso em gramas, temperatura em décimos de °C.
+export const internacaoParametros = pgTable(
+  'internacao_parametros',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    internacaoId: uuid('internacao_id').notNull().references(() => internacoes.id, { onDelete: 'cascade' }),
+    pesoG: integer('peso_g'),
+    temperaturaDecimos: integer('temperatura_decimos'),
+    freqCardiaca: integer('freq_cardiaca'),
+    freqRespiratoria: integer('freq_respiratoria'),
+    observacao: text('observacao'),
+    registradoEm: timestamp('registrado_em', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    internacaoIdx: index('internacao_parametros_internacao_idx').on(t.tenantId, t.internacaoId),
+  }),
+);
+
 export type Internacao = typeof internacoes.$inferSelect;
 export type InternacaoExecucao = typeof internacaoExecucoes.$inferSelect;
+export type InternacaoMotivo = typeof internacaoMotivos.$inferSelect;
+export type InternacaoBox = typeof internacaoBoxes.$inferSelect;
+export type ModeloPrescricao = typeof modelosPrescricao.$inferSelect;
+export type ModeloPrescricaoItem = typeof modelosPrescricaoItens.$inferSelect;
+export type InternacaoParametro = typeof internacaoParametros.$inferSelect;

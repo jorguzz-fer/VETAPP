@@ -93,8 +93,11 @@ Pendências conhecidas:
   de agendamento** (`agendamento_solicitacoes`, RLS) — a clínica confirma, nada
   grava direto na agenda. Público: `/clinica/[slug]` + `GET/POST /api/public/clinica/:slug`
   (única rota anônima de escrita — honeypot + rate limit por IP+slug). Gestão em
-  `/site` (admin/gestor): CMS + triagem. Pendente: agendamento em tempo real,
-  conversão solicitação→cliente, Google Agenda/IA, rate limit distribuído.
+  `/site` (admin/gestor): CMS + triagem. **Conversão solicitação→cliente feita**
+  (migração 0028): `POST /api/site/solicitacoes/:id/converter` cria o responsável
+  (nome/telefone/email/origem) + o pet (se `petNome`), liga `responsavel_id` na
+  solicitação e marca confirmada; UI abre a ficha do novo cliente. Pendente:
+  agendamento em tempo real, Google Agenda/IA, rate limit distribuído.
 - **Fiscal MVP feito** (doc 13 §3.3, provider-agnostic): config do emitente por
   tenant (`fiscal_config`, RLS) e ciclo da nota (`notas_fiscais`, RLS) a partir da
   fatura (`rascunho→emitida→cancelada`). **Provedor pluggável** (`FiscalProvider` +
@@ -109,8 +112,9 @@ Pendências conhecidas:
   `'tutor'`). Onboarding **por convite** da clínica (link na ficha do cliente →
   tutor cria senha). Tutor vê **meus pets** (vacinas + histórico resumido, sem
   `observacao`), **agendamentos** (só leitura) e **faturas** (2ª via). Pagamento
-  online/fiscal e agendamento online ficam para depois. Refresh do tutor é
-  stateless por ora (follow-up: rotação/revogação como na gestão).
+  online/fiscal e agendamento online ficam para depois. **Refresh do tutor agora é
+  stateful** (rotação por family + detecção de reuso + revogação, `tutor_refresh_tokens`,
+  migração 0026 — mesmo padrão da gestão; `/portal/logout` revoga a family).
 - **Financeiro fase 2 feito**: recebimento parcial (`recebimentos`, status
   derivado), formas de recebimento (taxa em bps, em `/cadastros`), saldo do
   cliente (`/api/financeiro/saldos`, `/saldos`).
@@ -119,9 +123,87 @@ Pendências conhecidas:
   `/auth/logout`; renovação proativa no front) e **recovery codes de MFA**
   (`mfa_recovery_codes`, `/auth/mfa/recovery-codes`, aceitos no `/auth/mfa/verify`;
   UI em `/configuracoes`). Tabelas globais sem RLS (escopo por `jti`/`user_id`).
-- Fase 2 documentada (pendente): histórico/vigência de preços, baixa automática de
-  estoque (exige evento do prontuário referenciar item de catálogo), **MFA
-  obrigatório por papel**, migração de token para cookie httpOnly/BFF, WebAuthn.
+- **Baixa automática de estoque feita** (doc 13 §2): o evento do prontuário passa a
+  referenciar um item do catálogo (`item_id` + `quantidade`, migração 0025). Ao
+  registrar, se o item é estocável (produto/medicamento/vacina) e há saldo, gera
+  `saida` no estoque automaticamente (mesma regra da internação; não bloqueia o
+  registro clínico se faltar saldo — sinaliza `estoqueBaixado:false`). `item_id`
+  também vai ao `fatura_itens` (comissão). UI: picker de catálogo + quantidade na
+  ficha do animal.
+- **Estoque lote/validade feito** (doc 13 §2): a entrada registra `lote` e `validade`
+  (migração 0029, colunas em `estoque_movimentos`). `GET /api/estoque/vencimentos?dias=90`
+  lista lotes a vencer (dias restantes; vencidos sinalizados). UI `/estoque`: campos na
+  entrada, histórico e card "Vencimentos próximos". Fase 3: saldo por lote (FIFO).
+- **MFA obrigatório por papel feito** (doc 02 §2.2): papéis sensíveis (admin/gestor/
+  financeiro) não recebem sessão sem 2º fator. Login devolve `mfaSetupRequired` +
+  `mfaSetupToken` (escopo `mfa_setup`, 15 min) → `POST /auth/mfa/forced-setup` +
+  `/forced-enable` (liga MFA, emite recovery codes E a sessão). `JwtAuthGuard` recusa
+  o token de setup como sessão. Front força o passo (QR → recovery codes) no login.
+- **Histórico/vigência de preços feito** (doc 13 §2): tabela `preco_historico`
+  (migração 0027, RLS fail-closed). Cada linha é um preço vigente a partir de
+  `vigente_desde` (quem alterou + quando). `catalogo.create` grava a vigência inicial;
+  `catalogo.update` grava nova vigência quando o `precoCentavos` muda. `GET
+  /api/catalogo/:id/precos` lista o histórico. UI em `/precos`: alterar preço (gera
+  vigência) + modal de histórico.
+- **Exportação LGPD do titular feita** (doc 09 §5, doc 02 §6): `GET
+  /api/lgpd/clientes/:responsavelId/export` (admin/gestor, auditado `lgpd.exportar`) —
+  JSON agregado (cadastro + pets/prontuário + faturas/itens/recebimentos + agendamentos)
+  sob `withTenant`+RLS, sem chaves internas. UI: botão "Exportar (LGPD)" na ficha do
+  cliente. Atende acesso + portabilidade. Pendente: exclusão/anonimização, retenção.
+- **Revogação + limpeza de sessões feita** (doc 02 §2.3): `SessionsService` (global) —
+  reset de senha e desativação de usuário revogam as famílias de refresh da gestão;
+  limpeza periódica (boot + 24h via `setInterval`, sem scheduler) apaga refresh
+  expirados (gestão e tutor), preservando os revogados ainda válidos (detecção de reuso).
+- Fase 2 documentada (pendente): migração de token para cookie httpOnly/BFF, denylist
+  de access token (Redis), WebAuthn.
+- **Admin da Plataforma (SaaS back-office) — MVP FEITO (Stages 1–3)** (doc 15): back-office do
+  dono do SaaS (assinaturas, adesões, gestão de clínicas, KPIs cruzando tenants). Auth
+  **separada** (`scope:'platform'`, `platform_admins`, guard próprio, MFA obrigatório,
+  refresh stateful), rotas `/api/platform/*` e front `/plataforma/*`, opera **fora** do
+  RLS de tenant, auditoria própria append-only. **Decisão**: inadimplência = grace
+  period → bloqueio.
+  - **Stage 1 (auth) FEITO** (migração 0030): tabelas globais `platform_admins`/
+    `platform_refresh_tokens`/`platform_mfa_recovery_codes`/`platform_audit_log`
+    (append-only via RLS SELECT/INSERT + REVOKE); `PlatformAuthService` (login + **MFA
+    obrigatório** setup forçado + refresh stateful), `PlatformGuard`, `/api/platform/auth/*`,
+    bootstrap do 1º admin por ENV (`PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD`, idempotente no boot).
+  - **Stage 2 (assinaturas + gestão de clínicas) FEITO** (migração 0031): tabelas globais
+    `planos`/`assinaturas`; `AssinaturasService` (@Global) com `avaliarAcesso` (grace 7d →
+    bloqueio), CRUD (definir plano/marcar pago/suspender/cancelar), KPIs (MRR/status) e
+    listagem de clínicas. **Login da gestão faz enforcement** (`resolveLogin` bloqueia
+    antes do MFA); self-signup entra em trial; planos padrão semeados no boot. Back-office
+    `/api/platform/*` (PlatformGuard, auditado): clinicas, assinatura (GET/PUT), pagar,
+    provisionar, planos (CRUD), kpis.
+  - **Stage 3 (front `/plataforma/*`) FEITO**: área separada (não mistura com o app da
+    clínica/portal) — `PlatformAuthProvider` (login + MFA obrigatório QR/recovery + refresh
+    proativo, storage próprio) + `platformApi`. Telas: `/plataforma/login`, `/plataforma`
+    (KPIs + tabela de clínicas com pagar/suspender/reativar/definir-plano/provisionar) e
+    `/plataforma/planos` (CRUD). **MVP fase 1 completo.**
+  - **Próximo (externo/fase 2)**: gateway de pagamento (checkout/webhooks/dunning),
+    impersonação assistida, quotas por plano.
+- **CRUD de Usuários e Acessos feito** (doc 07 §3.1): `/api/usuarios` (admin) +
+  UI em `/configuracoes` — criar (senha temporária ou vincular existente), papel,
+  ativar/desativar, reset de senha, remover acesso; travas anti-lockout (não mexe
+  em si mesmo nem no último admin).
+- **Seed de demonstração** (`apps/api/src/database/seed.ts`, `pnpm --filter
+  @vetapp/api db:seed` / `node dist/database/seed.js`): clínica-demo completa e
+  idempotente para apresentação (tenant separado, login `ana@vetexemplo.demo`).
+- **Log de auditoria LGPD feito** (doc 02 §6, doc 07 §3.2): `audit_log` **append-only
+  por tenant** — imutabilidade no banco (policies RLS só de SELECT/INSERT → sem policy
+  de UPDATE/DELETE, RLS default-deny bloqueia para qualquer papel; + `REVOKE
+  UPDATE/DELETE` de `vetapp_app` = erro duro em prod). `AuditService.registrar(tenantId,
+  …)` best-effort (nunca quebra a ação de negócio) grava nas escritas sensíveis: auth
+  (login/logout/register), usuários/acessos, fiscal (emitir/cancelar) e financeiro
+  (receber). `GET /api/auditoria` (admin, paginado + filtro) e página `/auditoria` (só
+  leitura). Append-only coberto por `tenant-isolation.spec.ts` (roda na CI).
+- **Upload do logo da clínica feito** (doc 10 §3, doc 03 §5): tabela de domínio
+  `tenant_branding` (migração 0024, RLS fail-closed — branding NÃO é público, ao
+  contrário do `site_config`). Logo no **R2** (bucket privado, só `logo_key` no banco
+  → URL assinada, nunca proxia bytes). `/api/branding`: `GET` (qualquer membro, p/
+  renderizar) + `POST logo/sign-upload` · `POST logo` · `DELETE logo` (**admin**,
+  auditados). UI em `/configuracoes` (preview + upload + remover) e logo no cabeçalho
+  da sidebar. Pendente: cor primária por tenant; reuso em documentos impressos quando
+  existirem (o `GET /api/branding` já atende).
 
 ## Regra viva
 

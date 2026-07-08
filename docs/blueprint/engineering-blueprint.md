@@ -158,6 +158,14 @@ evoluindo para orquestração só quando necessário.
   reproduzível.
 - **CI/CD**: pipeline que builda, testa, escaneia e publica imagem; deploy
   automatizado (rolling/blue-green quando possível) com rollback fácil.
+  > **Lição estrutural — migrations no *release*, nunca no *build*:** o `docker build`
+  > roda sem (e não deve ter) acesso ao banco de produção — migrar ali é errado e
+  > costuma nem ser possível. Rode as migrations no **start do container** (entrypoint:
+  > `migrate && exec app`), idempotente e **fail-fast** (schema quebrado = container
+  > não sobe). Use o papel **admin** (DDL/RLS) só aqui; a app roda com o papel restrito.
+  > Evite "pre-deploy commands" de PaaS que executam no **container antigo** (são
+  > pulados se ele estiver morto) — o entrypoint sempre roda com a imagem nova. Deixe
+  > um flag de opt-out (`RUN_MIGRATIONS=false`) para quem gere o schema à parte.
 - **Backups + DR**: backup automatizado do banco (dump + PITR quando der), cópia
   off-site cifrada; **testar restauração** periodicamente. Definir **RPO/RTO**.
 - **Custo/FinOps**: dimensionar para o uso real; storage com egress baixo;
@@ -311,6 +319,17 @@ isolamento de dados.
     login o GUC nunca é setado → policy inerte → isolamento por tenant intacto;
     escrita continua exigindo o contexto de tenant. **Teste o login com o role
     NOBYPASSRLS**, não só em dev.
+- **Lição estrutural — tabela append-only (auditoria) com RLS *default-deny*:**
+  para uma trilha imutável por tenant (LGPD/compliance), não confie só na aplicação
+  "não fazer UPDATE". Crie policies RLS **apenas** de `SELECT` e `INSERT` (com o
+  isolamento por tenant de sempre). Como o RLS é *default-deny*, a **ausência** de
+  policy para `UPDATE`/`DELETE` faz qualquer papel sujeito ao RLS afetar **zero
+  linhas** ao tentar editar/apagar — imutabilidade **role-agnóstica**, sem depender
+  de `GRANT`s. Some, como defesa dura em produção, `REVOKE UPDATE, DELETE ON <tab>
+  FROM <app_role>` (erro explícito em vez de no-op silencioso). Escrever é
+  best-effort: a gravação da auditoria **nunca** deve quebrar a ação de negócio
+  (try/catch + log). **Teste na CI** que o `UPDATE`/`DELETE` afeta 0 linhas sob o
+  role sem BYPASSRLS.
 - **Ciclo de vida**: provisionamento + seed padrão; configuração por tenant;
   suspensão/exportação (portabilidade); exclusão auditada.
 - **Dados globais vs. do tenant**: catálogos comuns (read-only, compartilhados)
@@ -390,6 +409,17 @@ pelo próprio front).
   `tenant_id` se multitenant).
 - **Soft-delete + auditoria** em entidades sensíveis (nada some sem rastro).
 - **Backups/DR**: ver seção 5.
+  > **Lição estrutural — concorrência em saldos e sequências:** operações do tipo
+  > "lê o estado atual, valida, escreve o próximo" (baixar recebimento sobre um
+  > saldo, atribuir o próximo número de nota/pedido a partir de um contador) são
+  > **race conditions** clássicas: dois requests simultâneos leem o mesmo valor e
+  > ambos gravam → over-payment, número duplicado. Uma transação **não basta** — o
+  > `READ COMMITTED` do Postgres deixa os dois lerem antes de qualquer commit.
+  > Trave a linha de agregação/contador com **`SELECT ... FOR UPDATE`** no início da
+  > transação (serializa os concorrentes na mesma linha) **e** proteja com uma
+  > **constraint/unique index** no banco como backstop (ex.: `UNIQUE (tenant, série,
+  > número)` parcial para números atribuídos). App-lock + DB-constraint: cinto e
+  > suspensório. Faça a baixa integral na **mesma** transação, nunca em duas.
 
 **Checklist**
 - [ ] Migrations no repo, aplicadas por CI/CD.

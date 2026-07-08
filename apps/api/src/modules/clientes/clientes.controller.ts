@@ -4,9 +4,11 @@ import type { Request } from 'express';
 import { ClientesService } from './clientes.service';
 import {
   AnimalDto,
+  BuscaAnimalDto,
   ConfirmFotoDto,
   CreateAnimalDto,
   CreateResponsavelDto,
+  CreateVacinaDto,
   ListResponsaveisDto,
   OkDto,
   ResponsavelComAnimaisDto,
@@ -15,6 +17,7 @@ import {
   SignUploadResponseDto,
   UpdateAnimalDto,
   UpdateResponsavelDto,
+  VacinaDto,
 } from './clientes.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles, RolesGuard } from '../../common/guards/roles.guard';
@@ -79,6 +82,13 @@ export class ClientesController {
     return this.clientes.createAnimal(req.auth!.tenantId, id, dto);
   }
 
+  @Get('animais')
+  @ApiQuery({ name: 'search', required: false, description: 'Nome do animal ou nome/telefone do tutor' })
+  @ApiOkResponse({ type: [BuscaAnimalDto] })
+  buscarAnimais(@Req() req: Request, @Query('search') search?: string): Promise<BuscaAnimalDto[]> {
+    return this.clientes.buscarAnimais(req.auth!.tenantId, search);
+  }
+
   @Get('animais/:id')
   @ApiOkResponse({ type: AnimalDto })
   animal(@Req() req: Request, @Param('id') id: string): Promise<AnimalDto> {
@@ -112,5 +122,19 @@ export class ClientesController {
   @ApiCreatedResponse({ type: AnimalDto })
   confirmFoto(@Req() req: Request, @Param('id') id: string, @Body() dto: ConfirmFotoDto): Promise<AnimalDto> {
     return this.clientes.confirmAnimalFoto(req.auth!.tenantId, id, dto.key);
+  }
+
+  // Protocolos vacinais (doc 16 PR9). Ver = qualquer staff; registrar = clínico.
+  @Get('animais/:id/vacinas')
+  @ApiOkResponse({ type: [VacinaDto] })
+  listVacinas(@Req() req: Request, @Param('id') id: string): Promise<VacinaDto[]> {
+    return this.clientes.listVacinas(req.auth!.tenantId, id);
+  }
+
+  @Roles('admin', 'gestor', 'veterinario', 'internacao')
+  @Post('animais/:id/vacinas')
+  @ApiCreatedResponse({ type: VacinaDto })
+  criarVacina(@Req() req: Request, @Param('id') id: string, @Body() dto: CreateVacinaDto): Promise<VacinaDto> {
+    return this.clientes.criarVacina(req.auth!.tenantId, id, req.auth!.userId, dto);
   }
 }

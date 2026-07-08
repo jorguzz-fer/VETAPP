@@ -1,4 +1,5 @@
-import { pgTable, uuid, text, timestamp, integer, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, boolean, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { tenants } from './tenants';
 import { responsaveis } from './responsaveis';
 import { faturas } from './prontuario';
@@ -64,6 +65,10 @@ export const notasFiscais = pgTable(
   (t) => ({
     tenantIdx: index('notas_fiscais_tenant_idx').on(t.tenantId),
     faturaIdx: index('notas_fiscais_fatura_idx').on(t.tenantId, t.faturaId),
+    // Número emitido é único por tenant+série (rascunhos têm numero NULL → parcial).
+    numeroUniq: uniqueIndex('notas_fiscais_numero_uniq')
+      .on(t.tenantId, t.serie, t.numero)
+      .where(sql`${t.numero} IS NOT NULL`),
   }),
 );
 

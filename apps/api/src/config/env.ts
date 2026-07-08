@@ -22,6 +22,24 @@ export const envSchema = z.object({
   // desabilitado (a app sobe normalmente).
   GOOGLE_CLIENT_ID: z.string().optional(),
 
+  // Enforcement do MFA (doc 02 §2.2). Por padrão LIGADO: papéis sensíveis (gestão)
+  // e o super-admin da plataforma exigem 2º fator. 'off' coloca o MFA em STANDBY —
+  // o login emite sessão direto (sem desafio nem setup forçado). Válvula de escape
+  // para testes; NUNCA deve ficar 'off' em produção real. Seguro por padrão: a
+  // ausência da var mantém o MFA obrigatório.
+  MFA_ENFORCEMENT: z.enum(['on', 'off']).default('on'),
+
+  // Bootstrap do 1º super-admin da plataforma (doc 15 §2). Opcional: se ambos
+  // presentes e válidos, o boot cria/garante esse admin (idempotente) — nunca por
+  // rota pública. Segredo só na ENV do Coolify, nunca no repo.
+  //
+  // Validação intencionalmente FROUXA aqui (só string): um valor malformado numa var
+  // OPCIONAL de conveniência jamais pode derrubar a API inteira em loop. O formato
+  // (e-mail válido, senha ≥ 12) é checado no PlatformBootstrapService, que é
+  // best-effort e apenas PULA o bootstrap com um aviso se algo estiver errado.
+  PLATFORM_BOOTSTRAP_EMAIL: z.string().optional(),
+  PLATFORM_BOOTSTRAP_PASSWORD: z.string().optional(),
+
   // Object storage (Cloudflare R2 / S3-compatível). Opcional: sem isto, uploads
   // ficam desabilitados (a app sobe normalmente em dev/CI). Credenciais só aqui,
   // nunca no cliente (docs/spec/02).

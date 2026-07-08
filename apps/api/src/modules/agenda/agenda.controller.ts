@@ -5,9 +5,12 @@ import { AgendaService } from './agenda.service';
 import {
   AgendamentoDto,
   CreateAgendamentoDto,
+  CreateDepartamentoDto,
   CreateTipoAtendimentoDto,
+  DepartamentoDto,
   ProfissionalDto,
   TipoAtendimentoDto,
+  UpdateDepartamentoDto,
   UpdateStatusDto,
   UpdateTipoAtendimentoDto,
 } from './agenda.dto';
@@ -25,14 +28,16 @@ export class AgendaController {
   @ApiQuery({ name: 'from', required: false, description: 'ISO 8601' })
   @ApiQuery({ name: 'to', required: false, description: 'ISO 8601' })
   @ApiQuery({ name: 'profissionalId', required: false, description: 'Filtra por profissional ("minha agenda")' })
+  @ApiQuery({ name: 'departamentoId', required: false, description: 'Filtra por departamento (Clínica, Hotel…)' })
   @ApiOkResponse({ type: [AgendamentoDto] })
   list(
     @Req() req: Request,
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('profissionalId') profissionalId?: string,
+    @Query('departamentoId') departamentoId?: string,
   ): Promise<AgendamentoDto[]> {
-    return this.agenda.list(req.auth!.tenantId, from, to, profissionalId);
+    return this.agenda.list(req.auth!.tenantId, from, to, profissionalId, departamentoId);
   }
 
   @Roles('admin', 'gestor', 'recepcao', 'veterinario')
@@ -71,6 +76,32 @@ export class AgendaController {
     @Body() dto: UpdateTipoAtendimentoDto,
   ): Promise<TipoAtendimentoDto> {
     return this.agenda.updateTipo(req.auth!.tenantId, id, dto);
+  }
+
+  // Departamentos da agenda (doc 16 A1). Ver = qualquer staff; gestão = admin/gestor.
+  @Get('departamentos')
+  @ApiQuery({ name: 'incluirInativos', required: false, type: Boolean })
+  @ApiOkResponse({ type: [DepartamentoDto] })
+  departamentos(@Req() req: Request, @Query('incluirInativos') incluirInativos?: string): Promise<DepartamentoDto[]> {
+    return this.agenda.listDepartamentos(req.auth!.tenantId, incluirInativos === 'true');
+  }
+
+  @Roles('admin', 'gestor')
+  @Post('departamentos')
+  @ApiCreatedResponse({ type: DepartamentoDto })
+  createDepartamento(@Req() req: Request, @Body() dto: CreateDepartamentoDto): Promise<DepartamentoDto> {
+    return this.agenda.createDepartamento(req.auth!.tenantId, dto);
+  }
+
+  @Roles('admin', 'gestor')
+  @Patch('departamentos/:id')
+  @ApiOkResponse({ type: DepartamentoDto })
+  updateDepartamento(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: UpdateDepartamentoDto,
+  ): Promise<DepartamentoDto> {
+    return this.agenda.updateDepartamento(req.auth!.tenantId, id, dto);
   }
 
   @Roles('admin', 'gestor', 'recepcao', 'veterinario')

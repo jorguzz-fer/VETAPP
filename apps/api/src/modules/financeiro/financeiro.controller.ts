@@ -15,6 +15,7 @@ import {
 } from './financeiro.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles, RolesGuard } from '../../common/guards/roles.guard';
+import { AuditService } from '../audit/audit.service';
 
 @ApiTags('financeiro')
 @ApiBearerAuth()
@@ -22,7 +23,10 @@ import { Roles, RolesGuard } from '../../common/guards/roles.guard';
 @Roles('admin', 'gestor', 'financeiro', 'recepcao')
 @Controller()
 export class FinanceiroController {
-  constructor(private readonly financeiro: FinanceiroService) {}
+  constructor(
+    private readonly financeiro: FinanceiroService,
+    private readonly audit: AuditService,
+  ) {}
 
   @Get('faturas')
   @ApiQuery({ name: 'status', required: false, enum: ['aberta', 'parcial', 'paga', 'cancelada'] })
@@ -39,8 +43,18 @@ export class FinanceiroController {
 
   @Post('faturas/:id/recebimentos')
   @ApiCreatedResponse({ type: ReceberResultDto })
-  receber(@Req() req: Request, @Param('id') id: string, @Body() dto: ReceberDto): Promise<ReceberResultDto> {
-    return this.financeiro.receber(req.auth!.tenantId, id, dto);
+  async receber(@Req() req: Request, @Param('id') id: string, @Body() dto: ReceberDto): Promise<ReceberResultDto> {
+    const result = await this.financeiro.receber(req.auth!.tenantId, id, dto);
+    await this.audit.registrar(req.auth!.tenantId, {
+      userId: req.auth!.userId,
+      acao: 'financeiro.receber',
+      entidade: 'fatura',
+      entidadeId: id,
+      resumo: `Recebeu R$ ${(dto.valorCentavos / 100).toFixed(2)} — fatura ${result.status}`,
+      detalhe: { valorCentavos: dto.valorCentavos, formaId: dto.formaId ?? null, status: result.status },
+      ip: req.ip ?? null,
+    });
+    return result;
   }
 
   @Get('faturas/:id/recebimentos')

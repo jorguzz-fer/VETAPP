@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { SiteService } from './site.service';
 import {
   ConfirmLogoDto,
+  ConverterResultDto,
   SignLogoDto,
   SignUploadResponseDto,
   SiteConfigDto,
@@ -69,5 +70,13 @@ export class SiteController {
   @ApiOkResponse({ type: SolicitacaoDto })
   recusar(@Req() req: Request, @Param('id') id: string, @Body() dto: TriagemDto): Promise<SolicitacaoDto> {
     return this.site.recusar(req.auth!.tenantId, id, dto.observacao);
+  }
+
+  // Converte a solicitação em cliente/responsável de verdade (+ pet, se informado).
+  @Post('solicitacoes/:id/converter')
+  @HttpCode(200)
+  @ApiOkResponse({ type: ConverterResultDto })
+  converter(@Req() req: Request, @Param('id') id: string): Promise<ConverterResultDto> {
+    return this.site.converter(req.auth!.tenantId, id);
   }
 }

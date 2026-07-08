@@ -10,6 +10,9 @@ import {
   LogoutDto,
   MfaCodeDto,
   MfaEnableResponseDto,
+  MfaForcedEnableDto,
+  MfaForcedEnableResponseDto,
+  MfaForcedSetupDto,
   MfaSetupResponseDto,
   MfaStatusDto,
   MfaVerifyDto,
@@ -30,8 +33,8 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('register')
   @ApiCreatedResponse({ type: TokensDto })
-  register(@Body() dto: RegisterDto): Promise<TokensDto> {
-    return this.auth.register(dto);
+  register(@Req() req: Request, @Body() dto: RegisterDto): Promise<TokensDto> {
+    return this.auth.register(dto, req.ip);
   }
 
   // Anti-brute-force: 10 tentativas de login por IP/min.
@@ -39,8 +42,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
-  login(@Body() dto: LoginDto): Promise<LoginResultDto> {
-    return this.auth.login(dto);
+  login(@Req() req: Request, @Body() dto: LoginDto): Promise<LoginResultDto> {
+    return this.auth.login(dto, req.ip);
   }
 
   // Login com Google (id_token validado no servidor — docs/spec/02 §2.1).
@@ -48,16 +51,32 @@ export class AuthController {
   @Post('google')
   @HttpCode(200)
   @ApiOkResponse({ type: LoginResultDto })
-  google(@Body() dto: GoogleLoginDto): Promise<LoginResultDto> {
-    return this.auth.googleLogin(dto.idToken);
+  google(@Req() req: Request, @Body() dto: GoogleLoginDto): Promise<LoginResultDto> {
+    return this.auth.googleLogin(dto.idToken, undefined, req.ip);
   }
 
   // Conclui o login quando o usuário tem MFA ativo.
   @Post('mfa/verify')
   @HttpCode(200)
   @ApiOkResponse({ type: TokensDto })
-  mfaVerify(@Body() dto: MfaVerifyDto): Promise<TokensDto> {
-    return this.auth.mfaVerify(dto.mfaToken, dto.code);
+  mfaVerify(@Req() req: Request, @Body() dto: MfaVerifyDto): Promise<TokensDto> {
+    return this.auth.mfaVerify(dto.mfaToken, dto.code, req.ip);
+  }
+
+  // MFA obrigatório por papel — setup forçado. Autorizado pelo mfaSetupToken (no
+  // body), não por sessão: o usuário ainda não tem sessão (doc 02 §2.2).
+  @Post('mfa/forced-setup')
+  @HttpCode(200)
+  @ApiOkResponse({ type: MfaSetupResponseDto })
+  mfaForcedSetup(@Body() dto: MfaForcedSetupDto): Promise<MfaSetupResponseDto> {
+    return this.auth.mfaForcedSetup(dto.setupToken);
+  }
+
+  @Post('mfa/forced-enable')
+  @HttpCode(200)
+  @ApiOkResponse({ type: MfaForcedEnableResponseDto })
+  mfaForcedEnable(@Req() req: Request, @Body() dto: MfaForcedEnableDto): Promise<MfaForcedEnableResponseDto> {
+    return this.auth.mfaForcedEnable(dto.setupToken, dto.code, req.ip);
   }
 
   // Rotação de refresh token (stateful, com detecção de reuso — docs/spec/02 §2.2).
@@ -72,8 +91,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   @ApiOkResponse({ type: OkResponseDto })
-  logout(@Body() dto: LogoutDto): Promise<OkResponseDto> {
-    return this.auth.logout(dto.refreshToken);
+  logout(@Req() req: Request, @Body() dto: LogoutDto): Promise<OkResponseDto> {
+    return this.auth.logout(dto.refreshToken, req.ip);
   }
 
   // ───────── Gestão do MFA (autenticado) ─────────

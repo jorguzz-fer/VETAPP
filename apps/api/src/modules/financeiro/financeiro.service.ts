@@ -56,57 +56,73 @@ export class FinanceiroService {
   /** Registra um recebimento (parcial ou integral) e recalcula o status. */
   async receber(tenantId: string, id: string, dto: ReceberDto): Promise<ReceberResultDto> {
     return this.database.withTenant(tenantId, async (tx) => {
-      const fatura = await tx.query.faturas.findFirst({ where: eq(faturas.id, id) });
-      if (!fatura) throw new NotFoundException('Fatura não encontrada');
-      if (fatura.status === 'cancelada') throw new BadRequestException('Fatura cancelada');
-      if (fatura.status === 'paga') throw new BadRequestException('Fatura já quitada');
-
-      if (dto.formaId) {
-        const forma = await tx.query.formasRecebimento.findFirst({ where: eq(formasRecebimento.id, dto.formaId) });
-        if (!forma) throw new NotFoundException('Forma de recebimento não encontrada');
-      }
-
-      const recebidoAntes = await this.recebido(tx, id);
-      const saldo = fatura.totalCentavos - recebidoAntes;
-      if (dto.valorCentavos > saldo) {
-        throw new BadRequestException(`Valor acima do saldo em aberto (${saldo} centavos)`);
-      }
-
-      await tx.insert(recebimentos).values({
-        tenantId,
-        faturaId: id,
-        formaId: dto.formaId ?? null,
-        valorCentavos: dto.valorCentavos,
-        observacao: dto.observacao ?? null,
-      });
-
-      const recebido = recebidoAntes + dto.valorCentavos;
-      const novoStatus = recebido >= fatura.totalCentavos ? 'paga' : 'parcial';
-      await tx.update(faturas).set({ status: novoStatus, updatedAt: new Date() }).where(eq(faturas.id, id));
-
-      return {
-        ok: true,
-        status: novoStatus,
-        recebidoCentavos: recebido,
-        saldoCentavos: fatura.totalCentavos - recebido,
-      };
+      const fatura = await this.lockFatura(tx, id);
+      return this.aplicarRecebimento(tx, tenantId, id, fatura, dto);
     });
   }
 
-  /** Baixa integral (quita o saldo restante numa tacada). */
+  /** Baixa integral (quita o saldo restante numa tacada). Uma única transação. */
   async pagar(tenantId: string, id: string): Promise<OkDto> {
-    const res = await this.database.withTenant(tenantId, async (tx) => {
-      const fatura = await tx.query.faturas.findFirst({ where: eq(faturas.id, id) });
-      if (!fatura) throw new NotFoundException('Fatura não encontrada');
-      if (fatura.status === 'cancelada') throw new BadRequestException('Fatura cancelada');
-      if (fatura.status === 'paga') throw new BadRequestException('Fatura já quitada');
+    await this.database.withTenant(tenantId, async (tx) => {
+      const fatura = await this.lockFatura(tx, id);
       const saldo = fatura.totalCentavos - (await this.recebido(tx, id));
-      return { saldo };
+      if (saldo > 0) {
+        await this.aplicarRecebimento(tx, tenantId, id, fatura, { valorCentavos: saldo });
+      }
     });
-    if (res.saldo > 0) {
-      await this.receber(tenantId, id, { valorCentavos: res.saldo });
-    }
     return { ok: true };
+  }
+
+  /**
+   * Carrega a fatura com LOCK de linha (SELECT ... FOR UPDATE): serializa
+   * recebimentos concorrentes na mesma fatura — sem isso, dois recebimentos
+   * simultâneos leem o mesmo saldo e podem exceder o total (over-payment).
+   */
+  private async lockFatura(tx: Database, id: string): Promise<typeof faturas.$inferSelect> {
+    const [fatura] = await tx.select().from(faturas).where(eq(faturas.id, id)).for('update');
+    if (!fatura) throw new NotFoundException('Fatura não encontrada');
+    if (fatura.status === 'cancelada') throw new BadRequestException('Fatura cancelada');
+    if (fatura.status === 'paga') throw new BadRequestException('Fatura já quitada');
+    return fatura;
+  }
+
+  /** Aplica um recebimento sobre uma fatura JÁ carregada e travada (FOR UPDATE). */
+  private async aplicarRecebimento(
+    tx: Database,
+    tenantId: string,
+    faturaId: string,
+    fatura: typeof faturas.$inferSelect,
+    dto: ReceberDto,
+  ): Promise<ReceberResultDto> {
+    if (dto.formaId) {
+      const forma = await tx.query.formasRecebimento.findFirst({ where: eq(formasRecebimento.id, dto.formaId) });
+      if (!forma) throw new NotFoundException('Forma de recebimento não encontrada');
+    }
+
+    const recebidoAntes = await this.recebido(tx, faturaId);
+    const saldo = fatura.totalCentavos - recebidoAntes;
+    if (dto.valorCentavos > saldo) {
+      throw new BadRequestException(`Valor acima do saldo em aberto (${saldo} centavos)`);
+    }
+
+    await tx.insert(recebimentos).values({
+      tenantId,
+      faturaId,
+      formaId: dto.formaId ?? null,
+      valorCentavos: dto.valorCentavos,
+      observacao: dto.observacao ?? null,
+    });
+
+    const recebido = recebidoAntes + dto.valorCentavos;
+    const novoStatus = recebido >= fatura.totalCentavos ? 'paga' : 'parcial';
+    await tx.update(faturas).set({ status: novoStatus, updatedAt: new Date() }).where(eq(faturas.id, faturaId));
+
+    return {
+      ok: true,
+      status: novoStatus,
+      recebidoCentavos: recebido,
+      saldoCentavos: fatura.totalCentavos - recebido,
+    };
   }
 
   async listRecebimentos(tenantId: string, id: string): Promise<RecebimentoDto[]> {

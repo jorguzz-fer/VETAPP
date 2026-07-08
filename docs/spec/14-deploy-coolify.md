@@ -38,13 +38,21 @@ migrations/DDL/RLS) e `DATABASE_URL` (`vetapp_app`, runtime da app).
 
 ## Migrations
 
-Rodar a cada deploy com migration nova (usa `DATABASE_ADMIN_URL`):
+**Rodam automaticamente no START do container da API** (entrypoint do Dockerfile:
+`node dist/database/migrate.js && exec node dist/main.js`), usando `DATABASE_ADMIN_URL`.
+São idempotentes (o drizzle aplica só o que falta) e **fail-fast**: se a migration
+falhar, o container não sobe com schema quebrado. **Nada manual no deploy normal.**
 
-```
-pnpm --filter @vetapp/api db:migrate
-```
+- **NÃO** roda no `docker build` (a imagem é construída sem acesso ao banco; um build
+  jamais deve tocar dados de produção). O lugar correto é o *release*/start.
+- Requer `DATABASE_ADMIN_URL` setada nas ENVs da API (papel admin — DDL + RLS).
+- Para gerir o schema à parte, defina `RUN_MIGRATIONS=false` (o boot pula o migrate).
+- Fallback manual (raro — ex.: reaplicar após restore): no Terminal da API,
+  `node dist/database/migrate.js`.
 
-Recomendado como **pre-deploy command** da API no Coolify.
+> Evita o pre-deploy command do Coolify de propósito: ele roda no **container antigo**
+> e é pulado se ele estiver morto ("Skipping"). O entrypoint sempre roda com a imagem
+> nova.
 
 ## ENVs — API
 
@@ -67,11 +75,25 @@ S3_SECRET_ACCESS_KEY=<R2_SECRET>
 S3_FORCE_PATH_STYLE=true
 # Google OIDC — opcional
 GOOGLE_CLIENT_ID=<client-id>.apps.googleusercontent.com
+# Super-admin da plataforma (doc 15) — opcional. Se ambos setados, o boot cria/garante
+# esse admin (idempotente). SEGREDO só aqui, NUNCA no repo. Senha ≥ 12 chars.
+PLATFORM_BOOTSTRAP_EMAIL=<email-do-dono>
+PLATFORM_BOOTSTRAP_PASSWORD=<senha-forte>
+# MFA — opcional. Default 'on' (ausência = obrigatório). 'off' coloca o 2º fator em
+# STANDBY (login sem MFA) — SÓ para testes; jamais em produção real.
+# MFA_ENFORCEMENT=off
 # Redis — opcional
 # REDIS_URL=redis://<REDIS_HOST>:6379
 ```
 
 Segredos JWT: `openssl rand -hex 32`. Healthcheck do Coolify: `GET /api/health`.
+**Bootstrap do super-admin**: setar `PLATFORM_BOOTSTRAP_EMAIL`/`PASSWORD` cria o dono
+da plataforma no próximo boot (o login exige MFA no 1º acesso — doc 15). Trocar a
+senha na ENV propaga no boot seguinte.
+**MFA em standby**: `MFA_ENFORCEMENT=off` desliga o 2º fator (gestão + plataforma)
+para facilitar testes — o login emite sessão direto, sem desafio nem setup forçado.
+Válvula de escape temporária; a API loga um `warn` no boot. Remover a var (ou `=on`)
+restaura o MFA obrigatório. **Nunca `off` em produção real.**
 Docs OpenAPI (`/api/docs`) ficam **desabilitados** quando `NODE_ENV=production`
 (nenhuma rota a mais exposta — doc 02); o contrato segue gerado offline por
 `openapi:gen`. Para expor a parceiros, publicar atrás de proxy/authz.

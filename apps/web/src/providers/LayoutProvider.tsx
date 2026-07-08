@@ -21,11 +21,13 @@ export default function LayoutProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(false);
   const toggleActive = () => setActive((v) => !v);
 
-  // O portal do tutor (/portal/*) tem shell e auth próprios (PortalAuthProvider) e
-  // o site público (/clinica/*) é anônimo — nenhum usa o shell/guard da gestão.
+  // O portal do tutor (/portal/*) e o back-office da plataforma (/plataforma/*) têm
+  // shell e auth próprios (PortalAuthProvider / PlatformAuthProvider) e o site público
+  // (/clinica/*) é anônimo — nenhum usa o shell/guard da gestão.
   const isBare =
     BARE_ROUTES.includes(pathname) ||
     pathname.startsWith('/portal') ||
+    pathname.startsWith('/plataforma') ||
     pathname.startsWith('/clinica/');
 
   // Guarda de rota (scaffold): sem usuário em rota protegida → login.

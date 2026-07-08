@@ -19,6 +19,15 @@ import { InteligenciaModule } from './modules/inteligencia/inteligencia.module';
 import { PortalModule } from './modules/portal/portal.module';
 import { FiscalModule } from './modules/fiscal/fiscal.module';
 import { SiteModule } from './modules/site/site.module';
+import { ModelosModule } from './modules/modelos/modelos.module';
+import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { BrandingModule } from './modules/branding/branding.module';
+import { LgpdModule } from './modules/lgpd/lgpd.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
+import { AssinaturasModule } from './modules/assinaturas/assinaturas.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { MensageriaModule } from './modules/mensageria/mensageria.module';
 import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
@@ -29,6 +38,9 @@ import { StorageModule } from './modules/storage/storage.module';
     // escalar réplicas (ver doc de infra).
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     DatabaseModule,
+    AuditModule,
+    SessionsModule,
+    AssinaturasModule,
     StorageModule,
     HealthModule,
     AuthModule,
@@ -46,6 +58,12 @@ import { StorageModule } from './modules/storage/storage.module';
     PortalModule,
     FiscalModule,
     SiteModule,
+    ModelosModule,
+    UsuariosModule,
+    BrandingModule,
+    LgpdModule,
+    PlatformModule,
+    MensageriaModule,
   ],
   providers: [
     // ThrottlerGuard pode ser global: age por IP e não depende de req.auth

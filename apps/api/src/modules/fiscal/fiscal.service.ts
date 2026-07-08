@@ -118,9 +118,21 @@ export class FiscalService {
       if (nota.status !== 'rascunho' && nota.status !== 'rejeitada') {
         throw new BadRequestException(`Nota não pode ser emitida (status: ${nota.status})`);
       }
-      const config = await tx.query.fiscalConfig.findFirst({ where: eq(fiscalConfig.tenantId, tenantId) });
+      // Lock no config (SELECT ... FOR UPDATE): serializa emissões concorrentes do
+      // mesmo tenant, garantindo que cada uma leia/incremente proximo_numero sem
+      // colidir. O índice único parcial (0019) é o backstop no banco.
+      const [config] = await tx
+        .select()
+        .from(fiscalConfig)
+        .where(eq(fiscalConfig.tenantId, tenantId))
+        .for('update');
       if (!config) throw new BadRequestException('Configure o Fiscal antes de emitir');
       if (!config.ativo) throw new BadRequestException('Emissão fiscal desativada (ative na configuração)');
+
+      // Re-snapshot do valor: a nota reflete o total ATUAL da fatura na emissão
+      // (itens lançados depois do rascunho não deixam a nota defasada).
+      const fatura = await tx.query.faturas.findFirst({ where: eq(faturas.id, nota.faturaId) });
+      const valorCentavos = fatura?.totalCentavos ?? nota.valorCentavos;
 
       const resp = await tx.query.responsaveis.findFirst({ where: eq(responsaveis.id, nota.responsavelId) });
       const provider = this.providers.resolve(config.provedor);
@@ -149,6 +161,7 @@ export class FiscalService {
           status: result.status,
           numero,
           serie,
+          valorCentavos,
           providerRef: result.providerRef ?? nota.providerRef,
           mensagem: result.mensagem ?? null,
           emitidaEm: result.status === 'emitida' ? new Date() : nota.emitidaEm,
