@@ -83,6 +83,24 @@ persona** (`/api/dashboard`, KPIs reais recortados por papel) e **produtividade*
 mapeamento (doc 05) completa** — restam os complementares do doc 13.
 **App em produção** (Coolify/VPS): runbook e troubleshooting em `docs/spec/14`.
 
+**Ajustes de UX do advisor (doc 16) — FEITO** (PRs #101–#116): KPIs do dashboard
+(receita líquida/ticket médio/a receber), "Clientes e Pacientes" (código + tutor/pets
+na lista), cadastro de paciente (pelagem/microchip/marcações/pedigree, migrações 0032),
+ficha do cliente (resumo de vendas + WhatsApp), **dashboard de internação** em cards
+(foto + previsão de alta, migração 0033), "A cobrar"/comanda, **prontuário** (cards +
+timeline por blocos + evolução por médico `registrado_por` migração 0036 + **protocolos
+vacinais** `vacinas` migração 0034), **agenda** (slider de detalhe + **departamentos**
+`departamentos` migração 0035). R1 ("Atendimento clínico") era tela do concorrente — N/A.
+
+**CRM / Mensageria (doc 17) — MVP FEITO** (PRs #117–#120), provider-agnostic (igual ao
+Fiscal): tabela `mensagens` (migração 0037) + driver **`log`/`manual`** (registra;
+envio manual) + `MensageriaModule`; **histórico na ficha** do cliente + templates
+(`mensagem_templates` migração 0038, CRUD em `/cadastros` + placeholders) + página CRM
+`/mensagens` (**vacinas a vencer** via `GET /api/mensagens/vacinas-vencendo` → registrar
+lembrete + histórico geral). **Pendente (decisão externa)**: provider real (WhatsApp
+Business/SMS/e-mail) + webhooks de status + disparo automático agendado + notificação de
+chegada + campanhas — só plugar o driver quando o provedor/credenciais forem definidos.
+
 Pendências conhecidas:
 - **Branch protection** em `main` (ação manual no GitHub UI — exigir PR + checks
   `API (lint · types · test · build)` e `Web (typecheck · build)`).
