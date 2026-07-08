@@ -6057,7 +6057,25 @@
           "role"
         ]
       },
-      "ResponsavelDto": {
+      "ResponsavelPetResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "ResponsavelListItemDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -6080,11 +6098,18 @@
           },
           "origem": {
             "type": "string"
+          },
+          "pets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResponsavelPetResumoDto"
+            }
           }
         },
         "required": [
           "id",
-          "nome"
+          "nome",
+          "pets"
         ]
       },
       "ListResponsaveisDto": {
@@ -6093,7 +6118,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ResponsavelDto"
+              "$ref": "#/components/schemas/ResponsavelListItemDto"
             }
           },
           "total": {
@@ -6140,6 +6165,36 @@
           }
         },
         "required": [
+          "nome"
+        ]
+      },
+      "ResponsavelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
           "nome"
         ]
       },

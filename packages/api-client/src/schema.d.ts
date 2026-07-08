@@ -2097,7 +2097,12 @@ export interface components {
             /** @example admin */
             role: string;
         };
-        ResponsavelDto: {
+        ResponsavelPetResumoDto: {
+            id: string;
+            nome: string;
+            codigo?: string;
+        };
+        ResponsavelListItemDto: {
             id: string;
             codigo?: string;
             nome: string;
@@ -2105,9 +2110,10 @@ export interface components {
             telefone?: string;
             documento?: string;
             origem?: string;
+            pets: components["schemas"]["ResponsavelPetResumoDto"][];
         };
         ListResponsaveisDto: {
-            items: components["schemas"]["ResponsavelDto"][];
+            items: components["schemas"]["ResponsavelListItemDto"][];
             total: number;
             page: number;
             pageSize: number;
@@ -2122,6 +2128,15 @@ export interface components {
             telefone?: string;
             documento?: string;
             /** @description Como nos conheceu? */
+            origem?: string;
+        };
+        ResponsavelDto: {
+            id: string;
+            codigo?: string;
+            nome: string;
+            email?: string;
+            telefone?: string;
+            documento?: string;
             origem?: string;
         };
         AnimalDto: {

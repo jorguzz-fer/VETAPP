@@ -24,7 +24,7 @@ export const navSections: NavSection[] = [
   {
     title: 'Clínico',
     items: [
-      { label: 'Clientes & Animais', href: '/clientes', icon: 'ri-user-heart-line' },
+      { label: 'Clientes e Pacientes', href: '/clientes', icon: 'ri-user-heart-line' },
       { label: 'Prontuário', href: '/prontuario', icon: 'ri-stethoscope-line' },
       { label: 'Modelos', href: '/modelos', icon: 'ri-file-text-line' },
       { label: 'Internação', href: '/internacao', icon: 'ri-hospital-line', roles: ['admin', 'veterinario', 'internacao'] },

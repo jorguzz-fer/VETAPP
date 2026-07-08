@@ -133,8 +133,19 @@ export class UpdateAnimalDto {
   @ApiPropertyOptional({ enum: ['vivo', 'falecido'] }) @IsOptional() @IsIn(['vivo', 'falecido']) status?: string;
 }
 
+// Pet resumido para a listagem de clientes (doc 16 C4): tutor + pacientes na linha.
+export class ResponsavelPetResumoDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() nome!: string;
+  @ApiPropertyOptional({ type: String }) codigo?: string | null;
+}
+
+export class ResponsavelListItemDto extends ResponsavelDto {
+  @ApiProperty({ type: [ResponsavelPetResumoDto] }) pets!: ResponsavelPetResumoDto[];
+}
+
 export class ListResponsaveisDto {
-  @ApiProperty({ type: [ResponsavelDto] }) items!: ResponsavelDto[];
+  @ApiProperty({ type: [ResponsavelListItemDto] }) items!: ResponsavelListItemDto[];
   @ApiProperty() total!: number;
   @ApiProperty() page!: number;
   @ApiProperty() pageSize!: number;
