@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
@@ -30,6 +32,10 @@ import { StorageModule } from './modules/storage/storage.module';
 @Module({
   imports: [
     ConfigModule,
+    // Rate limiting global anti-brute-force (por IP). Default generoso; as rotas
+    // de auth apertam via @Throttle. Store em memória — troque por Redis ao
+    // escalar réplicas (ver doc de infra).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     DatabaseModule,
     AuditModule,
     SessionsModule,
@@ -56,6 +62,11 @@ import { StorageModule } from './modules/storage/storage.module';
     BrandingModule,
     LgpdModule,
     PlatformModule,
+  ],
+  providers: [
+    // ThrottlerGuard pode ser global: age por IP e não depende de req.auth
+    // (ao contrário do RolesGuard — ver nota abaixo).
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
   // NB: RBAC (RolesGuard) NÃO é global. Um guard global roda ANTES dos guards de
   // controller (JwtAuthGuard), então o RolesGuard leria req.auth antes de ele ser

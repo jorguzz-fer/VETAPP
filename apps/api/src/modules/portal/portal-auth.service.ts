@@ -169,6 +169,7 @@ export class PortalAuthService {
     try {
       payload = await this.jwt.verifyAsync<TutorRefreshPayload>(refreshToken, {
         secret: this.env.JWT_REFRESH_SECRET,
+        algorithms: ['HS256'],
       });
     } catch {
       throw new UnauthorizedException('Sessão expirada — faça login novamente');

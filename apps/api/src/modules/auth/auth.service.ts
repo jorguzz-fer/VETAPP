@@ -191,6 +191,7 @@ export class AuthService {
     try {
       payload = await this.jwt.verifyAsync<MfaTokenPayload>(mfaToken, {
         secret: this.env.JWT_ACCESS_SECRET,
+        algorithms: ['HS256'],
       });
     } catch {
       throw new UnauthorizedException('Sessão de MFA expirada — faça login novamente');
@@ -277,6 +278,7 @@ export class AuthService {
     try {
       payload = await this.jwt.verifyAsync<RefreshPayload>(refreshToken, {
         secret: this.env.JWT_REFRESH_SECRET,
+        algorithms: ['HS256'],
       });
     } catch {
       throw new UnauthorizedException('Sessão expirada — faça login novamente');
@@ -307,6 +309,7 @@ export class AuthService {
     try {
       const payload = await this.jwt.verifyAsync<RefreshPayload>(refreshToken, {
         secret: this.env.JWT_REFRESH_SECRET,
+        algorithms: ['HS256'],
       });
       if (payload.scope === 'refresh') {
         // Uma linha da family dá o tenant/usuário para a auditoria (o refresh JWT
