@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
 import { DatabaseService } from '../../database/database.service';
-import { animais, faturas, responsaveis } from '../../database/schema';
+import { animais, faturas, prontuarioEventos, responsaveis, users, vacinas } from '../../database/schema';
 import { StorageService } from '../storage/storage.service';
 import type {
   AnimalDto,
@@ -10,11 +10,13 @@ import type {
   CreateResponsavelDto,
   ListResponsaveisDto,
   OkDto,
+  CreateVacinaDto,
   ResponsavelComAnimaisDto,
   ResponsavelDto,
   SignUploadResponseDto,
   UpdateAnimalDto,
   UpdateResponsavelDto,
+  VacinaDto,
 } from './clientes.dto';
 
 interface ListOpts {
@@ -236,6 +238,81 @@ export class ClientesService {
       return r;
     });
     return this.toAnimalDto(row);
+  }
+
+  // ───────── Protocolos vacinais (doc 16 PR9) ─────────
+
+  async listVacinas(tenantId: string, animalId: string): Promise<VacinaDto[]> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const rows = await tx
+        .select({
+          id: vacinas.id,
+          animalId: vacinas.animalId,
+          nome: vacinas.nome,
+          laboratorio: vacinas.laboratorio,
+          lote: vacinas.lote,
+          aplicadaEm: vacinas.aplicadaEm,
+          proximaEm: vacinas.proximaEm,
+          aplicadaPorNome: users.name,
+          observacao: vacinas.observacao,
+        })
+        .from(vacinas)
+        .leftJoin(users, eq(users.id, vacinas.aplicadaPor))
+        .where(eq(vacinas.animalId, animalId))
+        .orderBy(desc(vacinas.aplicadaEm));
+      return rows.map((r) => ({
+        ...r,
+        aplicadaEm: r.aplicadaEm as unknown as string,
+        proximaEm: (r.proximaEm as unknown as string | null) ?? null,
+      }));
+    });
+  }
+
+  async criarVacina(
+    tenantId: string,
+    animalId: string,
+    userId: string,
+    dto: CreateVacinaDto,
+  ): Promise<VacinaDto> {
+    return this.database.withTenant(tenantId, async (tx) => {
+      const animal = await tx.query.animais.findFirst({ where: eq(animais.id, animalId) });
+      if (!animal) throw new NotFoundException('Paciente não encontrado');
+      const [row] = await tx
+        .insert(vacinas)
+        .values({
+          tenantId,
+          animalId,
+          nome: dto.nome,
+          laboratorio: dto.laboratorio ?? null,
+          lote: dto.lote ?? null,
+          aplicadaEm: dto.aplicadaEm,
+          proximaEm: dto.proximaEm ?? null,
+          aplicadaPor: userId,
+          observacao: dto.observacao ?? null,
+        })
+        .returning();
+      // Também vira evento na linha do tempo do paciente.
+      await tx.insert(prontuarioEventos).values({
+        tenantId,
+        animalId,
+        tipo: 'vacina',
+        descricao: `Vacina: ${dto.nome}${dto.lote ? ` (lote ${dto.lote})` : ''}`,
+      });
+      const [autor] = userId
+        ? await tx.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
+        : [];
+      return {
+        id: row.id,
+        animalId: row.animalId,
+        nome: row.nome,
+        laboratorio: row.laboratorio,
+        lote: row.lote,
+        aplicadaEm: row.aplicadaEm as unknown as string,
+        proximaEm: (row.proximaEm as unknown as string | null) ?? null,
+        aplicadaPorNome: autor?.name ?? null,
+        observacao: row.observacao,
+      };
+    });
   }
 
   private async toAnimalDto(r: AnimalRow): Promise<AnimalDto> {

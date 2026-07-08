@@ -3,6 +3,7 @@ export * from './users';
 export * from './memberships';
 export * from './responsaveis';
 export * from './animais';
+export * from './vacinas';
 export * from './prontuario';
 export * from './agenda';
 export * from './catalogo';

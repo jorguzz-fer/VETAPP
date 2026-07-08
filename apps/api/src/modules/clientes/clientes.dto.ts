@@ -202,6 +202,28 @@ export class OkDto {
   @ApiProperty() ok!: boolean;
 }
 
+// Protocolos vacinais (doc 16 PR9).
+export class CreateVacinaDto {
+  @ApiProperty({ example: 'Antirrábica' }) @IsString() @MinLength(1) @MaxLength(120) nome!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() laboratorio?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() lote?: string;
+  @ApiProperty({ example: '2026-07-08', description: 'AAAA-MM-DD' }) @IsString() @MinLength(1) aplicadaEm!: string;
+  @ApiPropertyOptional({ example: '2027-07-08', description: 'Próxima dose (AAAA-MM-DD)' }) @IsOptional() @IsString() proximaEm?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() observacao?: string;
+}
+
+export class VacinaDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() animalId!: string;
+  @ApiProperty() nome!: string;
+  @ApiPropertyOptional({ type: String }) laboratorio?: string | null;
+  @ApiPropertyOptional({ type: String }) lote?: string | null;
+  @ApiProperty() aplicadaEm!: string;
+  @ApiPropertyOptional({ type: String }) proximaEm?: string | null;
+  @ApiPropertyOptional({ type: String }) aplicadaPorNome?: string | null;
+  @ApiPropertyOptional({ type: String }) observacao?: string | null;
+}
+
 export class SignUploadDto {
   @ApiProperty({ example: 'image/jpeg', enum: ['image/jpeg', 'image/png', 'image/webp'] })
   @IsIn(['image/jpeg', 'image/png', 'image/webp'])

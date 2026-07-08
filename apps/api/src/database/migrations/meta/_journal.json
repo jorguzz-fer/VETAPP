@@ -239,6 +239,13 @@
       "when": 1719593700000,
       "tag": "0033_internacao_alta_prevista",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1719593800000,
+      "tag": "0034_vacinas",
+      "breakpoints": true
     }
   ]
 }

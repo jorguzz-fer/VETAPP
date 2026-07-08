@@ -38,6 +38,16 @@ interface Fatura {
   totalCentavos: number;
   itens: { id: string; descricao: string; valorCentavos: number }[];
 }
+interface Vacina {
+  id: string;
+  nome: string;
+  laboratorio?: string | null;
+  lote?: string | null;
+  aplicadaEm: string;
+  proximaEm?: string | null;
+  aplicadaPorNome?: string | null;
+  observacao?: string | null;
+}
 
 const TIPOS = ['atendimento', 'peso', 'vacina', 'exame', 'receita', 'observacao', 'internacao'] as const;
 type Tipo = (typeof TIPOS)[number];
@@ -61,6 +71,10 @@ export default function ProntuarioPage() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [fatura, setFatura] = useState<Fatura | null>(null);
   const [cobrando, setCobrando] = useState(false);
+  const [vacinas, setVacinas] = useState<Vacina[]>([]);
+  const [vacForm, setVacForm] = useState({ nome: '', laboratorio: '', lote: '', aplicadaEm: '', proximaEm: '' });
+  const [showVacForm, setShowVacForm] = useState(false);
+  const [salvandoVac, setSalvandoVac] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -139,6 +153,35 @@ export default function ProntuarioPage() {
     setFatura((data as Fatura) ?? null);
   }, []);
 
+  const loadVacinas = useCallback(async () => {
+    const { data } = await api.GET('/api/animais/{id}/vacinas', { params: { path: { id } } });
+    setVacinas((data as Vacina[]) ?? []);
+  }, [id]);
+
+  async function onAddVacina(e: FormEvent) {
+    e.preventDefault();
+    if (!vacForm.nome.trim() || !vacForm.aplicadaEm) return;
+    setSalvandoVac(true);
+    const { error } = await api.POST('/api/animais/{id}/vacinas', {
+      params: { path: { id } },
+      body: {
+        nome: vacForm.nome.trim(),
+        laboratorio: vacForm.laboratorio || undefined,
+        lote: vacForm.lote || undefined,
+        aplicadaEm: vacForm.aplicadaEm,
+        proximaEm: vacForm.proximaEm || undefined,
+      },
+    });
+    setSalvandoVac(false);
+    if (error) {
+      alert('Não foi possível registrar a vacina (permissão de perfil clínico?).');
+      return;
+    }
+    setVacForm({ nome: '', laboratorio: '', lote: '', aplicadaEm: '', proximaEm: '' });
+    setShowVacForm(false);
+    await Promise.all([loadVacinas(), load()]);
+  }
+
   // Efetuar cobrança (doc 16 B3): baixa integral da comanda em aberto.
   async function onEfetuarCobranca() {
     if (!fatura || !animal) return;
@@ -183,6 +226,10 @@ export default function ProntuarioPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadVacinas();
+  }, [loadVacinas]);
 
   async function onAddEvento(e: FormEvent) {
     e.preventDefault();
@@ -709,6 +756,74 @@ export default function ProntuarioPage() {
           )}
         </Card>
       )}
+
+      {/* Protocolos vacinais (doc 16 PR9) */}
+      <Card>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-black dark:text-white">Protocolos vacinais</h2>
+          <Button variant="ghost" onClick={() => setShowVacForm((v) => !v)}>
+            <i className="ri-syringe-line"></i> Registrar vacina
+          </Button>
+        </div>
+        {showVacForm && (
+          <form onSubmit={onAddVacina} className="grid grid-cols-1 md:grid-cols-5 gap-2 md:items-end mb-4">
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              <span className="text-gray-600 dark:text-gray-300">Vacina</span>
+              <input required value={vacForm.nome} onChange={(e) => setVacForm({ ...vacForm, nome: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" placeholder="Ex.: Antirrábica" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Laboratório</span>
+              <input value={vacForm.laboratorio} onChange={(e) => setVacForm({ ...vacForm, laboratorio: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Lote</span>
+              <input value={vacForm.lote} onChange={(e) => setVacForm({ ...vacForm, lote: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Aplicada em</span>
+              <input type="date" required value={vacForm.aplicadaEm} onChange={(e) => setVacForm({ ...vacForm, aplicadaEm: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">Próxima dose</span>
+              <input type="date" value={vacForm.proximaEm} onChange={(e) => setVacForm({ ...vacForm, proximaEm: e.target.value })} className="rounded-md border border-gray-200 dark:border-[#172036] bg-white dark:bg-[#0c1427] px-3 py-2 outline-none focus:border-primary-500" />
+            </label>
+            <Button type="submit" disabled={salvandoVac} className="md:col-span-5 md:justify-self-start">
+              {salvandoVac ? 'Salvando…' : 'Salvar'}
+            </Button>
+          </form>
+        )}
+        {vacinas.length === 0 ? (
+          <p className="text-sm text-gray-400">Nenhuma vacina registrada.</p>
+        ) : (
+          <ul className="divide-y divide-gray-50 dark:divide-[#172036]/50 text-sm">
+            {vacinas.map((v) => {
+              const prox = v.proximaEm ? new Date(v.proximaEm) : null;
+              const dias = prox ? Math.floor((prox.getTime() - Date.now()) / 86_400_000) : null;
+              const proxCls =
+                dias == null ? '' : dias < 0 ? 'text-red-500' : dias <= 30 ? 'text-amber-600' : 'text-gray-500';
+              return (
+                <li key={v.id} className="py-2.5 flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-black dark:text-white">{v.nome}</p>
+                    <p className="text-xs text-gray-500">
+                      Aplicada em {new Date(v.aplicadaEm).toLocaleDateString('pt-BR')}
+                      {v.laboratorio && ` · ${v.laboratorio}`}
+                      {v.lote && ` · lote ${v.lote}`}
+                      {v.aplicadaPorNome && ` · ${v.aplicadaPorNome}`}
+                    </p>
+                  </div>
+                  {prox && (
+                    <span className={`text-xs whitespace-nowrap ${proxCls}`}>
+                      Próxima {prox.toLocaleDateString('pt-BR')}
+                      {dias != null && dias < 0 ? ' (vencida)' : ''}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
 
       {/* Linha do tempo */}
       <Card>
